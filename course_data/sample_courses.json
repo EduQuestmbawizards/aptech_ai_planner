@@ -1,0 +1,1514 @@
+[
+  {
+    "course_code": "PSAT-8",
+    "name": "PSAT Class 8 (PSAT 8/9 Foundation)",
+    "description": "Official College Board PSAT 8/9 Grade 8 foundation track covering Digital Reading & Writing and foundational Math (Algebra, Problem-Solving, Data Analysis & Geometry).",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 48.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "BEGINNER",
+    "prerequisites": [
+      "Grade 8 Mathematics & English Foundations"
+    ],
+    "modules": [
+      {
+        "module_code": "PSAT8-RW",
+        "title": "Reading & Writing (College Board Digital PSAT 8/9)",
+        "description": "54 questions / 64 minutes across 2 adaptive modules: Craft & Structure, Information & Ideas, Standard English Conventions, and Expression of Ideas.",
+        "order_index": 1,
+        "estimated_hours": 22.0,
+        "topics": [
+          {
+            "topic_code": "PSAT8-RW-1",
+            "title": "Information & Ideas (Central Ideas, Details & Command of Evidence)",
+            "description": "Analyzing short passages, identifying central claims, and interpreting quantitative evidence.",
+            "estimated_hours": 6.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": ["Main Idea & Purpose", "Textual Evidence", "Basic Graphs & Tables"]
+          },
+          {
+            "topic_code": "PSAT8-RW-2",
+            "title": "Craft & Structure (Words in Context & Text Structure)",
+            "description": "Vocabulary in context, passage organization, and cross-text connections.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 2,
+            "subtopics": ["Words in Context", "Text Structure & Purpose"]
+          },
+          {
+            "topic_code": "PSAT8-RW-3",
+            "title": "Standard English Conventions (Grammar, Punctuation & Boundaries)",
+            "description": "Sentence boundaries, subject-verb agreement, verb tenses, and modifiers.",
+            "estimated_hours": 6.0,
+            "difficulty": "BEGINNER",
+            "order_index": 3,
+            "subtopics": ["Sentence Boundaries", "Punctuation & Agreement"]
+          },
+          {
+            "topic_code": "PSAT8-RW-4",
+            "title": "Expression of Ideas (Transitions & Rhetorical Synthesis)",
+            "description": "Logical transitions and synthesizing bulleted research notes.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 4,
+            "subtopics": ["Logical Transitions", "Rhetorical Synthesis"]
+          }
+        ]
+      },
+      {
+        "module_code": "PSAT8-MATH",
+        "title": "Mathematics (College Board Digital PSAT 8/9)",
+        "description": "44 questions / 70 minutes across 2 adaptive modules with built-in Desmos graphing calculator.",
+        "order_index": 2,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "PSAT8-M-1",
+            "title": "Algebra Foundations (Linear Equations & Inequalities)",
+            "description": "Solving single-variable equations, linear functions, and word problems.",
+            "estimated_hours": 7.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": ["Linear Equations", "Slope & Intercepts", "Linear Inequalities"]
+          },
+          {
+            "topic_code": "PSAT8-M-2",
+            "title": "Problem-Solving & Data Analysis (Ratios, Rates & Percentages)",
+            "description": "Proportions, unit conversions, percentages, and reading statistical charts.",
+            "estimated_hours": 7.0,
+            "difficulty": "BEGINNER",
+            "order_index": 2,
+            "subtopics": ["Ratios & Proportions", "Percentages", "Mean, Median & Charts"]
+          },
+          {
+            "topic_code": "PSAT8-M-3",
+            "title": "Geometry & Coordinate Plane Foundations",
+            "description": "Area, perimeter, volume, angle relationships, and coordinate geometry basics.",
+            "estimated_hours": 6.0,
+            "difficulty": "BEGINNER",
+            "order_index": 3,
+            "subtopics": ["Area & Volume", "Angles & Triangles"]
+          }
+        ]
+      },
+      {
+        "module_code": "PSAT8-MOCK",
+        "title": "Adaptive Full-Length Mock Tests & Review",
+        "description": "Timed Bluebook-style digital practice tests and error analysis.",
+        "order_index": 3,
+        "estimated_hours": 6.0,
+        "topics": [
+          {
+            "topic_code": "PSAT8-MOCK-1",
+            "title": "Full-Length PSAT 8/9 Diagnostic & Final Mock Reviews",
+            "description": "Two full timed adaptive mock exams with question-by-question review.",
+            "estimated_hours": 6.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": ["Timed Pacing", "Error Log Review"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "PSAT-9",
+    "name": "PSAT Class 9 (PSAT 8/9 Mastery)",
+    "description": "Official College Board PSAT 8/9 Grade 9 mastery program covering adaptive Reading & Writing and Algebra, Systems, Data Analysis & Geometry.",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 54.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "Grade 9 Mathematics & English Foundations"
+    ],
+    "modules": [
+      {
+        "module_code": "PSAT9-RW",
+        "title": "Reading & Writing (Adaptive Modules 1 & 2)",
+        "description": "54 questions / 64 minutes: Craft & Structure, Information & Ideas, Standard English Conventions, Expression of Ideas.",
+        "order_index": 1,
+        "estimated_hours": 24.0,
+        "topics": [
+          {
+            "topic_code": "PSAT9-RW-1",
+            "title": "Information & Ideas (Inferences & Quantitative Evidence)",
+            "description": "Logical inferences, evaluating claims, and data-backed arguments.",
+            "estimated_hours": 7.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Inferences", "Command of Evidence"]
+          },
+          {
+            "topic_code": "PSAT9-RW-2",
+            "title": "Craft & Structure (Cross-Text Connections & Precision)",
+            "description": "Comparing dual passages and high-utility academic vocabulary.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Dual Texts", "Academic Vocabulary"]
+          },
+          {
+            "topic_code": "PSAT9-RW-3",
+            "title": "Standard English Conventions & Expression of Ideas",
+            "description": "Clauses, punctuation, modifiers, transitions, and rhetorical synthesis.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": ["Clause Boundaries", "Modifiers & Tense", "Transitions & Synthesis"]
+          }
+        ]
+      },
+      {
+        "module_code": "PSAT9-MATH",
+        "title": "Mathematics (Adaptive Modules 1 & 2)",
+        "description": "44 questions / 70 minutes: Algebra, Systems, Nonlinear Intro, Problem-Solving & Data Analysis, Geometry.",
+        "order_index": 2,
+        "estimated_hours": 24.0,
+        "topics": [
+          {
+            "topic_code": "PSAT9-M-1",
+            "title": "Algebra & Systems of Linear Equations",
+            "description": "Multi-step linear equations, systems of equations, and linear inequalities.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Linear Systems", "Graphical Solutions"]
+          },
+          {
+            "topic_code": "PSAT9-M-2",
+            "title": "Problem-Solving, Data Analysis & Probability",
+            "description": "Two-way tables, scatterplots, growth models, and probability.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Scatterplots & Lines of Best Fit", "Probability & Two-Way Tables"]
+          },
+          {
+            "topic_code": "PSAT9-M-3",
+            "title": "Geometry & Intro to Quadratics",
+            "description": "Similar triangles, Pythagorean theorem, circles, and basic quadratic expressions.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": ["Triangles & Circles", "Quadratic Basics"]
+          }
+        ]
+      },
+      {
+        "module_code": "PSAT9-MOCK",
+        "title": "Full-Length Adaptive Practice & Strategy",
+        "description": "Timed Bluebook-style adaptive mock tests and score calibration.",
+        "order_index": 3,
+        "estimated_hours": 6.0,
+        "topics": [
+          {
+            "topic_code": "PSAT9-MOCK-1",
+            "title": "Adaptive Mock Tests & Error Diagnostics",
+            "description": "Full-length timed practice exams and pacing drills.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Bluebook Timing", "Desmos Speed Drills"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "SAT-PREP",
+    "name": "SAT (College Board Digital SAT)",
+    "description": "Complete College Board Digital SAT preparation (1600 scale): Reading & Writing (54 Qs / 64m) and Math (44 Qs / 70m) with Desmos graphing strategies.",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 72.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "High School Algebra & Geometry",
+      "Academic English"
+    ],
+    "modules": [
+      {
+        "module_code": "SAT-RW",
+        "title": "Reading & Writing (54 Qs / 64 mins)",
+        "description": "All 4 official College Board domains: Craft & Structure, Information & Ideas, Standard English Conventions, Expression of Ideas.",
+        "order_index": 1,
+        "estimated_hours": 32.0,
+        "topics": [
+          {
+            "topic_code": "SAT-RW-1",
+            "title": "Craft & Structure (Words in Context, Structure & Dual Texts)",
+            "description": "Mastering vocabulary precision, text function, and cross-text synthesis.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Words in Context", "Text Structure & Purpose", "Cross-Text Connections"]
+          },
+          {
+            "topic_code": "SAT-RW-2",
+            "title": "Information & Ideas (Evidence, Central Ideas & Inferences)",
+            "description": "Textual and quantitative command of evidence and logical conclusions.",
+            "estimated_hours": 10.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Central Ideas & Details", "Command of Evidence", "Inferences"]
+          },
+          {
+            "topic_code": "SAT-RW-3",
+            "title": "Standard English Conventions (Boundaries & Form/Structure)",
+            "description": "Punctuation, clauses, subject-verb agreement, pronouns, and modifiers.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": ["Boundaries", "Form, Structure & Sense"]
+          },
+          {
+            "topic_code": "SAT-RW-4",
+            "title": "Expression of Ideas (Rhetorical Synthesis & Transitions)",
+            "description": "Selecting effective transitions and goal-directed note synthesis.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": ["Transitions", "Rhetorical Synthesis"]
+          }
+        ]
+      },
+      {
+        "module_code": "SAT-MATH",
+        "title": "Math (44 Qs / 70 mins with Desmos)",
+        "description": "Official 4 Digital SAT Math domains: Algebra, Advanced Math, Problem-Solving & Data Analysis, Geometry & Trigonometry.",
+        "order_index": 2,
+        "estimated_hours": 32.0,
+        "topics": [
+          {
+            "topic_code": "SAT-M-1",
+            "title": "Algebra (Linear Equations, Systems & Inequalities)",
+            "description": "Linear functions, systems with no/infinite solutions, and Desmos graphing.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Linear Equations", "Systems & Inequalities"]
+          },
+          {
+            "topic_code": "SAT-M-2",
+            "title": "Advanced Math (Quadratics, Polynomials & Exponentials)",
+            "description": "Nonlinear equations, equivalent expressions, functions, and radicals.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Quadratics & Discriminant", "Polynomials & Rational Functions", "Exponential Growth"]
+          },
+          {
+            "topic_code": "SAT-M-3",
+            "title": "Problem-Solving & Data Analysis (Statistics, Margin of Error & Rates)",
+            "description": "Percentages, ratios, distributions, standard deviation, and inference.",
+            "estimated_hours": 7.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": ["Ratios & Percentages", "Statistics & Sampling"]
+          },
+          {
+            "topic_code": "SAT-M-4",
+            "title": "Geometry & Trigonometry (Circles, Triangles & Right-Triangle Trig)",
+            "description": "Circle equations, arc/sector, similarity, and SOH-CAH-TOA.",
+            "estimated_hours": 7.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": ["Circle Equations", "Triangles & Trigonometry"]
+          }
+        ]
+      },
+      {
+        "module_code": "SAT-MOCK",
+        "title": "Bluebook Adaptive Mock Tests & Score Review",
+        "description": "Full-length timed adaptive SAT simulations and Module-2 difficulty prep.",
+        "order_index": 3,
+        "estimated_hours": 8.0,
+        "topics": [
+          {
+            "topic_code": "SAT-MOCK-1",
+            "title": "Full-Length Digital SAT Mock Exams & Hard Module Drills",
+            "description": "Timed adaptive mocks with complete error-log analysis.",
+            "estimated_hours": 8.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Adaptive Pacing", "Desmos Shortcuts"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "ACT-PREP",
+    "name": "ACT (Enhanced ACT 2025/2026)",
+    "description": "Official Enhanced ACT preparation: Core Composite (English 50 Qs/35m, Math 45 Qs/50m, Reading 36 Qs/40m) plus Optional Science (40 Qs/40m) and Writing.",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 68.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "High School Algebra, Geometry & English"
+    ],
+    "modules": [
+      {
+        "module_code": "ACT-ENG",
+        "title": "English (50 Qs / 35 mins)",
+        "description": "Production of Writing, Knowledge of Language, and Conventions of Standard English.",
+        "order_index": 1,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "ACT-E-1",
+            "title": "Conventions of Standard English (Punctuation, Usage & Sentence Structure)",
+            "description": "Commas, semicolons, colons, verb tense, and parallel structure.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Punctuation Rules", "Grammar & Sentence Structure"]
+          },
+          {
+            "topic_code": "ACT-E-2",
+            "title": "Production of Writing & Knowledge of Language",
+            "description": "Topic development, organization, conciseness, and tone.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Rhetorical Strategy", "Conciseness & Precision"]
+          }
+        ]
+      },
+      {
+        "module_code": "ACT-MATH",
+        "title": "Mathematics (45 Qs / 50 mins)",
+        "description": "Preparing for Higher Math (Algebra, Functions, Geometry, Stats & Probability) and Integrating Essential Skills.",
+        "order_index": 2,
+        "estimated_hours": 22.0,
+        "topics": [
+          {
+            "topic_code": "ACT-M-1",
+            "title": "Number, Algebra & Functions",
+            "description": "Linear/quadratic equations, matrices, logarithms, and complex numbers.",
+            "estimated_hours": 10.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Algebra & Functions", "Matrices & Logs"]
+          },
+          {
+            "topic_code": "ACT-M-2",
+            "title": "Geometry, Trigonometry & Vectors",
+            "description": "Coordinate geometry, conics, trig identities, and unit circle.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Plane & Coordinate Geometry", "Trigonometry"]
+          },
+          {
+            "topic_code": "ACT-M-3",
+            "title": "Statistics, Probability & Essential Skills",
+            "description": "Permutations, combinations, expected value, and data interpretation.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": ["Probability & Counting", "Data & Modeling"]
+          }
+        ]
+      },
+      {
+        "module_code": "ACT-READ",
+        "title": "Reading (36 Qs / 40 mins)",
+        "description": "Key Ideas & Details, Craft & Structure, Integration of Knowledge & Ideas across prose, social science, humanities & natural science.",
+        "order_index": 3,
+        "estimated_hours": 14.0,
+        "topics": [
+          {
+            "topic_code": "ACT-R-1",
+            "title": "Passage Mapping, Key Details & Author Purpose",
+            "description": "Rapid reading techniques for literary narrative, social science, humanities & natural science passages.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Detail Location", "Tone & Purpose"]
+          },
+          {
+            "topic_code": "ACT-R-2",
+            "title": "Paired Passages & Visual/Quantitative Integration",
+            "description": "Comparing dual passages and integrating passage charts.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Dual Passages", "Argument Analysis"]
+          }
+        ]
+      },
+      {
+        "module_code": "ACT-SCI-WR",
+        "title": "Optional Science (40 Qs / 40m) & Writing (40m)",
+        "description": "Enhanced ACT optional Science (Data Representation, Research Summaries, Conflicting Viewpoints) and Argumentative Writing.",
+        "order_index": 4,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "ACT-S-1",
+            "title": "ACT Science: Data Representation & Research Summaries",
+            "description": "Interpreting experimental tables, graphs, variables, and scientific trends.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Graph & Table Reading", "Experimental Design"]
+          },
+          {
+            "topic_code": "ACT-S-2",
+            "title": "Conflicting Viewpoints & Optional Writing Essay",
+            "description": "Comparing competing scientific hypotheses and structuring the 40-minute ACT essay.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Conflicting Viewpoints", "Perspective Essay Structure"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "TMUA-PREP",
+    "name": "TMUA (Test of Mathematics for University Admission — UAT-UK)",
+    "description": "Official UAT-UK TMUA preparation for Cambridge, Imperial, LSE, Warwick & UCL: Paper 1 (Applications of Math Knowledge, 20 Qs/75m) & Paper 2 (Mathematical Reasoning, 20 Qs/75m). No calculator.",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 66.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "AS-Level / Class 11-12 Pure Mathematics"
+    ],
+    "modules": [
+      {
+        "module_code": "TMUA-P1",
+        "title": "Paper 1: Applications of Mathematical Knowledge (75 mins / 20 MCQs)",
+        "description": "Section 1 specification: Algebra, Functions, Sequences, Coordinate Geometry, Trigonometry, Exponentials/Logs, Differentiation & Integration.",
+        "order_index": 1,
+        "estimated_hours": 34.0,
+        "topics": [
+          {
+            "topic_code": "TMUA-P1-1",
+            "title": "Algebra, Polynomials, Inequalities & Graph Sketching",
+            "description": "Factor theorem, modulus equations, surds, inequalities, and curve transformations.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Polynomials & Surds", "Inequalities & Transformations"]
+          },
+          {
+            "topic_code": "TMUA-P1-2",
+            "title": "Coordinate Geometry, Trigonometry, Logs & Exponentials",
+            "description": "Circles, trig identities, equations in radians/degrees, and logarithm laws.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Circles & Geometry", "Trigonometric Identities", "Exponentials & Logs"]
+          },
+          {
+            "topic_code": "TMUA-P1-3",
+            "title": "Sequences, Series, Differentiation & Integration",
+            "description": "AP/GP, binomial expansion, stationary points, optimization, and definite integrals.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": ["Sequences & Binomial", "Differentiation & Integration"]
+          }
+        ]
+      },
+      {
+        "module_code": "TMUA-P2",
+        "title": "Paper 2: Mathematical Reasoning & Logic (75 mins / 20 MCQs)",
+        "description": "Section 2 specification: Logic of arguments, Necessary & Sufficient conditions, Proof methods, and spotting flaws in proofs.",
+        "order_index": 2,
+        "estimated_hours": 24.0,
+        "topics": [
+          {
+            "topic_code": "TMUA-P2-1",
+            "title": "Elementary Logic (If & Only If, Quantifiers, Negations)",
+            "description": "Propositional logic, contrapositives, converses, and necessary vs sufficient conditions.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Necessary & Sufficient", "Quantifiers & Negation"]
+          },
+          {
+            "topic_code": "TMUA-P2-2",
+            "title": "Mathematical Proof, Counterexamples & Error Identification",
+            "description": "Proof by contradiction, exhaustion, counterexamples, and diagnosing flawed proofs.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Contradiction & Exhaustion", "Counterexamples & Proof Errors"]
+          }
+        ]
+      },
+      {
+        "module_code": "TMUA-MOCK",
+        "title": "Full TMUA Past Papers & Non-Calculator Speed Drills",
+        "description": "Timed Paper 1 + Paper 2 simulations under strict UAT-UK rules.",
+        "order_index": 3,
+        "estimated_hours": 8.0,
+        "topics": [
+          {
+            "topic_code": "TMUA-MOCK-1",
+            "title": "Timed TMUA Paper 1 & Paper 2 Simulations",
+            "description": "Full 150-minute exam simulations and 1.0-9.0 Rasch score calibration.",
+            "estimated_hours": 8.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["75-Min Paper Pacing", "Mental Calculation Accuracy"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "ESAT-PREP",
+    "name": "ESAT (Engineering and Science Admissions Test — UAT-UK)",
+    "description": "Official UAT-UK ESAT preparation for Cambridge & Imperial Engineering/Natural Sciences: Math 1 (Compulsory), Math 2, Physics, Chemistry & Biology (27 MCQs / 40m per module, no calculator).",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 80.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "High School Physics, Chemistry/Biology & Pure Mathematics"
+    ],
+    "modules": [
+      {
+        "module_code": "ESAT-M1",
+        "title": "Mathematics 1 (Compulsory Module — 27 MCQs / 40m)",
+        "description": "Units, Number, Algebra, Geometry, Statistics, and Probability without calculator.",
+        "order_index": 1,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "ESAT-M1-1",
+            "title": "Number, Algebra & Equations (No Calculator)",
+            "description": "Indices, surds, algebraic manipulation, quadratics, and inequalities.",
+            "estimated_hours": 10.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Surds & Indices", "Algebraic Manipulation"]
+          },
+          {
+            "topic_code": "ESAT-M1-2",
+            "title": "Geometry, Mensuration, Statistics & Probability",
+            "description": "Coordinate geometry, triangles, circles, probability trees, and distributions.",
+            "estimated_hours": 10.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Geometry & Trig", "Probability & Stats"]
+          }
+        ]
+      },
+      {
+        "module_code": "ESAT-M2",
+        "title": "Mathematics 2 (Advanced Pure Math — 27 MCQs / 40m)",
+        "description": "Calculus, functions, logarithms, series, and advanced trigonometry.",
+        "order_index": 2,
+        "estimated_hours": 18.0,
+        "topics": [
+          {
+            "topic_code": "ESAT-M2-1",
+            "title": "Functions, Logs, Exponentials & Trigonometry",
+            "description": "Trig identities, radian measure, logarithmic equations, and transformations.",
+            "estimated_hours": 9.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Logs & Exponentials", "Radian Trig"]
+          },
+          {
+            "topic_code": "ESAT-M2-2",
+            "title": "Differentiation, Integration & Sequences",
+            "description": "Tangents, normals, maxima/minima, areas under curves, and binomial series.",
+            "estimated_hours": 9.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Calculus Applications", "Sequences & Series"]
+          }
+        ]
+      },
+      {
+        "module_code": "ESAT-PHY",
+        "title": "Physics (27 MCQs / 40m)",
+        "description": "Mechanics, Energy, Electricity, Waves, Optics, Nuclear Physics & Fields.",
+        "order_index": 3,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "ESAT-P-1",
+            "title": "Mechanics, Forces, Momentum & Energy",
+            "description": "Kinematics, Newton laws, work-energy-power, and circular/orbital basics.",
+            "estimated_hours": 8.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Kinematics & Dynamics", "Momentum & Energy"]
+          },
+          {
+            "topic_code": "ESAT-P-2",
+            "title": "Electricity, Waves, Optics & Thermal/Nuclear Physics",
+            "description": "DC circuits, wave interference, refraction, radioactivity, and thermal laws.",
+            "estimated_hours": 8.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Circuits & Fields", "Waves & Nuclear"]
+          }
+        ]
+      },
+      {
+        "module_code": "ESAT-CHEM",
+        "title": "Chemistry (27 MCQs / 40m)",
+        "description": "Physical Chemistry (Stoichiometry, Energetics, Kinetics, Equilibria), Inorganic & Organic Chemistry.",
+        "order_index": 4,
+        "estimated_hours": 14.0,
+        "topics": [
+          {
+            "topic_code": "ESAT-C-1",
+            "title": "Physical & Inorganic Chemistry (Moles, Bonding, Equilibria & Periodicity)",
+            "description": "Quantitative stoichiometry, Hess law, Le Chatelier principle, redox & periodic trends.",
+            "estimated_hours": 8.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Stoichiometry & Energetics", "Kinetics & Equilibria"]
+          },
+          {
+            "topic_code": "ESAT-C-2",
+            "title": "Organic Chemistry (Functional Groups, Isomerism & Mechanisms)",
+            "description": "Alkanes, alkenes, alcohols, carbonyls, and reaction pathways.",
+            "estimated_hours": 6.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Isomerism & Functional Groups", "Organic Mechanisms"]
+          }
+        ]
+      },
+      {
+        "module_code": "ESAT-BIO",
+        "title": "Biology (27 MCQs / 40m — For Natural Sciences/Vet Med)",
+        "description": "Cell Biology, Biological Molecules, Genetics, Physiology & Ecology.",
+        "order_index": 5,
+        "estimated_hours": 12.0,
+        "topics": [
+          {
+            "topic_code": "ESAT-B-1",
+            "title": "Cells, Biomolecules, Enzymes & Genetics",
+            "description": "Membrane transport, mitosis/meiosis, DNA replication, and inheritance.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Cell Structure & Enzymes", "Molecular Genetics"]
+          },
+          {
+            "topic_code": "ESAT-B-2",
+            "title": "Human Physiology, Homeostasis & Ecology",
+            "description": "Circulatory, nervous, respiratory systems and ecosystem dynamics.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Physiology & Homeostasis", "Evolution & Ecology"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "LSAT-PREP",
+    "name": "LSAT (Law School Admission Test — LSAC)",
+    "description": "Official LSAC LSAT preparation (updated post-2024 structure): Logical Reasoning (2 scored sections / 35m each), Reading Comprehension (1 scored section / 35m), Experimental Section & Argumentative Writing.",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 70.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "Strong Reading Comprehension & Analytical Reasoning"
+    ],
+    "modules": [
+      {
+        "module_code": "LSAT-LR",
+        "title": "Logical Reasoning (2 Scored Sections — 35 mins each)",
+        "description": "Argument deconstruction, assumptions, flaws, strengthen/weaken, parallel reasoning, and conditional logic.",
+        "order_index": 1,
+        "estimated_hours": 36.0,
+        "topics": [
+          {
+            "topic_code": "LSAT-LR-1",
+            "title": "Argument Structure, Conditional Logic & Necessary/Sufficient Assumptions",
+            "description": "Diagramming conditional statements and identifying unstated necessary vs sufficient assumptions.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Conditional Diagramming", "Necessary vs Sufficient Assumptions"]
+          },
+          {
+            "topic_code": "LSAT-LR-2",
+            "title": "Flaw, Strengthen, Weaken & Paradox Questions",
+            "description": "Spotting classic logical fallacies, causal flaws, and resolving discrepancies.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Causal & Sampling Flaws", "Strengthen/Weaken"]
+          },
+          {
+            "topic_code": "LSAT-LR-3",
+            "title": "Inference, Must Be True, Parallel Reasoning & Principle",
+            "description": "Deductive inferences, matching argument structures, and applying general principles.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": ["Must Be True / Inference", "Parallel & Principle"]
+          }
+        ]
+      },
+      {
+        "module_code": "LSAT-RC",
+        "title": "Reading Comprehension (1 Scored Section — 35 mins)",
+        "description": "Law, Humanities, Social Sciences & Natural Sciences passages plus Comparative Reading.",
+        "order_index": 2,
+        "estimated_hours": 22.0,
+        "topics": [
+          {
+            "topic_code": "LSAT-RC-1",
+            "title": "Structural Passage Reading, Main Point & Author Attitude",
+            "description": "Mapping viewpoints and tracking shifts in dense academic and legal passages.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Viewpoint Tracking", "Main Point & Function"]
+          },
+          {
+            "topic_code": "LSAT-RC-2",
+            "title": "Comparative Reading (Dual Passages) & Analogical Application",
+            "description": "Synthesizing relationships between Passage A and Passage B under time pressure.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Comparative Synthesis", "Inference & Application"]
+          }
+        ]
+      },
+      {
+        "module_code": "LSAT-WR-MOCK",
+        "title": "LSAT Argumentative Writing & 4-Section PrepTests",
+        "description": "Remote proctored Argumentative Writing essay + full 4-section (including Experimental) timed PrepTests.",
+        "order_index": 3,
+        "estimated_hours": 12.0,
+        "topics": [
+          {
+            "topic_code": "LSAT-WR-1",
+            "title": "LSAT Argumentative Writing & Full 4-Section Timed PrepTests",
+            "description": "Evaluating perspective prompts for the writing sample and stamina training on 4-section tests.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Argumentative Writing", "120-180 Scale Stamina"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "TARA-PREP",
+    "name": "TARA (Test of Academic Reasoning for Admissions — UAT-UK)",
+    "description": "Official UAT-UK TARA preparation (Oxford/UCL Pearson VUE exam, 2 hours): Module 1 Critical Thinking (22 MCQs/40m), Module 2 Problem Solving (22 MCQs/40m), Module 3 The Writing Task (1 Essay/40m). No calculator.",
+    "official_duration_value": 2,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 48.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "High School Analytical Reading & Numerical Reasoning"
+    ],
+    "modules": [
+      {
+        "module_code": "TARA-CT",
+        "title": "Module 1: Critical Thinking (22 MCQs / 40 mins)",
+        "description": "All 7 official UAT-UK Critical Thinking skill areas: Conclusions, Assumptions, Impact of Evidence, Flaws, Parallel Arguments & Principles.",
+        "order_index": 1,
+        "estimated_hours": 18.0,
+        "topics": [
+          {
+            "topic_code": "TARA-CT-1",
+            "title": "Main Conclusion, Drawing Conclusions & Identifying Assumptions",
+            "description": "Locating core assertions, valid inferences, and unstated argument assumptions.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Main Conclusion", "Drawing Conclusions", "Assumptions"]
+          },
+          {
+            "topic_code": "TARA-CT-2",
+            "title": "Additional Evidence, Detecting Reasoning Errors, Matching & Principles",
+            "description": "Strengthening/weakening arguments, spotting fallacies, parallel reasoning & applying principles.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Impact of Evidence", "Reasoning Errors", "Matching Arguments & Principles"]
+          }
+        ]
+      },
+      {
+        "module_code": "TARA-PS",
+        "title": "Module 2: Problem Solving (22 MCQs / 40 mins — No Calculator)",
+        "description": "Official UAT-UK Problem Solving core skills: Relevant Selection, Finding Procedures & Identifying Similarity.",
+        "order_index": 2,
+        "estimated_hours": 18.0,
+        "topics": [
+          {
+            "topic_code": "TARA-PS-1",
+            "title": "Relevant Selection & Data Extraction (Tables, Charts & Text)",
+            "description": "Filtering irrelevant details from dense tables, timetables, and word scenarios.",
+            "estimated_hours": 8.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Relevant Selection", "Table & Chart Parsing"]
+          },
+          {
+            "topic_code": "TARA-PS-2",
+            "title": "Finding Procedures & Identifying Similarity",
+            "description": "Constructing multi-step numerical/spatial procedures and recognizing structural similarity.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Finding Procedures", "Identifying Similarity"]
+          }
+        ]
+      },
+      {
+        "module_code": "TARA-WT",
+        "title": "Module 3: The Writing Task (40 mins / ~750-word Essay) & Full Mocks",
+        "description": "Structured critical essay sent directly to university admissions tutors plus full 2-hour timed TARA mocks.",
+        "order_index": 3,
+        "estimated_hours": 12.0,
+        "topics": [
+          {
+            "topic_code": "TARA-WT-1",
+            "title": "Academic Essay Construction & Timed 2-Hour TARA Simulations",
+            "description": "Crafting balanced, persuasive 750-word essays in 40 mins and full 3-module timed practice.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Balanced Argumentation", "40-Min Essay Pacing", "Full 2-Hr Mocks"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "MCAT-PREP",
+    "name": "MCAT (Medical College Admission Test — AAMC)",
+    "description": "Official AAMC MCAT preparation (472-528 scale): Chemical & Physical Foundations (59 Qs/95m), CARS (53 Qs/90m), Biological & Biochemical Foundations (59 Qs/95m), Psychological, Social & Biological Foundations (59 Qs/95m).",
+    "official_duration_value": 4,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 120.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "Undergraduate Biology, General/Organic Chemistry, Physics & Psychology"
+    ],
+    "modules": [
+      {
+        "module_code": "MCAT-CP",
+        "title": "Chemical & Physical Foundations of Biological Systems (59 Qs / 95m)",
+        "description": "General Chemistry, Organic Chemistry, Physics, and foundational Biochemistry.",
+        "order_index": 1,
+        "estimated_hours": 32.0,
+        "topics": [
+          {
+            "topic_code": "MCAT-CP-1",
+            "title": "General & Organic Chemistry (Thermodynamics, Acid-Base, Solutions & Reactions)",
+            "description": "Chemical equilibria, electrochemistry, stereochemistry, carbonyl & carboxylic acid chemistry.",
+            "estimated_hours": 16.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Acid-Base & Electrochem", "Organic Reactions & Spectroscopy"]
+          },
+          {
+            "topic_code": "MCAT-CP-2",
+            "title": "Physics for Living Systems (Mechanics, Fluids, Circuits, Optics & Waves)",
+            "description": "Kinematics, fluid dynamics, electrostatics, circuits, light & sound.",
+            "estimated_hours": 16.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Fluids & Mechanics", "Circuits & Optics"]
+          }
+        ]
+      },
+      {
+        "module_code": "MCAT-CARS",
+        "title": "Critical Analysis and Reasoning Skills — CARS (53 Qs / 90m)",
+        "description": "Humanities and Social Sciences passage comprehension, reasoning within & beyond the text.",
+        "order_index": 2,
+        "estimated_hours": 24.0,
+        "topics": [
+          {
+            "topic_code": "MCAT-CARS-1",
+            "title": "CARS Passage Analysis, Foundations of Comprehension & Reasoning Beyond Text",
+            "description": "9-passage timed pacing, evaluating author tone, and applying arguments to new scenarios.",
+            "estimated_hours": 24.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Foundations of Comprehension", "Reasoning Within & Beyond Text"]
+          }
+        ]
+      },
+      {
+        "module_code": "MCAT-BB",
+        "title": "Biological & Biochemical Foundations of Living Systems (59 Qs / 95m)",
+        "description": "Enzyme kinetics, metabolism, molecular biology, genetics, and organ systems.",
+        "order_index": 3,
+        "estimated_hours": 34.0,
+        "topics": [
+          {
+            "topic_code": "MCAT-BB-1",
+            "title": "Biochemistry (Amino Acids, Enzymes & Metabolic Pathways)",
+            "description": "Michaelis-Menten kinetics, glycolysis, Krebs cycle, oxidative phosphorylation & lipid metabolism.",
+            "estimated_hours": 18.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Amino Acids & Enzymes", "Central Metabolism"]
+          },
+          {
+            "topic_code": "MCAT-BB-2",
+            "title": "Molecular Cell Biology, Genetics & Organ Systems",
+            "description": "Central dogma, gene regulation, endocrine, renal, cardiovascular & immune systems.",
+            "estimated_hours": 16.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Genetics & Cell Biology", "Human Organ Systems"]
+          }
+        ]
+      },
+      {
+        "module_code": "MCAT-PS",
+        "title": "Psychological, Social & Biological Foundations of Behavior (59 Qs / 95m)",
+        "description": "Sensation/Perception, Learning, Cognition, Identity, Social Stratification & Research Methods.",
+        "order_index": 4,
+        "estimated_hours": 30.0,
+        "topics": [
+          {
+            "topic_code": "MCAT-PS-1",
+            "title": "Psychology (Neurobiology, Learning, Memory & Personality)",
+            "description": "Sensory processing, classical/operant conditioning, cognitive development & psychological disorders.",
+            "estimated_hours": 16.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Learning & Cognition", "Neurobiology & Disorders"]
+          },
+          {
+            "topic_code": "MCAT-PS-2",
+            "title": "Sociology, Social Structure & Experimental Research Design",
+            "description": "Socialization, culture, inequality, demographics & AAMC scientific reasoning.",
+            "estimated_hours": 14.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Sociological Theories", "Research & Statistics"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "UCAT-PREP",
+    "name": "UCAT (Official 2025/2026 Format — UK/ANZ Medical Admissions)",
+    "description": "Updated UCAT Consortium syllabus (Abstract Reasoning removed from 2025 onward; 900-2700 cognitive scale): Verbal Reasoning (44 Qs/22m), Decision Making (35 Qs/37m), Quantitative Reasoning (36 Qs/26m) & Situational Judgement (69 Qs/26m).",
+    "official_duration_value": 2,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 60.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "High School Math & English Comprehension"
+    ],
+    "modules": [
+      {
+        "module_code": "UCAT-VR",
+        "title": "Verbal Reasoning (44 Qs / 22 mins)",
+        "description": "Rapid reading & critical evaluation of dense passages (True/False/Can't Tell and inference questions).",
+        "order_index": 1,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "UCAT-VR-1",
+            "title": "Keyword Scanning, True/False/Can't Tell & Author Inference",
+            "description": "Mastering 30-second-per-question speed reading and avoiding extreme-word traps.",
+            "estimated_hours": 16.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Keyword Scanning", "True/False/Can't Tell", "Inference Speed Drills"]
+          }
+        ]
+      },
+      {
+        "module_code": "UCAT-DM",
+        "title": "Decision Making (35 Qs / 37 mins — Expanded Format)",
+        "description": "Syllogisms, logic puzzles, recognizing assumptions, Venn diagrams & probability reasoning.",
+        "order_index": 2,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "UCAT-DM-1",
+            "title": "Syllogisms, Logic Puzzles & Evaluating Arguments",
+            "description": "Yes/No drag-and-drop syllogisms, deductive grid puzzles, and strongest argument analysis.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Syllogisms", "Logic Puzzles", "Strongest Arguments"]
+          },
+          {
+            "topic_code": "UCAT-DM-2",
+            "title": "Venn Diagrams & Probabilistic Decision Reasoning",
+            "description": "Set-theory Venn overlaps and expected-value probability decisions.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Venn Diagrams", "Probability Reasoning"]
+          }
+        ]
+      },
+      {
+        "module_code": "UCAT-QR",
+        "title": "Quantitative Reasoning (36 Qs / 26 mins)",
+        "description": "On-screen calculator fluency, percentages, ratios, rates, tax/currency tables & geometry.",
+        "order_index": 3,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "UCAT-QR-1",
+            "title": "Percentages, Ratios, Tables & On-Screen Calculator Speed",
+            "description": "Keyboard numpad shortcuts, percentage change, speed-distance-time, and multi-table problems.",
+            "estimated_hours": 16.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Calculator Numpad Drills", "Percentages & Ratios", "Multi-Table Interpretation"]
+          }
+        ]
+      },
+      {
+        "module_code": "UCAT-SJT",
+        "title": "Situational Judgement Test — SJT (69 Qs / 26 mins, Bands 1-4)",
+        "description": "GMC Good Medical Practice ethics, patient confidentiality, teamwork & professionalism.",
+        "order_index": 4,
+        "estimated_hours": 12.0,
+        "topics": [
+          {
+            "topic_code": "UCAT-SJT-1",
+            "title": "Medical Ethics, Appropriateness & Importance Ratings",
+            "description": "Ranking clinical/academic scenarios according to GMC ethical principles.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Confidentiality & Honesty", "Teamwork & Escalation", "Full 111-Min UCAT Mocks"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "ISAT-PREP",
+    "name": "ISAT (International Student Admissions Test — ACER)",
+    "description": "Official ACER ISAT preparation for Australian & international medical/dental/health science admissions (3 hours / 100 MCQs, non-calculator, no negative marking): Critical Reasoning (~50 Qs) & Quantitative Reasoning (~50 Qs).",
+    "official_duration_value": 2,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 54.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "High School Analytical Reading & Numerical Literacy"
+    ],
+    "modules": [
+      {
+        "module_code": "ISAT-CR",
+        "title": "Critical Reasoning (~50 MCQs — Non-Subject Passage & Argument Analysis)",
+        "description": "Evaluating written information, arguments, logical flaws, assumptions, and drawing valid conclusions.",
+        "order_index": 1,
+        "estimated_hours": 22.0,
+        "topics": [
+          {
+            "topic_code": "ISAT-CR-1",
+            "title": "Passage Comprehension, Main Conclusions & Inferences",
+            "description": "Rapidly extracting main claims, tone, and logical implications from dense texts.",
+            "estimated_hours": 11.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Reading Comprehension", "Logical Inference", "Author Attitude"]
+          },
+          {
+            "topic_code": "ISAT-CR-2",
+            "title": "Argument Analysis, Assumptions, Flaws & Conditional Logic",
+            "description": "Identifying unstated assumptions, detecting bias/fallacies, and evaluating argument strength.",
+            "estimated_hours": 11.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Assumptions & Flaws", "Strengthen & Weaken", "Conditional Deduction"]
+          }
+        ]
+      },
+      {
+        "module_code": "ISAT-QR",
+        "title": "Quantitative Reasoning (~50 MCQs — Strictly Non-Calculator)",
+        "description": "Interpreting numerical data, tables, charts, graphs, and applied logical problem-solving without a calculator.",
+        "order_index": 2,
+        "estimated_hours": 22.0,
+        "topics": [
+          {
+            "topic_code": "ISAT-QR-1",
+            "title": "Data Interpretation (Tables, Charts, Graphs & Scientific Visuals)",
+            "description": "Extracting trends, comparing rates/ratios, and reading multi-variable graphs quickly.",
+            "estimated_hours": 11.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Chart & Graph Trends", "Multi-Table Parsing", "Experimental Data"]
+          },
+          {
+            "topic_code": "ISAT-QR-2",
+            "title": "Non-Calculator Numerical Estimation & Logical Problem Solving",
+            "description": "Mental estimation, proportional reasoning, algebraic relationships & probability puzzles.",
+            "estimated_hours": 11.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Mental Estimation", "Proportional Reasoning", "Mathematical Deduction"]
+          }
+        ]
+      },
+      {
+        "module_code": "ISAT-MOCK",
+        "title": "Full-Length 3-Hour Timed ACER ISAT Mock Exams & Pacing",
+        "description": "100-question / 180-minute computer-based simulations (~108 seconds/question) with error analysis.",
+        "order_index": 3,
+        "estimated_hours": 10.0,
+        "topics": [
+          {
+            "topic_code": "ISAT-MOCK-1",
+            "title": "Timed 180-Minute ISAT Simulations & Pacing Calibration",
+            "description": "Two full 100-MCQ non-calculator mock tests and post-test error log review.",
+            "estimated_hours": 10.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["108-Sec/Q Pacing", "3-Hour Stamina", "Error Diagnostics"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "GMAT-PREP",
+    "name": "GMAT (GMAT Focus Edition — GMAC)",
+    "description": "Official GMAC GMAT Focus Edition (205-805 scale, 3 sections x 45 mins): Quantitative Reasoning (21 Qs), Verbal Reasoning (23 Qs) & Data Insights (20 Qs).",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 84.0,
+    "syllabus_version": "2026.1",
+    "category": "MBA Wizards",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "Undergraduate Math & Business Analytical Skills"
+    ],
+    "modules": [
+      {
+        "module_code": "GMAT-QR",
+        "title": "Quantitative Reasoning (21 Qs / 45 mins — Problem Solving)",
+        "description": "Pure Problem Solving (no Geometry in Focus Edition): Arithmetic, Algebra, Number Properties, Word Problems & Counting/Probability.",
+        "order_index": 1,
+        "estimated_hours": 30.0,
+        "topics": [
+          {
+            "topic_code": "GMAT-Q-1",
+            "title": "Arithmetic, Number Properties, Ratios & Percentages",
+            "description": "Divisibility, remainders, prime factorization, rates, mixtures & weighted averages.",
+            "estimated_hours": 15.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Number Properties", "Rates, Ratios & Mixtures"]
+          },
+          {
+            "topic_code": "GMAT-Q-2",
+            "title": "Algebra, Inequalities, Functions & Combinatorics",
+            "description": "Quadratics, absolute value inequalities, sequences, permutations & probability.",
+            "estimated_hours": 15.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Inequalities & Quadratics", "Counting & Probability"]
+          }
+        ]
+      },
+      {
+        "module_code": "GMAT-VR",
+        "title": "Verbal Reasoning (23 Qs / 45 mins — CR & RC)",
+        "description": "Critical Reasoning and Reading Comprehension (Sentence Correction removed in Focus Edition).",
+        "order_index": 2,
+        "estimated_hours": 26.0,
+        "topics": [
+          {
+            "topic_code": "GMAT-V-1",
+            "title": "Critical Reasoning (Assumptions, Strengthen/Weaken, Evaluate & Boldface)",
+            "description": "Deconstructing business and scientific arguments under adaptive pressure.",
+            "estimated_hours": 14.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Assumption & Flaw", "Strengthen/Weaken & Boldface"]
+          },
+          {
+            "topic_code": "GMAT-V-2",
+            "title": "Reading Comprehension (Main Idea, Inference & Structure)",
+            "description": "Active passage mapping for dense economics, science, and humanities texts.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Passage Mapping", "Inference & Tone"]
+          }
+        ]
+      },
+      {
+        "module_code": "GMAT-DI",
+        "title": "Data Insights (20 Qs / 45 mins — With On-Screen Calculator)",
+        "description": "All 5 official DI question types: Data Sufficiency, Multi-Source Reasoning, Table Analysis, Graphics Interpretation & Two-Part Analysis.",
+        "order_index": 3,
+        "estimated_hours": 28.0,
+        "topics": [
+          {
+            "topic_code": "GMAT-DI-1",
+            "title": "Data Sufficiency & Two-Part Analysis",
+            "description": "AD/BCE sufficiency logic and simultaneous quantitative/verbal two-part problems.",
+            "estimated_hours": 14.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Data Sufficiency", "Two-Part Analysis"]
+          },
+          {
+            "topic_code": "GMAT-DI-2",
+            "title": "Multi-Source Reasoning, Table Analysis & Graphics Interpretation",
+            "description": "Synthesizing multi-tab emails/charts, sortable tables, and interactive graphs.",
+            "estimated_hours": 14.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Multi-Source Reasoning", "Table & Graph Analysis"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "GRE-PREP",
+    "name": "GRE (ETS Shorter GRE General Test)",
+    "description": "Official ETS Shorter GRE General Test (1h 58m): Analytical Writing (1 Issue Essay / 30m), Verbal Reasoning (27 Qs / 41m) & Quantitative Reasoning (27 Qs / 47m).",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 78.0,
+    "syllabus_version": "2026.1",
+    "category": "MBA Wizards",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "Undergraduate Analytical & Quantitative Basics"
+    ],
+    "modules": [
+      {
+        "module_code": "GRE-VERBAL",
+        "title": "Verbal Reasoning (27 Qs / 41 mins across 2 adaptive sections)",
+        "description": "Text Completion (1-3 blanks), Sentence Equivalence, and Reading Comprehension.",
+        "order_index": 1,
+        "estimated_hours": 30.0,
+        "topics": [
+          {
+            "topic_code": "GRE-V-1",
+            "title": "Text Completion & Sentence Equivalence (Vocabulary & Context Logic)",
+            "description": "Contextual clue tracking, contrast/support pivots, and high-frequency GRE vocabulary.",
+            "estimated_hours": 16.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["1-3 Blank Text Completion", "Sentence Equivalence Pairs"]
+          },
+          {
+            "topic_code": "GRE-V-2",
+            "title": "Reading Comprehension & Critical Reasoning Passages",
+            "description": "Short, medium, and argument-analysis passages including multi-select questions.",
+            "estimated_hours": 14.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Passage Structure", "Argument Analysis"]
+          }
+        ]
+      },
+      {
+        "module_code": "GRE-QUANT",
+        "title": "Quantitative Reasoning (27 Qs / 47 mins across 2 adaptive sections)",
+        "description": "Quantitative Comparison, Problem Solving & Data Interpretation across Arithmetic, Algebra, Geometry & Data Analysis.",
+        "order_index": 2,
+        "estimated_hours": 36.0,
+        "topics": [
+          {
+            "topic_code": "GRE-Q-1",
+            "title": "Quantitative Comparison Strategies & Arithmetic/Number Properties",
+            "description": "ABCD comparison logic, divisibility, primes, exponents & percentages.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["QC Comparison Traps", "Number Properties"]
+          },
+          {
+            "topic_code": "GRE-Q-2",
+            "title": "Algebra, Coordinate Geometry & Plane Geometry",
+            "description": "Equations, inequalities, functions, triangles, circles & 3D solids.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": ["Algebra & Graphs", "Geometry & 3D Solids"]
+          },
+          {
+            "topic_code": "GRE-Q-3",
+            "title": "Data Analysis, Statistics, Normal Distribution & Probability",
+            "description": "Standard deviation, quartiles, combinatorics, probability & multi-chart DI.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": ["Stats & Normal Curve", "Data Interpretation"]
+          }
+        ]
+      },
+      {
+        "module_code": "GRE-AWA",
+        "title": "Analytical Writing (1 Issue Essay / 30 mins) & Full Adaptive Mocks",
+        "description": "Analyze an Issue essay (0-6 scale; Analyze an Argument removed in Shorter GRE) + timed mocks.",
+        "order_index": 3,
+        "estimated_hours": 12.0,
+        "topics": [
+          {
+            "topic_code": "GRE-AWA-1",
+            "title": "Analyze an Issue Essay & Full ETS-Format Mock Tests",
+            "description": "Structuring nuanced 6.0-level essays in 30 mins and full 1h 58m adaptive mocks.",
+            "estimated_hours": 12.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Issue Essay Templates", "Full Shorter GRE Mocks"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "CAT-PREP",
+    "name": "CAT (IIM Common Admission Test)",
+    "description": "Official IIM CAT preparation (120 mins total, 3 x 40-min sectional slots): VARC (24 Qs), DILR (20-22 Qs) & Quantitative Ability (22 Qs).",
+    "official_duration_value": 4,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 110.0,
+    "syllabus_version": "2026.1",
+    "category": "MBA Wizards",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "High School Mathematics & Strong Reading Speed"
+    ],
+    "modules": [
+      {
+        "module_code": "CAT-VARC",
+        "title": "Verbal Ability & Reading Comprehension — VARC (24 Qs / 40 mins)",
+        "description": "Reading Comprehension passages (~16 Qs) + Para Jumbles, Para Summary & Odd One Out (TITA).",
+        "order_index": 1,
+        "estimated_hours": 32.0,
+        "topics": [
+          {
+            "topic_code": "CAT-VARC-1",
+            "title": "Reading Comprehension (Inference, Tone & Author Logic)",
+            "description": "4-passage 40-minute selection strategy across philosophy, economics, science & literature.",
+            "estimated_hours": 20.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Passage Selection", "Inference & Elimination"]
+          },
+          {
+            "topic_code": "CAT-VARC-2",
+            "title": "Verbal Ability (Para Jumbles, Para Summary & Odd One Out)",
+            "description": "Non-MCQ (TITA) para-completion, logical sequencing, and concise summary skills.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["TITA Para Jumbles", "Para Summary & Odd Sentence"]
+          }
+        ]
+      },
+      {
+        "module_code": "CAT-DILR",
+        "title": "Data Interpretation & Logical Reasoning — DILR (20-22 Qs / 40 mins)",
+        "description": "Caselet sets: Arrangements, Games & Tournaments, Venn Diagrams, Networks, Routes & Quantitative Reasoning.",
+        "order_index": 2,
+        "estimated_hours": 38.0,
+        "topics": [
+          {
+            "topic_code": "CAT-DILR-1",
+            "title": "Logical Reasoning Sets (Arrangements, Grids, Games & Tournaments)",
+            "description": "Set selection in 40 mins, constraint mapping, knockout/round-robin tournaments & scheduling.",
+            "estimated_hours": 20.0,
+            "difficulty": "ADVANCED",
+            "order_index": 1,
+            "subtopics": ["Circular & Matrix Arrangements", "Games & Tournaments"]
+          },
+          {
+            "topic_code": "CAT-DILR-2",
+            "title": "Data Interpretation & Max-Min Caselets (Venn, Charts & Routes)",
+            "description": "3-4 set Venn diagrams, missing-data tables, network optimization & DI-LR hybrids.",
+            "estimated_hours": 18.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Maxima-Minima Venn", "Missing Data Caselets"]
+          }
+        ]
+      },
+      {
+        "module_code": "CAT-QA",
+        "title": "Quantitative Ability — QA (22 Qs / 40 mins)",
+        "description": "Arithmetic, Algebra, Geometry & Mensuration, Number System & Modern Math.",
+        "order_index": 3,
+        "estimated_hours": 40.0,
+        "topics": [
+          {
+            "topic_code": "CAT-QA-1",
+            "title": "Arithmetic (Percentages, Profit-Loss, TSD, Time & Work, Mixtures)",
+            "description": "Highest-weightage CAT QA domain (~40% of section) with shortcut techniques.",
+            "estimated_hours": 14.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": ["Ratios, Mixtures & TSD", "Time-Work & Averages"]
+          },
+          {
+            "topic_code": "CAT-QA-2",
+            "title": "Algebra (Quadratics, Inequalities, Logs, Functions & Progressions)",
+            "description": "Modulus graphs, maxima/minima, AP/GP/HP, and logarithmic equations.",
+            "estimated_hours": 14.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": ["Inequalities & Modulus", "Logs, Functions & Series"]
+          },
+          {
+            "topic_code": "CAT-QA-3",
+            "title": "Geometry, Mensuration, Number System & Modern Math",
+            "description": "Triangles, circles, coordinate geometry, remainders, P&C & probability.",
+            "estimated_hours": 12.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": ["Triangles & Circles", "Numbers & P&C"]
+          }
+        ]
+      }
+    ]
+  }
+]
