@@ -54,47 +54,47 @@ export const App: React.FC = () => {
     <AuthProvider>
       <StudyTimerProvider>
         <BrowserRouter>
-        <Routes>
-          {/* Public Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/activate" element={<ActivationPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/" element={<RootRedirect />} />
+          <Routes>
+            {/* Public Auth Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/activate" element={<ActivationPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/" element={<RootRedirect />} />
 
-          {/* Admin Protected Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="/admin/students" element={<AdminStudentsPage />} />
-              <Route path="/admin/courses" element={<AdminCoursesPage />} />
-              <Route path="/admin/enrollments" element={<AdminEnrollmentsPage />} />
-              <Route path="/admin/study-plans" element={<AdminStudyPlansPage />} />
-              <Route path="/admin/attendance" element={<AdminAttendancePage />} />
-              <Route path="/admin/ai-usage" element={<AdminAIUsagePage />} />
+            {/* Admin Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/students" element={<AdminStudentsPage />} />
+                <Route path="/admin/courses" element={<AdminCoursesPage />} />
+                <Route path="/admin/enrollments" element={<AdminEnrollmentsPage />} />
+                <Route path="/admin/study-plans" element={<AdminStudyPlansPage />} />
+                <Route path="/admin/attendance" element={<AdminAttendancePage />} />
+                <Route path="/admin/ai-usage" element={<AdminAIUsagePage />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Student Protected Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
-            <Route element={<StudentLayout />}>
-              <Route path="/dashboard" element={<StudentDashboardPage />} />
-              <Route path="/courses" element={<MyCoursesPage />} />
-              <Route path="/planner" element={<MyPlannerPage />} />
-              <Route path="/planner/onboarding" element={<PlannerOnboardingWizard />} />
-              <Route path="/tasks" element={<DailyTasksPage />} />
-              <Route path="/weekly" element={<WeeklySchedulePage />} />
-              <Route path="/attendance" element={<StudentAttendancePage />} />
-              <Route path="/syllabus" element={<CourseSyllabusPage />} />
-              <Route path="/analytics" element={<ProgressAnalyticsPage />} />
-              <Route path="/ai-assistant" element={<AILearningAssistantPage />} />
-              <Route path="/profile" element={<ProfileSettingsPage />} />
+            {/* Student Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
+              <Route element={<StudentLayout />}>
+                <Route path="/dashboard" element={<StudentDashboardPage />} />
+                <Route path="/courses" element={<MyCoursesPage />} />
+                <Route path="/planner" element={<MyPlannerPage />} />
+                <Route path="/planner/onboarding" element={<PlannerOnboardingWizard />} />
+                <Route path="/tasks" element={<DailyTasksPage />} />
+                <Route path="/weekly" element={<WeeklySchedulePage />} />
+                <Route path="/attendance" element={<StudentAttendancePage />} />
+                <Route path="/syllabus" element={<CourseSyllabusPage />} />
+                <Route path="/analytics" element={<ProgressAnalyticsPage />} />
+                <Route path="/ai-assistant" element={<AILearningAssistantPage />} />
+                <Route path="/profile" element={<ProfileSettingsPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/*Hello Ankit     ,, */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </BrowserRouter>
       </StudyTimerProvider>
     </AuthProvider>
