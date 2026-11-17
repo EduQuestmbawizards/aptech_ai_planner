@@ -57,6 +57,21 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000"
     ]
 
+    @property
+    def cors_origins(self) -> List[str]:
+        origins = list(self.BACKEND_CORS_ORIGINS)
+        if self.FRONTEND_URL and self.FRONTEND_URL.strip():
+            f_url = self.FRONTEND_URL.strip().rstrip("/")
+            if f_url not in origins:
+                origins.append(f_url)
+        custom_origins = os.getenv("CORS_ORIGINS", "")
+        if custom_origins:
+            for o in custom_origins.split(","):
+                o_clean = o.strip().rstrip("/")
+                if o_clean and o_clean not in origins:
+                    origins.append(o_clean)
+        return origins
+
     model_config = SettingsConfigDict(
         env_file=[str(ROOT_DIR / ".env"), str(BASE_DIR / ".env"), ".env"],
         extra="ignore"
