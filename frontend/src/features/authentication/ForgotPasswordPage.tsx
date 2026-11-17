@@ -34,16 +34,12 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-2xl shadow-amber-500/20 border-2 border-amber-400/40 hover:scale-105 transition-transform duration-300">
-            <img
-              src="/aptech-logo.png"
-              alt="Aptech Learning"
-              className="h-20 sm:h-24 w-auto object-contain"
-            />
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border-2 border-amber-400/30 flex items-center justify-center shadow-xl shadow-amber-500/10">
+            <Mail className="w-8 h-8 text-amber-400" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-2xl sm:text-3xl font-black text-amber-300 tracking-tight uppercase">
+        <h2 className="text-center text-2xl sm:text-3xl font-black text-amber-300 tracking-tight uppercase">
           Reset Your Password
         </h2>
         <p className="mt-1.5 text-center text-xs text-amber-200/90 font-medium tracking-wide">

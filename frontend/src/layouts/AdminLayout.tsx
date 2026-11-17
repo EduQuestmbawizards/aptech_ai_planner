@@ -35,16 +35,12 @@ export const AdminLayout: React.FC = () => {
       {/* Mobile Topbar */}
       <div className="md:hidden bg-slate-900 text-white p-3 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center space-x-3">
-          <div className="bg-white px-2 py-1 rounded-xl shadow-md border border-amber-400/40">
-            <img
-              src="/aptech-logo.png"
-              alt="Aptech Learning"
-              className="h-10 w-auto object-contain"
-            />
+          <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <div className="text-xs font-black text-amber-300 tracking-tight uppercase">Aptech Admin</div>
-            <div className="text-[10px] text-amber-200/90 font-mono uppercase tracking-wider font-semibold">Admin Portal</div>
+            <div className="text-xs font-black text-amber-300 tracking-tight uppercase">Admin Portal</div>
+            <div className="text-[10px] text-amber-200/90 font-mono uppercase tracking-wider font-semibold">Study Planner</div>
           </div>
         </div>
         <button
@@ -63,19 +59,17 @@ export const AdminLayout: React.FC = () => {
       >
         {/* Prominent Logo & Brand Header */}
         <div className="p-4 border-b border-slate-800/80 bg-slate-950/70">
-          <div className="bg-white rounded-2xl p-3 shadow-xl border-2 border-amber-400/40 flex items-center justify-center transition-transform hover:scale-[1.02]">
-            <img
-              src="/aptech-logo.png"
-              alt="Aptech Learning"
-              className="h-20 w-auto max-h-20 object-contain"
-            />
+          <div className="flex items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border-2 border-amber-400/30 flex items-center justify-center shadow-lg shadow-amber-500/10">
+              <Sparkles className="w-7 h-7 text-amber-400" />
+            </div>
           </div>
-          <div className="mt-3.5 text-center">
+          <div className="mt-3 text-center">
             <h1 className="text-sm font-black text-amber-300 tracking-wider uppercase">
-              Aptech Admin
+              Admin Portal
             </h1>
-            <p className="text-[11px] text-amber-200 font-semibold tracking-wide mt-0.5">
-              Central Management
+            <p className="text-[11px] text-amber-200/80 font-medium tracking-wide mt-0.5">
+              Study Planner Management
             </p>
           </div>
         </div>

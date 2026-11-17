@@ -131,20 +131,16 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-2xl shadow-amber-500/20 border-2 border-amber-400/40 hover:scale-105 transition-transform duration-300">
-            <img
-              src="/aptech-logo.png"
-              alt="Aptech Learning"
-              className="h-20 sm:h-24 w-auto object-contain"
-            />
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border-2 border-amber-400/30 flex items-center justify-center shadow-xl shadow-amber-500/10">
+            <Sparkles className="w-8 h-8 text-amber-400" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-2xl sm:text-3xl font-black text-amber-300 tracking-tight uppercase">
-          AI Career & Study Planner
+        <h2 className="text-center text-2xl sm:text-3xl font-black text-amber-300 tracking-tight uppercase">
+          AI Study Planner & Courses
         </h2>
         <p className="mt-1.5 text-center text-xs text-amber-200/90 font-medium tracking-wide">
-          Unleash Your Potential — Sign in to access your personalized curriculum
+          Sign in to access your personalized curriculum & study schedule
         </p>
       </div>
 
@@ -154,7 +150,7 @@ export const LoginPage: React.FC = () => {
           <div className="mb-6 p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl flex items-start space-x-2 text-xs text-amber-900">
             <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
             <span>
-              <strong>Invitation Only:</strong> Accounts are granted upon verified Aptech course admission. Public signup is disabled.
+              <strong>Invitation Only:</strong> Accounts are granted upon verified course admission. Public signup is disabled.
             </span>
           </div>
 
