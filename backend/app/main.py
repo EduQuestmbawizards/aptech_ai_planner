@@ -62,13 +62,107 @@ def _ensure_study_plan_columns():
         logger.warning(f"Column migration notice: {str(e)}")
 
 
+def _ensure_initial_data():
+    try:
+        from app.core.database import SessionLocal
+        from app.core.security import get_password_hash
+        from app.models.user import User, StudentProfile, UserRole
+        from app.models.course import Course
+        from app.services.course_service import CourseService
+        import os
+
+        db = SessionLocal()
+        try:
+            admin_email = (settings.ADMIN_EMAIL or "admin@aptech.edu").lower().strip()
+            admin_pass = os.getenv("ADMIN_PASSWORD", "AptechAdmin@2026!")
+
+            # 1. Ensure configured admin account exists
+            existing_admin = db.query(User).filter(User.email == admin_email).first()
+            if not existing_admin:
+                logger.info(f"Auto-creating initial admin account ({admin_email})...")
+                admin_user = User(
+                    email=admin_email,
+                    full_name="Administrator",
+                    role=UserRole.ADMIN.value,
+                    password_hash=get_password_hash(admin_pass),
+                    is_active=True,
+                    is_suspended=False
+                )
+                db.add(admin_user)
+                db.commit()
+                logger.info("Admin account created successfully.")
+            elif not existing_admin.password_hash or not existing_admin.is_active:
+                existing_admin.password_hash = get_password_hash(admin_pass)
+                existing_admin.is_active = True
+                existing_admin.is_suspended = False
+                db.commit()
+
+            # 2. Also ensure default admin@aptech.edu exists
+            if admin_email != "admin@aptech.edu":
+                default_admin = db.query(User).filter(User.email == "admin@aptech.edu").first()
+                if not default_admin:
+                    alt_admin = User(
+                        email="admin@aptech.edu",
+                        full_name="Default Administrator",
+                        role=UserRole.ADMIN.value,
+                        password_hash=get_password_hash("AptechAdmin@2026!"),
+                        is_active=True,
+                        is_suspended=False
+                    )
+                    db.add(alt_admin)
+                    db.commit()
+
+            # 3. Ensure demo student account exists
+            student_email = "student.demo@aptech.edu"
+            existing_student = db.query(User).filter(User.email == student_email).first()
+            if not existing_student:
+                logger.info(f"Auto-creating demo student ({student_email})...")
+                st_user = User(
+                    email=student_email,
+                    full_name="Aarav Mehta",
+                    role=UserRole.STUDENT.value,
+                    password_hash=get_password_hash("StudentDemo@2026!"),
+                    is_active=True,
+                    is_suspended=False
+                )
+                db.add(st_user)
+                db.flush()
+
+                st_profile = StudentProfile(
+                    user_id=st_user.id,
+                    aptech_student_id="APT-MUM-2026-1001",
+                    phone="+91 98200 12345",
+                    current_level="INTERMEDIATE",
+                    target_career="Full Stack Python Developer"
+                )
+                db.add(st_profile)
+                db.commit()
+                logger.info("Demo student created successfully.")
+
+            # 4. Auto-seed courses if empty
+            if db.query(Course).count() == 0:
+                logger.info("No courses found in database. Loading courses...")
+                root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"
+                for catalogue_name in ("sample_courses.json", "aptech_courses.json"):
+                    courses_file = root_course_dir / catalogue_name
+                    if courses_file.exists():
+                        with open(courses_file, "r", encoding="utf-8") as f:
+                            CourseService.import_courses_from_json(db, f.read())
+                logger.info("Course catalogues seeded.")
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"Initial data setup notice: {str(e)}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing database schema...")
     try:
         Base.metadata.create_all(bind=engine)
         _ensure_study_plan_columns()
-        logger.info("Database tables initialized successfully.")
+        _ensure_initial_data()
+        logger.info("Database tables and seed data initialized successfully.")
     except Exception as e:
         logger.error(f"Database schema initialization notice: {str(e)}")
     yield
@@ -81,16 +175,31 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Middleware
+# CORS Middleware: allow_origin_regex=r".*" ensures ANY origin is allowed with credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_origin_regex=r"^https?:\/\/([a-zA-Z0-9_-]+\.)*vercel\.app(:\d+)?$",
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
+    max_age=86400,
 )
+
+# Explicit OPTIONS handler to guarantee preflight responses
+@app.options("/{full_path:path}")
+async def options_handler(request: Request, full_path: str):
+    origin = request.headers.get("origin", "*")
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+            "Access-Control-Allow-Headers": request.headers.get("access-control-request-headers", "*"),
+            "Access-Control-Max-Age": "86400",
+        }
+    )
 
 # Global Exception Handler
 @app.exception_handler(Exception)
@@ -110,18 +219,24 @@ def health_check():
         "version": settings.VERSION
     }
 
-# Register API Routers under /api
+# Register API Routers under /api AND at root level for maximum frontend compatibility
 api_prefix = settings.API_V1_STR
-app.include_router(auth.router, prefix=api_prefix)
-app.include_router(admin.router, prefix=api_prefix)
-app.include_router(courses.router, prefix=api_prefix)
-app.include_router(enrollments.router, prefix=api_prefix)
-app.include_router(planner.router, prefix=api_prefix)
-app.include_router(tasks.router, prefix=api_prefix)
-app.include_router(progress.router, prefix=api_prefix)
-app.include_router(ai.router, prefix=api_prefix)
-app.include_router(integrations.router, prefix=api_prefix)
-app.include_router(attendance.router, prefix=api_prefix)
+api_routers = [
+    auth.router,
+    admin.router,
+    courses.router,
+    enrollments.router,
+    planner.router,
+    tasks.router,
+    progress.router,
+    ai.router,
+    integrations.router,
+    attendance.router
+]
+
+for r in api_routers:
+    app.include_router(r, prefix=api_prefix)
+    app.include_router(r)
 
 # --- Serve Frontend Static Files ---
 if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
@@ -133,11 +248,11 @@ if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
     # SPA catch-all: any non-API route returns index.html
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        # If a specific static file exists in dist, serve it
+        if full_path.startswith("api/") or full_path.startswith("auth/"):
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
         file_path = FRONTEND_DIST / full_path
         if full_path and file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
-        # Otherwise serve index.html for SPA routing
         return FileResponse(str(FRONTEND_DIST / "index.html"))
 
     logger.info(f"Serving frontend from {FRONTEND_DIST}")

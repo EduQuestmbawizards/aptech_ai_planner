@@ -62,14 +62,15 @@ def login(payload: LoginRequest, response: Response, request: Request, db: Sessi
 
     access_token = create_access_token(subject=user.id, role=user.role)
 
-    # Set secure HttpOnly cookie
+    # Set secure HttpOnly cookie (supports cross-origin HTTPS on Vercel/Render)
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False # Set to True in production with HTTPS
+        samesite="none" if is_https else "lax",
+        secure=is_https
     )
 
     apt_id = None
@@ -160,13 +161,14 @@ def trial_signup(payload: TrialSignupRequest, response: Response, request: Reque
     db.commit()
 
     access_token = create_access_token(subject=user.id, role=user.role)
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False
+        samesite="none" if is_https else "lax",
+        secure=is_https
     )
 
     return TokenResponse(
