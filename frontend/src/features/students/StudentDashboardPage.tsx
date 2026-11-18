@@ -218,7 +218,7 @@ export const StudentDashboardPage: React.FC = () => {
                   {(stats.total_session_minutes / 60).toFixed(1)} Hours
                 </div>
                 <div className="text-[11px] text-slate-300 mt-1">
-                  {stats.completed} sessions conducted
+                  {stats.total_sessions_count || stats.completed} sessions conducted
                 </div>
               </div>
             </div>
@@ -233,7 +233,7 @@ export const StudentDashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-black text-slate-900 mt-2">
-              {stats.completed} / {stats.total_items}
+              {stats.total_sessions_count || stats.completed} Classes
             </div>
             <div className="text-xs text-slate-500 mt-1">
               Monthly milestone reviews

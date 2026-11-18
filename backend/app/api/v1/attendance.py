@@ -11,6 +11,7 @@ from app.models.enrollment import Enrollment, EnrollmentStatus
 from app.models.course import Course
 from app.models.planner import StudyTask
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.profile_roadmap import ProfileSessionAttendance
 from app.models.logs import AuditLog
 from app.schemas.attendance import (
     AttendanceRecordSchema,
@@ -82,12 +83,65 @@ def get_my_attendance(
     if course_id:
         query = query.join(Enrollment, Attendance.enrollment_id == Enrollment.id).filter(Enrollment.course_id == course_id)
 
-    records = query.order_by(Attendance.attendance_date.desc()).all()
-    summary = _calculate_summary(records)
+    course_records = query.order_by(Attendance.attendance_date.desc()).all()
+    all_record_schemas = [_serialize_record(r) for r in course_records]
+
+    # Include Profile Building & Mentorship session attendances if not filtering for a specific academic course
+    if not course_id:
+        profile_sessions = (
+            db.query(ProfileSessionAttendance)
+            .filter(ProfileSessionAttendance.student_id == student.id)
+            .order_by(ProfileSessionAttendance.session_date.desc())
+            .all()
+        )
+        for s in profile_sessions:
+            period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
+            marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
+            all_record_schemas.append(
+                AttendanceRecordSchema(
+                    id=s.id,
+                    student_id=s.student_id,
+                    enrollment_id="",
+                    course_id="PROFILE_BUILDING",
+                    course_name="Profile Building & Mentorship",
+                    course_code="PROFILE",
+                    student_name=student.user.full_name if student.user else "Student",
+                    aptech_student_id=student.aptech_student_id,
+                    study_task_id=s.roadmap_item_id,
+                    task_title=f"{s.topic} ({period_str})",
+                    attendance_date=s.session_date,
+                    status=s.status,
+                    remarks=f"{s.description} • {s.duration_minutes} mins" + (f" • Note: {s.remarks}" if s.remarks else ""),
+                    marked_by_name=marker_name,
+                    created_at=s.created_at
+                )
+            )
+
+    # Sort all records by attendance_date descending
+    all_record_schemas.sort(key=lambda r: r.attendance_date, reverse=True)
+
+    # Calculate overall summary
+    total = len(all_record_schemas)
+    present = sum(1 for r in all_record_schemas if r.status == AttendanceStatus.PRESENT.value)
+    late = sum(1 for r in all_record_schemas if r.status == AttendanceStatus.LATE.value)
+    absent = sum(1 for r in all_record_schemas if r.status == AttendanceStatus.ABSENT.value)
+    excused = sum(1 for r in all_record_schemas if r.status == AttendanceStatus.EXCUSED.value)
+    effective_present = present + (0.5 * late)
+    base_denominator = total - excused if (total - excused) > 0 else total
+    percentage = round((effective_present / base_denominator * 100), 1) if base_denominator > 0 else 100.0
+
+    summary = AttendanceSummary(
+        total_classes=total,
+        present_count=present,
+        absent_count=absent,
+        late_count=late,
+        excused_count=excused,
+        percentage=percentage,
+    )
 
     return StudentAttendanceStatsResponse(
         summary=summary,
-        records=[_serialize_record(r) for r in records]
+        records=all_record_schemas
     )
 
 
@@ -177,6 +231,34 @@ def mark_batch_attendance(
         if status_clean not in valid_statuses:
             continue
 
+        # Handle Profile Building students who do not have an academic enrollment
+        if item.enrollment_id.startswith("pb_") or not item.enrollment_id:
+            existing_pb = db.query(ProfileSessionAttendance).filter(
+                ProfileSessionAttendance.student_id == item.student_id,
+                ProfileSessionAttendance.session_date == payload.attendance_date
+            ).first()
+            if existing_pb:
+                existing_pb.status = status_clean
+                if item.remarks:
+                    existing_pb.remarks = item.remarks
+                existing_pb.marked_by = admin_user.id
+                existing_pb.updated_at = datetime.now(timezone.utc)
+                updated_count += 1
+            else:
+                new_pb = ProfileSessionAttendance(
+                    student_id=item.student_id,
+                    session_date=payload.attendance_date,
+                    topic="Mentorship & Profile Building Class",
+                    description=item.remarks or "Session attendance logged by faculty mentor",
+                    duration_minutes=45,
+                    status=status_clean,
+                    remarks=item.remarks,
+                    marked_by=admin_user.id
+                )
+                db.add(new_pb)
+                created_count += 1
+            continue
+
         existing = db.query(Attendance).filter(
             Attendance.enrollment_id == item.enrollment_id,
             Attendance.attendance_date == payload.attendance_date
@@ -253,6 +335,47 @@ def get_students_attendance_overview(
         primary_enr = enrollments[0] if enrollments else (st.enrollments[0] if st.enrollments else None)
 
         if not primary_enr:
+            if getattr(st, "track_type", "COURSE") in ("PROFILE_BUILDING", "BOTH"):
+                # Profile Building Student Overview
+                profile_sessions = (
+                    db.query(ProfileSessionAttendance)
+                    .filter(ProfileSessionAttendance.student_id == st.id)
+                    .all()
+                )
+                today_session = next((s for s in profile_sessions if s.session_date == att_date), None)
+                tot = len(profile_sessions)
+                pres = sum(1 for s in profile_sessions if s.status == "PRESENT")
+                lat = sum(1 for s in profile_sessions if s.status == "LATE")
+                ab = sum(1 for s in profile_sessions if s.status == "ABSENT")
+                ex = sum(1 for s in profile_sessions if s.status == "EXCUSED")
+                eff = pres + 0.5 * lat
+                den = (tot - ex) if (tot - ex) > 0 else tot
+                pct = round((eff / den * 100), 1) if den > 0 else 100.0
+
+                results.append({
+                    "student_id": st.id,
+                    "enrollment_id": f"pb_{st.id}",
+                    "user_id": u.id,
+                    "full_name": u.full_name,
+                    "email": u.email,
+                    "aptech_student_id": st.aptech_student_id,
+                    "phone": st.phone,
+                    "course_id": "PROFILE_BUILDING",
+                    "course_name": "Profile Building & Mentorship",
+                    "course_code": "PROFILE",
+                    "access_type": "FULL",
+                    "track_type": st.track_type,
+                    "current_status": today_session.status if today_session else None,
+                    "remarks": (f"{today_session.topic}: {today_session.description}") if today_session else None,
+                    "summary": AttendanceSummary(
+                        total_classes=tot,
+                        present_count=pres,
+                        absent_count=ab,
+                        late_count=lat,
+                        excused_count=ex,
+                        percentage=pct
+                    ),
+                })
             continue
 
         # Check attendance for target_date
@@ -302,14 +425,63 @@ def get_student_attendance_admin(
     if not student:
         raise HTTPException(status_code=404, detail="Student not found.")
 
-    records = db.query(Attendance).filter(Attendance.student_id == student_id).order_by(Attendance.attendance_date.desc()).all()
-    summary = _calculate_summary(records)
+    course_records = db.query(Attendance).filter(Attendance.student_id == student_id).order_by(Attendance.attendance_date.desc()).all()
+    all_schemas = [_serialize_record(r) for r in course_records]
+
+    profile_sessions = (
+        db.query(ProfileSessionAttendance)
+        .filter(ProfileSessionAttendance.student_id == student_id)
+        .order_by(ProfileSessionAttendance.session_date.desc())
+        .all()
+    )
+    for s in profile_sessions:
+        period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
+        marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
+        all_schemas.append(
+            AttendanceRecordSchema(
+                id=s.id,
+                student_id=s.student_id,
+                enrollment_id="",
+                course_id="PROFILE_BUILDING",
+                course_name="Profile Building & Mentorship",
+                course_code="PROFILE",
+                student_name=student.user.full_name if student.user else "Student",
+                aptech_student_id=student.aptech_student_id,
+                study_task_id=s.roadmap_item_id,
+                task_title=f"{s.topic} ({period_str})",
+                attendance_date=s.session_date,
+                status=s.status,
+                remarks=f"{s.description} • {s.duration_minutes} mins" + (f" • Note: {s.remarks}" if s.remarks else ""),
+                marked_by_name=marker_name,
+                created_at=s.created_at
+            )
+        )
+
+    all_schemas.sort(key=lambda r: r.attendance_date, reverse=True)
+
+    tot = len(all_schemas)
+    pres = sum(1 for r in all_schemas if r.status == AttendanceStatus.PRESENT.value)
+    lat = sum(1 for r in all_schemas if r.status == AttendanceStatus.LATE.value)
+    ab = sum(1 for r in all_schemas if r.status == AttendanceStatus.ABSENT.value)
+    ex = sum(1 for r in all_schemas if r.status == AttendanceStatus.EXCUSED.value)
+    eff = pres + 0.5 * lat
+    den = (tot - ex) if (tot - ex) > 0 else tot
+    pct = round((eff / den * 100), 1) if den > 0 else 100.0
+
+    summary = AttendanceSummary(
+        total_classes=tot,
+        present_count=pres,
+        absent_count=ab,
+        late_count=lat,
+        excused_count=ex,
+        percentage=pct
+    )
 
     return {
         "student_id": student.id,
         "student_name": student.user.full_name if student.user else "Student",
         "aptech_student_id": student.aptech_student_id,
         "summary": summary,
-        "records": [_serialize_record(r) for r in records]
+        "records": all_schemas
     }
 

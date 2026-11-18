@@ -137,4 +137,52 @@ def test_profile_roadmap_admin_upload_and_student_flow():
     assert "Advanced Literature Review & Ethics Protocol" in patched_data["main_actions"]
     assert "Signed hospital ethics board approval" in patched_data["milestones_outputs"]
 
+    # 7. Admin logs multiple date-wise sessions with topic and description
+    session1_res = client.post(
+        f"/api/profile-roadmap/students/{student_id}/sessions",
+        headers=admin_headers,
+        json={
+            "roadmap_item_id": first_item_id,
+            "session_date": "2026-11-05",
+            "topic": "Session 1: Research Methodology & Supervisor Selection",
+            "description": "Discussed primary research question and literature review outline.",
+            "duration_minutes": 60,
+            "status": "PRESENT",
+            "remarks": "Active participation"
+        }
+    )
+    assert session1_res.status_code == 200
+    s1_data = session1_res.json()
+    assert s1_data["topic"] == "Session 1: Research Methodology & Supervisor Selection"
+    assert s1_data["status"] == "PRESENT"
+
+    session2_res = client.post(
+        f"/api/profile-roadmap/students/{student_id}/sessions",
+        headers=admin_headers,
+        json={
+            "roadmap_item_id": first_item_id,
+            "session_date": "2026-11-12",
+            "topic": "Session 2: Doctor Shadowing Prep",
+            "description": "Reviewed hospital compliance forms and observer guidelines.",
+            "duration_minutes": 45,
+            "status": "PRESENT"
+        }
+    )
+    assert session2_res.status_code == 200
+
+    # 8. Admin retrieves student session attendance history
+    history_res = client.get(f"/api/profile-roadmap/students/{student_id}/sessions", headers=admin_headers)
+    assert history_res.status_code == 200
+    history_data = history_res.json()
+    assert len(history_data) >= 2
+    assert any(s["topic"] == "Session 1: Research Methodology & Supervisor Selection" for s in history_data)
+
+    # 9. Student retrieves their own transparent attendance history
+    student_att_res = client.get("/api/attendance/my", headers=student_headers)
+    assert student_att_res.status_code == 200
+    att_data = student_att_res.json()
+    assert att_data["summary"]["total_classes"] >= 2
+    assert any("Research Methodology" in r["task_title"] for r in att_data["records"])
+
+
 

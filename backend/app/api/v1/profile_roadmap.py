@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.api.deps import get_current_user, require_admin
 from app.models.user import User, StudentProfile
-from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus
+from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus, ProfileSessionAttendance
 from app.schemas.profile_roadmap import (
     ProfileRoadmapItemResponse,
     ProfileRoadmapItemUpdate,
@@ -15,6 +15,9 @@ from app.schemas.profile_roadmap import (
     ProfileRoadmapStudentSummary,
     ProfileRoadmapItemCreate,
     ProfileRoadmapStats,
+    ProfileSessionAttendanceCreate,
+    ProfileSessionAttendanceUpdate,
+    ProfileSessionAttendanceResponse,
 )
 from app.services.profile_roadmap_service import (
     parse_profile_roadmap_excel,
@@ -24,6 +27,34 @@ from app.services.profile_roadmap_service import (
 logger = logging.getLogger("aptech_planner.api.profile_roadmap")
 
 router = APIRouter(prefix="/profile-roadmap", tags=["Profile Building & Mentorship Roadmap"])
+
+
+def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceResponse:
+    marker_name = s.marker.full_name if s.marker else None
+    period_str = s.roadmap_item.period if s.roadmap_item else None
+    return ProfileSessionAttendanceResponse(
+        id=s.id,
+        student_id=s.student_id,
+        roadmap_item_id=s.roadmap_item_id,
+        period=period_str,
+        session_date=s.session_date,
+        topic=s.topic,
+        description=s.description,
+        duration_minutes=s.duration_minutes,
+        status=s.status,
+        remarks=s.remarks,
+        marked_by=s.marked_by,
+        marked_by_name=marker_name,
+        created_at=s.created_at,
+        updated_at=s.updated_at
+    )
+
+
+def _serialize_item(item: ProfileRoadmapItem) -> ProfileRoadmapItemResponse:
+    sessions = [_serialize_session(s) for s in (item.sessions or [])]
+    data = ProfileRoadmapItemResponse.model_validate(item)
+    data.sessions = sessions
+    return data
 
 
 @router.post("/upload-excel", response_model=ProfileRoadmapStudentSummary)
@@ -70,7 +101,7 @@ async def upload_roadmap_excel(
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
         stats=ProfileRoadmapStats(**stats),
-        items=[ProfileRoadmapItemResponse.model_validate(i) for i in saved_items]
+        items=[_serialize_item(i) for i in saved_items]
     )
 
 
@@ -101,7 +132,7 @@ def list_students_with_roadmaps(
                 aptech_student_id=s.aptech_student_id,
                 track_type=s.track_type,
                 stats=ProfileRoadmapStats(**stats),
-                items=[ProfileRoadmapItemResponse.model_validate(i) for i in items]
+                items=[_serialize_item(i) for i in items]
             )
         )
     return summaries
@@ -133,7 +164,7 @@ def get_student_roadmap(
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
         stats=ProfileRoadmapStats(**stats),
-        items=[ProfileRoadmapItemResponse.model_validate(i) for i in items]
+        items=[_serialize_item(i) for i in items]
     )
 
 
@@ -279,6 +310,100 @@ def get_my_profile_roadmap(
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
         stats=ProfileRoadmapStats(**stats),
-        items=[ProfileRoadmapItemResponse.model_validate(i) for i in items]
+        items=[_serialize_item(i) for i in items]
     )
+
+
+# -------------------------------------------------------------
+# Session Attendance & Class History Endpoints
+# -------------------------------------------------------------
+
+@router.post("/students/{student_id}/sessions", response_model=ProfileSessionAttendanceResponse)
+def log_session_attendance(
+    student_id: str,
+    body: ProfileSessionAttendanceCreate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin/Teacher logs attendance for a specific session with date, topic covered,
+    description of what was taught, duration in minutes, and attendance status (PRESENT, etc.).
+    Can optionally be linked to a specific roadmap month/item.
+    """
+    session = ProfileRoadmapService.log_session_attendance(
+        db=db,
+        student_id=student_id,
+        roadmap_item_id=body.roadmap_item_id,
+        session_date=body.session_date,
+        topic=body.topic,
+        description=body.description,
+        duration_minutes=body.duration_minutes,
+        status=body.status,
+        remarks=body.remarks,
+        marked_by=admin.id
+    )
+    return _serialize_session(session)
+
+
+@router.get("/students/{student_id}/sessions", response_model=List[ProfileSessionAttendanceResponse])
+def get_student_sessions(
+    student_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin retrieves the complete historical log of all mentorship & profile building sessions
+    for a student, ordered by session date descending.
+    """
+    sessions = ProfileRoadmapService.get_student_sessions(db, student_id)
+    return [_serialize_session(s) for s in sessions]
+
+
+@router.patch("/sessions/{session_id}", response_model=ProfileSessionAttendanceResponse)
+def update_session_attendance(
+    session_id: str,
+    body: ProfileSessionAttendanceUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin updates a previously logged session (date, topic, description, duration, status, etc.).
+    """
+    update_data = body.model_dump(exclude_unset=True)
+    session = ProfileRoadmapService.update_session_attendance(db, session_id, update_data)
+    return _serialize_session(session)
+
+
+@router.delete("/sessions/{session_id}")
+def delete_session_attendance(
+    session_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin deletes a logged session attendance record.
+    """
+    ProfileRoadmapService.delete_session_attendance(db, session_id)
+    return {"message": "Session attendance deleted successfully."}
+
+
+@router.get("/my/sessions", response_model=List[ProfileSessionAttendanceResponse])
+def get_my_sessions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Student retrieves their transparent, complete attendance and session history
+    with date, topics taught, and faculty discussion notes.
+    """
+    student = db.query(StudentProfile).filter(StudentProfile.user_id == current_user.id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Student profile not found."
+        )
+
+    sessions = ProfileRoadmapService.get_student_sessions(db, student.id)
+    return [_serialize_session(s) for s in sessions]
+
 

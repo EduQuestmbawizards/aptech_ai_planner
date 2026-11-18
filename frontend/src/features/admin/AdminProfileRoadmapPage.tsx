@@ -4,7 +4,9 @@ import { api } from '../../services/api';
 import {
   ProfileRoadmapStudentSummary,
   ProfileRoadmapItem,
+  ProfileSessionAttendance,
   RoadmapItemStatusType,
+  AttendanceStatusType,
 } from '../../types';
 import {
   Compass,
@@ -29,6 +31,10 @@ import {
   BookOpen,
   Target,
   Award,
+  CalendarCheck,
+  Plus,
+  Trash2,
+  GraduationCap,
 } from 'lucide-react';
 
 export const AdminProfileRoadmapPage: React.FC = () => {
@@ -64,6 +70,24 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const [editMilestonesOutputs, setEditMilestonesOutputs] = useState<string>('');
   const [editLoading, setEditLoading] = useState<boolean>(false);
   const [editError, setEditError] = useState<string | null>(null);
+
+  // Session Attendance Modal State
+  const [showSessionModal, setShowSessionModal] = useState<boolean>(false);
+  const [sessionTargetItem, setSessionTargetItem] = useState<ProfileRoadmapItem | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [sessionDate, setSessionDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [sessionTopic, setSessionTopic] = useState<string>('');
+  const [sessionDescription, setSessionDescription] = useState<string>('');
+  const [sessionDuration, setSessionDuration] = useState<number>(45);
+  const [sessionStatus, setSessionStatus] = useState<AttendanceStatusType>('PRESENT');
+  const [sessionRemarks, setSessionRemarks] = useState<string>('');
+  const [sessionLoading, setSessionLoading] = useState<boolean>(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  // View All Sessions History Modal State
+  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+  const [studentSessionsHistory, setStudentSessionsHistory] = useState<ProfileSessionAttendance[]>([]);
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
 
   const fetchStudents = async () => {
     try {
@@ -172,6 +196,97 @@ export const AdminProfileRoadmapPage: React.FC = () => {
       setEditError(err.response?.data?.detail || 'Failed to update milestone details.');
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleOpenAddSession = (item?: ProfileRoadmapItem) => {
+    setSessionTargetItem(item || null);
+    setEditingSessionId(null);
+    setSessionDate(new Date().toISOString().split('T')[0]);
+    setSessionTopic(item ? `${item.period} Mentorship Session` : '');
+    setSessionDescription('');
+    setSessionDuration(45);
+    setSessionStatus('PRESENT');
+    setSessionRemarks('');
+    setSessionError(null);
+    setShowSessionModal(true);
+  };
+
+  const handleOpenEditSession = (session: ProfileSessionAttendance, item?: ProfileRoadmapItem) => {
+    setSessionTargetItem(item || null);
+    setEditingSessionId(session.id);
+    setSessionDate(session.session_date);
+    setSessionTopic(session.topic);
+    setSessionDescription(session.description);
+    setSessionDuration(session.duration_minutes);
+    setSessionStatus(session.status);
+    setSessionRemarks(session.remarks || '');
+    setSessionError(null);
+    setShowSessionModal(true);
+  };
+
+  const handleSaveSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+    setSessionLoading(true);
+    setSessionError(null);
+
+    try {
+      if (editingSessionId) {
+        await api.patch(`/profile-roadmap/sessions/${editingSessionId}`, {
+          roadmap_item_id: sessionTargetItem?.id || undefined,
+          session_date: sessionDate,
+          topic: sessionTopic,
+          description: sessionDescription,
+          duration_minutes: Number(sessionDuration),
+          status: sessionStatus,
+          remarks: sessionRemarks || undefined,
+        });
+      } else {
+        await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`, {
+          roadmap_item_id: sessionTargetItem?.id || undefined,
+          session_date: sessionDate,
+          topic: sessionTopic,
+          description: sessionDescription,
+          duration_minutes: Number(sessionDuration),
+          status: sessionStatus,
+          remarks: sessionRemarks || undefined,
+        });
+      }
+
+      await loadStudentDetails(selectedStudent.student_id);
+      setShowSessionModal(false);
+    } catch (err: any) {
+      setSessionError(err.response?.data?.detail || 'Failed to save session attendance.');
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this session attendance log?')) return;
+    if (!selectedStudent) return;
+    try {
+      await api.delete(`/profile-roadmap/sessions/${sessionId}`);
+      await loadStudentDetails(selectedStudent.student_id);
+      // Also update history list if open
+      setStudentSessionsHistory((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to delete session attendance.');
+    }
+  };
+
+  const handleOpenHistoryModal = async () => {
+    if (!selectedStudent) return;
+    setShowHistoryModal(true);
+    setHistoryLoading(true);
+    try {
+      const res = await api.get(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`);
+      setStudentSessionsHistory(res.data);
+    } catch (err) {
+      console.error('Failed to load session history', err);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -349,7 +464,24 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                    <button
+                      onClick={handleOpenHistoryModal}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 flex items-center shadow-xs transition-colors"
+                      title="View complete date-wise session attendance history from starting"
+                    >
+                      <CalendarCheck className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+                      Attendance &amp; Session History
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenAddSession()}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center shadow-xs transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Log Session &amp; Attendance
+                    </button>
+
                     <button
                       onClick={() => setShowUploadModal(true)}
                       className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center"
@@ -368,10 +500,10 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                       {selectedStudent.stats.total_items} Months
                     </div>
                   </div>
-                  <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
-                    <div className="text-[11px] font-medium text-emerald-700">Completed Sessions</div>
-                    <div className="text-lg font-black text-emerald-800 mt-0.5">
-                      {selectedStudent.stats.completed}
+                  <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100">
+                    <div className="text-[11px] font-medium text-blue-700">Total Sessions Logged</div>
+                    <div className="text-lg font-black text-blue-800 mt-0.5">
+                      {selectedStudent.stats.total_sessions_count || selectedStudent.stats.completed} Sessions
                     </div>
                   </div>
                   <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-100">
@@ -380,9 +512,9 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                       {selectedStudent.stats.completion_percentage}%
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100">
-                    <div className="text-[11px] font-medium text-blue-700">Mentorship Hours</div>
-                    <div className="text-lg font-black text-blue-800 mt-0.5">
+                  <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
+                    <div className="text-[11px] font-medium text-emerald-700">Mentorship Hours</div>
+                    <div className="text-lg font-black text-emerald-800 mt-0.5">
                       {(selectedStudent.stats.total_session_minutes / 60).toFixed(1)} hrs
                     </div>
                   </div>
@@ -501,11 +633,100 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                                   </div>
                                 )}
                               </div>
+
+                              {/* 3. Conducted Sessions & Attendance */}
+                              <div className="mt-2.5 p-3 bg-blue-50/50 rounded-xl border border-blue-200/70">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-blue-900 uppercase tracking-wider">
+                                    <CalendarCheck className="w-3.5 h-3.5 text-blue-600" />
+                                    <span>Sessions &amp; Attendance ({item.sessions?.length || 0})</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAddSession(item)}
+                                    className="inline-flex items-center px-2 py-0.5 text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-white border border-blue-200 rounded shadow-2xs hover:bg-blue-50 transition-colors"
+                                  >
+                                    <Plus className="w-3 h-3 mr-0.5 text-blue-600" />
+                                    Add Session
+                                  </button>
+                                </div>
+
+                                {item.sessions && item.sessions.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {item.sessions.map((sess) => (
+                                      <div key={sess.id} className="bg-white p-2.5 rounded-lg border border-blue-100/90 shadow-2xs text-xs space-y-1">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center space-x-2">
+                                            <span className="font-bold text-slate-900 flex items-center">
+                                              <Calendar className="w-3 h-3 mr-1 text-slate-400" />
+                                              {sess.session_date}
+                                            </span>
+                                            <span className={`px-2 py-0.2 rounded-full text-[10px] font-extrabold uppercase ${
+                                              sess.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800' :
+                                              sess.status === 'LATE' ? 'bg-amber-100 text-amber-800' :
+                                              sess.status === 'ABSENT' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'
+                                            }`}>
+                                              {sess.status}
+                                            </span>
+                                            <span className="text-[11px] text-slate-500 font-medium">
+                                              ⏱️ {sess.duration_minutes} mins
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center space-x-1">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleOpenEditSession(sess, item)}
+                                              className="p-1 text-slate-400 hover:text-amber-700 rounded hover:bg-slate-50"
+                                              title="Edit Session"
+                                            >
+                                              <Edit3 className="w-3 h-3" />
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteSession(sess.id)}
+                                              className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-50"
+                                              title="Delete Session"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div className="font-semibold text-slate-800">{sess.topic}</div>
+                                        <p className="text-slate-600 text-[11px] whitespace-pre-line leading-relaxed">{sess.description}</p>
+                                        {sess.remarks && (
+                                          <div className="text-[10px] text-slate-400 italic">
+                                            Mentor Note: {sess.remarks}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-blue-700/80 italic flex items-center justify-between">
+                                    <span>No sessions logged yet for {item.period}.</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenAddSession(item)}
+                                      className="text-blue-700 underline font-semibold hover:text-blue-900 not-italic ml-2"
+                                    >
+                                      + Log 1st Session
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex sm:flex-col items-end gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => handleOpenAddSession(item)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 shadow-2xs transition-colors"
+                            >
+                              <CalendarCheck className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+                              Log Session
+                            </button>
+
                             <button
                               onClick={() => handleOpenEditModal(item)}
                               className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
@@ -524,7 +745,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                               }`}
                             >
                               <MessageSquareText className="w-3.5 h-3.5 mr-1.5" />
-                              {isCompleted ? 'Edit MoM / Log' : 'Mark Completed & Log Session'}
+                              {isCompleted ? 'Edit MoM / Log' : 'Mark Completed'}
                             </button>
 
                             {/* Status Quick Switch */}
@@ -820,6 +1041,358 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Log / Edit Session Attendance Modal */}
+      {showSessionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <CalendarCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {editingSessionId ? 'Edit Session Attendance' : 'Log Mentorship Session & Attendance'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Student: <span className="font-semibold text-slate-800">{selectedStudent?.student_name}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSessionModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {sessionError && (
+              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{sessionError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSession} className="space-y-4 mt-4">
+              {/* Linked Roadmap Month */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Roadmap Month / Milestone Stage
+                </label>
+                <select
+                  value={sessionTargetItem?.id || ''}
+                  onChange={(e) => {
+                    const item = selectedStudent?.items.find((i) => i.id === e.target.value);
+                    setSessionTargetItem(item || null);
+                  }}
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                  <option value="">General Mentorship Session (Not linked to specific month)</option>
+                  {selectedStudent?.items.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      Month {i.order_index}: {i.period}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date & Duration */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Session Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={sessionDate}
+                    onChange={(e) => setSessionDate(e.target.value)}
+                    className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Duration (Minutes) *
+                  </label>
+                  <div className="flex items-center space-x-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={480}
+                      required
+                      value={sessionDuration}
+                      onChange={(e) => setSessionDuration(Number(e.target.value))}
+                      className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                    {[30, 45, 60].map((m) => (
+                      <button
+                        type="button"
+                        key={m}
+                        onClick={() => setSessionDuration(m)}
+                        className={`px-1.5 py-1.5 text-[10px] font-bold rounded border ${
+                          sessionDuration === m
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {m}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Status */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Attendance Status *
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(['PRESENT', 'LATE', 'ABSENT', 'EXCUSED'] as const).map((st) => (
+                    <button
+                      type="button"
+                      key={st}
+                      onClick={() => setSessionStatus(st)}
+                      className={`py-1.5 px-2 text-xs font-bold rounded-lg border text-center transition-all ${
+                        sessionStatus === st
+                          ? st === 'PRESENT'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                            : st === 'LATE'
+                            ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                            : st === 'ABSENT'
+                            ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                            : 'bg-slate-800 text-white border-slate-800 shadow-xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Topic Taught */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Session Topic / Concept Taught *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={sessionTopic}
+                  onChange={(e) => setSessionTopic(e.target.value)}
+                  placeholder="e.g. Research Methodology, Doctor Shadowing Prep, Diamond Pitch"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Description / What was taught */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  What Was Taught / MoM &amp; Discussion Notes *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={sessionDescription}
+                  onChange={(e) => setSessionDescription(e.target.value)}
+                  placeholder="e.g. Discussed primary research question. Literature review draft to be submitted by next week. Elderly home visit schedule confirmed."
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  These details will be immediately visible to the student in their transparent attendance log.
+                </p>
+              </div>
+
+              {/* Optional Remarks */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Faculty Guidance / Private Remarks (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={sessionRemarks}
+                  onChange={(e) => setSessionRemarks(e.target.value)}
+                  placeholder="e.g. Student showed great curiosity; submitted case reflection on time"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowSessionModal(false)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={sessionLoading}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  {sessionLoading ? 'Saving...' : editingSessionId ? 'Update Session' : 'Save Session & Attendance'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View All Sessions & Attendance History Modal */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <CalendarCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Complete Attendance &amp; Mentorship Session History
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Student: <span className="font-semibold text-slate-800">{selectedStudent?.student_name}</span> ({selectedStudent?.aptech_student_id})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick KPI stats in History Modal */}
+            <div className="grid grid-cols-3 gap-3 my-4">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <div className="text-[11px] font-bold text-slate-500 uppercase">Total Sessions</div>
+                <div className="text-xl font-black text-slate-900 mt-0.5">{studentSessionsHistory.length}</div>
+              </div>
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
+                <div className="text-[11px] font-bold text-emerald-700 uppercase">Present Rate</div>
+                <div className="text-xl font-black text-emerald-800 mt-0.5">
+                  {studentSessionsHistory.length > 0
+                    ? Math.round(
+                        (studentSessionsHistory.filter((s) => s.status === 'PRESENT').length /
+                          studentSessionsHistory.length) *
+                          100
+                      )
+                    : 100}
+                  %
+                </div>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 text-center">
+                <div className="text-[11px] font-bold text-blue-700 uppercase">Total Hours Logged</div>
+                <div className="text-xl font-black text-blue-800 mt-0.5">
+                  {(
+                    studentSessionsHistory.reduce((acc, s) => acc + s.duration_minutes, 0) / 60
+                  ).toFixed(1)}{' '}
+                  hrs
+                </div>
+              </div>
+            </div>
+
+            {/* History Table / Timeline */}
+            {historyLoading ? (
+              <div className="py-12 text-center text-xs text-slate-400">Loading complete session history...</div>
+            ) : studentSessionsHistory.length === 0 ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                No mentorship sessions recorded yet for this student. Click "Log Session &amp; Attendance" to record the first class.
+              </div>
+            ) : (
+              <div className="space-y-3 mt-2">
+                {studentSessionsHistory.map((s) => (
+                  <div key={s.id} className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200 text-xs space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-200/60">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono font-bold text-slate-900 flex items-center">
+                          <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                          {s.session_date}
+                        </span>
+                        {s.period && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded">
+                            {s.period}
+                          </span>
+                        )}
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                            s.status === 'PRESENT'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : s.status === 'LATE'
+                              ? 'bg-amber-100 text-amber-800'
+                              : s.status === 'ABSENT'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {s.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-slate-500 text-[11px]">
+                        <span>⏱️ {s.duration_minutes} mins</span>
+                        <span>• Faculty: {s.marked_by_name || 'Admin'}</span>
+                        <div className="flex items-center space-x-1 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowHistoryModal(false);
+                              handleOpenEditSession(s);
+                            }}
+                            className="p-1 text-slate-400 hover:text-amber-700 rounded hover:bg-slate-200"
+                            title="Edit"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSession(s.id)}
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-200"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="font-bold text-slate-900">{s.topic}</span>
+                    </div>
+
+                    <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200/60">
+                      {s.description}
+                    </p>
+
+                    {s.remarks && (
+                      <div className="text-[11px] text-slate-500 italic">
+                        <span className="font-semibold text-slate-600 not-italic">Faculty Guidance: </span>
+                        {s.remarks}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-slate-100 mt-4">
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800"
+              >
+                Close History
+              </button>
+            </div>
           </div>
         </div>
       )}

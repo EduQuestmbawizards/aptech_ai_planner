@@ -422,6 +422,23 @@ export interface AIUsageMetrics {
 
 export type RoadmapItemStatusType = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 
+export interface ProfileSessionAttendance {
+  id: string;
+  student_id: string;
+  roadmap_item_id?: string | null;
+  period?: string | null;
+  session_date: string;
+  topic: string;
+  description: string;
+  duration_minutes: number;
+  status: AttendanceStatusType;
+  remarks?: string | null;
+  marked_by?: string | null;
+  marked_by_name?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ProfileRoadmapItem {
   id: string;
   student_id: string;
@@ -438,6 +455,7 @@ export interface ProfileRoadmapItem {
   marked_by?: string | null;
   created_at?: string;
   updated_at?: string;
+  sessions?: ProfileSessionAttendance[];
 }
 
 export interface ProfileRoadmapStats {
@@ -447,6 +465,7 @@ export interface ProfileRoadmapStats {
   pending: number;
   completion_percentage: number;
   total_session_minutes: number;
+  total_sessions_count?: number;
 }
 
 export interface ProfileRoadmapStudentSummary {

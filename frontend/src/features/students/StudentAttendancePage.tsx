@@ -215,48 +215,65 @@ export const StudentAttendancePage: React.FC = () => {
             <thead className="bg-slate-50 text-slate-600 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Course</th>
+                <th className="py-3 px-4">Track / Course</th>
                 <th className="py-3 px-4">Topic / Class</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Remarks</th>
+                <th className="py-3 px-4">What Was Taught / MoM Description</th>
+                <th className="py-3 px-4">Faculty</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400 font-bold">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
                     Loading your attendance history...
                   </td>
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400 font-bold">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
                     No attendance records found for this filter.
                   </td>
                 </tr>
               ) : (
-                filteredRecords.map((r) => (
-                  <tr key={r.id} className="hover:bg-amber-50/20 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-800 whitespace-nowrap">
-                      {r.attendance_date}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-bold text-slate-900">{r.course_code || 'Course'}</span>
-                      <span className="text-[11px] text-slate-400 block truncate max-w-xs">{r.course_name}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {r.task_title ? (
-                        <span className="font-bold text-slate-800 line-clamp-1">{r.task_title}</span>
-                      ) : (
-                        <span className="text-slate-400 italic">Daily Lecture / Batch Session</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">{getStatusBadge(r.status)}</td>
-                    <td className="py-3 px-4 text-slate-500">
-                      {r.remarks || <span className="text-slate-300">—</span>}
-                    </td>
-                  </tr>
-                ))
+                filteredRecords.map((r) => {
+                  const isProfile = r.course_id === 'PROFILE_BUILDING';
+                  return (
+                    <tr key={r.id} className={`transition-colors ${isProfile ? 'hover:bg-amber-50/30' : 'hover:bg-slate-50'}`}>
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800 whitespace-nowrap">
+                        {r.attendance_date}
+                      </td>
+                      <td className="py-3 px-4">
+                        {isProfile ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            Profile Mentorship
+                          </span>
+                        ) : (
+                          <>
+                            <span className="font-bold text-slate-900">{r.course_code || 'Course'}</span>
+                            <span className="text-[11px] text-slate-400 block truncate max-w-xs">{r.course_name}</span>
+                          </>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-slate-800 line-clamp-2">
+                          {r.task_title || (isProfile ? 'Mentorship Session' : 'Daily Lecture / Batch Session')}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">{getStatusBadge(r.status)}</td>
+                      <td className="py-3 px-4 text-slate-700 max-w-md">
+                        {r.remarks ? (
+                          <p className="whitespace-pre-line leading-relaxed text-xs">{r.remarks}</p>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
+                        {r.marked_by_name || 'Faculty Mentor'}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

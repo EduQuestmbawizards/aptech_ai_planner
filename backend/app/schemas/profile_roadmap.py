@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -42,6 +42,45 @@ class ProfileRoadmapStatusUpdateRequest(BaseModel):
     status: str = Field(..., description="PENDING, IN_PROGRESS, or COMPLETED")
 
 
+class ProfileSessionAttendanceCreate(BaseModel):
+    roadmap_item_id: Optional[str] = None
+    session_date: date
+    topic: str = Field(..., description="Topic covered or taught in the session")
+    description: str = Field(..., description="Detailed description of what was taught, discussion details, or MoM")
+    duration_minutes: int = Field(45, ge=1, le=600, description="Session duration in minutes")
+    status: str = Field("PRESENT", description="PRESENT, ABSENT, LATE, EXCUSED")
+    remarks: Optional[str] = None
+
+
+class ProfileSessionAttendanceUpdate(BaseModel):
+    roadmap_item_id: Optional[str] = None
+    session_date: Optional[date] = None
+    topic: Optional[str] = None
+    description: Optional[str] = None
+    duration_minutes: Optional[int] = Field(None, ge=1, le=600)
+    status: Optional[str] = None
+    remarks: Optional[str] = None
+
+
+class ProfileSessionAttendanceResponse(BaseModel):
+    id: str
+    student_id: str
+    roadmap_item_id: Optional[str] = None
+    period: Optional[str] = None
+    session_date: date
+    topic: str
+    description: str
+    duration_minutes: int
+    status: str
+    remarks: Optional[str] = None
+    marked_by: Optional[str] = None
+    marked_by_name: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProfileRoadmapItemResponse(BaseModel):
     id: str
     student_id: str
@@ -58,6 +97,7 @@ class ProfileRoadmapItemResponse(BaseModel):
     marked_by: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    sessions: List[ProfileSessionAttendanceResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,6 +109,7 @@ class ProfileRoadmapStats(BaseModel):
     pending: int
     completion_percentage: float
     total_session_minutes: int
+    total_sessions_count: int = 0
 
 
 class ProfileRoadmapStudentSummary(BaseModel):

@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
 from enum import Enum
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, DateTime, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -36,4 +36,28 @@ class ProfileRoadmapItem(Base):
 
     student = relationship("StudentProfile", back_populates="profile_roadmap_items")
     marked_by_user = relationship("User", foreign_keys=[marked_by])
+    sessions = relationship("ProfileSessionAttendance", back_populates="roadmap_item", cascade="all, delete-orphan", order_by="ProfileSessionAttendance.session_date.asc()")
+
+
+class ProfileSessionAttendance(Base):
+    __tablename__ = "profile_session_attendances"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    student_id = Column(String(36), ForeignKey("student_profiles.id", ondelete="CASCADE"), index=True, nullable=False)
+    roadmap_item_id = Column(String(36), ForeignKey("profile_roadmap_items.id", ondelete="SET NULL"), index=True, nullable=True)
+    session_date = Column(Date, default=date.today, nullable=False, index=True)
+    topic = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    duration_minutes = Column(Integer, default=45, nullable=False)
+    status = Column(String(16), default="PRESENT", nullable=False) # PRESENT, ABSENT, LATE, EXCUSED
+    remarks = Column(Text, nullable=True)
+    marked_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    student = relationship("StudentProfile", backref="profile_attendances")
+    roadmap_item = relationship("ProfileRoadmapItem", back_populates="sessions")
+    marker = relationship("User", foreign_keys=[marked_by])
+
 

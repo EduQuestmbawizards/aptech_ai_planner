@@ -7,7 +7,7 @@ from openpyxl.utils.datetime import from_excel
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus
+from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus, ProfileSessionAttendance
 from app.models.user import StudentProfile
 
 logger = logging.getLogger("aptech_planner.profile_roadmap")
@@ -340,6 +340,93 @@ class ProfileRoadmapService:
         return item
 
     @staticmethod
+    def log_session_attendance(
+        db: Session,
+        student_id: str,
+        roadmap_item_id: Optional[str],
+        session_date: date,
+        topic: str,
+        description: str,
+        duration_minutes: int = 45,
+        status: str = "PRESENT",
+        remarks: Optional[str] = None,
+        marked_by: Optional[str] = None
+    ) -> ProfileSessionAttendance:
+        student = db.query(StudentProfile).filter(StudentProfile.id == student_id).first()
+        if not student:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Student profile with ID {student_id} not found."
+            )
+
+        roadmap_item = None
+        if roadmap_item_id:
+            roadmap_item = db.query(ProfileRoadmapItem).filter(
+                ProfileRoadmapItem.id == roadmap_item_id,
+                ProfileRoadmapItem.student_id == student_id
+            ).first()
+
+        session = ProfileSessionAttendance(
+            student_id=student_id,
+            roadmap_item_id=roadmap_item.id if roadmap_item else None,
+            session_date=session_date,
+            topic=topic.strip(),
+            description=description.strip(),
+            duration_minutes=duration_minutes,
+            status=status.upper().strip(),
+            remarks=remarks.strip() if remarks else None,
+            marked_by=marked_by
+        )
+        db.add(session)
+
+        # If roadmap item is attached and currently PENDING, mark it IN_PROGRESS
+        if roadmap_item and roadmap_item.status == RoadmapItemStatus.PENDING.value:
+            roadmap_item.status = RoadmapItemStatus.IN_PROGRESS.value
+
+        db.commit()
+        db.refresh(session)
+        return session
+
+    @staticmethod
+    def get_student_sessions(db: Session, student_id: str) -> List[ProfileSessionAttendance]:
+        return (
+            db.query(ProfileSessionAttendance)
+            .filter(ProfileSessionAttendance.student_id == student_id)
+            .order_by(ProfileSessionAttendance.session_date.desc(), ProfileSessionAttendance.created_at.desc())
+            .all()
+        )
+
+    @staticmethod
+    def update_session_attendance(
+        db: Session,
+        session_id: str,
+        update_data: Dict[str, Any]
+    ) -> ProfileSessionAttendance:
+        session = db.query(ProfileSessionAttendance).filter(ProfileSessionAttendance.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session attendance record not found.")
+
+        for field, val in update_data.items():
+            if val is not None and hasattr(session, field):
+                if isinstance(val, str):
+                    val = val.strip()
+                setattr(session, field, val)
+
+        session.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(session)
+        return session
+
+    @staticmethod
+    def delete_session_attendance(db: Session, session_id: str) -> bool:
+        session = db.query(ProfileSessionAttendance).filter(ProfileSessionAttendance.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session attendance record not found.")
+        db.delete(session)
+        db.commit()
+        return True
+
+    @staticmethod
     def get_stats_for_student(db: Session, student_id: str) -> Dict[str, Any]:
         items = (
             db.query(ProfileRoadmapItem)
@@ -351,7 +438,21 @@ class ProfileRoadmapService:
         completed = sum(1 for i in items if i.status == RoadmapItemStatus.COMPLETED.value)
         in_progress = sum(1 for i in items if i.status == RoadmapItemStatus.IN_PROGRESS.value)
         pending = sum(1 for i in items if i.status == RoadmapItemStatus.PENDING.value)
-        total_duration = sum(i.session_duration_minutes or 0 for i in items if i.status == RoadmapItemStatus.COMPLETED.value)
+
+        # Sum duration from profile_session_attendances
+        sessions = (
+            db.query(ProfileSessionAttendance)
+            .filter(ProfileSessionAttendance.student_id == student_id)
+            .all()
+        )
+        total_sessions = len(sessions)
+        session_duration = sum(s.duration_minutes for s in sessions if s.status == "PRESENT")
+
+        # Fallback to items meeting duration if no sessions logged yet
+        if total_sessions == 0:
+            session_duration = sum(i.session_duration_minutes or 0 for i in items if i.status == RoadmapItemStatus.COMPLETED.value)
+            total_sessions = completed
+
         percentage = round((completed / total * 100), 1) if total > 0 else 0.0
 
         return {
@@ -360,6 +461,7 @@ class ProfileRoadmapService:
             "in_progress": in_progress,
             "pending": pending,
             "completion_percentage": percentage,
-            "total_session_minutes": total_duration
+            "total_session_minutes": session_duration,
+            "total_sessions_count": total_sessions
         }
 
