@@ -7,7 +7,7 @@ class StudentCreateRequest(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     aptech_student_id: str
-    course_id: str # initial course to enroll
+    course_id: Optional[str] = None # initial course to enroll (optional for PROFILE_BUILDING)
     access_type: str = "FULL" # FULL or TRIAL
     payment_reference: Optional[str] = None
     notes: Optional[str] = None

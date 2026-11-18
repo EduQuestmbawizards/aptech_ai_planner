@@ -42,19 +42,27 @@ export const StudentLayout: React.FC = () => {
   } = useStudyTimer();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const isProfileBuildingOnly = user?.track_type === 'PROFILE_BUILDING';
+
+  const allNavItems = [
     { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
-    { label: 'My Courses', to: '/courses', icon: GraduationCap },
-    { label: 'Study Planner', to: '/planner', icon: Compass },
     { label: 'Profile Roadmap', to: '/profile-roadmap', icon: Target },
-    { label: 'Daily Tasks', to: '/tasks', icon: ListTodo },
-    { label: 'Weekly Schedule', to: '/weekly', icon: Calendar },
+    { label: 'My Courses', to: '/courses', icon: GraduationCap, courseOnly: true },
+    { label: 'Study Planner', to: '/planner', icon: Compass, courseOnly: true },
+    { label: 'Daily Tasks', to: '/tasks', icon: ListTodo, courseOnly: true },
+    { label: 'Weekly Schedule', to: '/weekly', icon: Calendar, courseOnly: true },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
-    { label: 'Course Syllabus', to: '/syllabus', icon: BookOpen },
-    { label: 'Progress Analytics', to: '/analytics', icon: LineChart },
-    { label: 'AI Learning Assistant', to: '/ai-assistant', icon: Bot },
+    { label: 'Course Syllabus', to: '/syllabus', icon: BookOpen, courseOnly: true },
+    { label: 'Progress Analytics', to: '/analytics', icon: LineChart, courseOnly: true },
+    { label: 'AI Learning Assistant', to: '/ai-assistant', icon: Bot, courseOnly: true },
     { label: 'Profile & Settings', to: '/profile', icon: User },
   ];
+
+  const navItems = isProfileBuildingOnly
+    ? allNavItems.filter((item) => !item.courseOnly)
+    : user?.track_type === 'COURSE'
+    ? allNavItems.filter((item) => item.label !== 'Profile Roadmap')
+    : allNavItems;
 
   return (
     <div className="min-h-screen bg-[#fcfaf4] flex flex-col md:flex-row">

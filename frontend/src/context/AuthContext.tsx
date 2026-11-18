@@ -66,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       is_active: true,
       is_suspended: false,
       aptech_student_id: res.data.aptech_student_id,
+      track_type: res.data.track_type,
     };
     setUser(userData);
     localStorage.setItem('aptech_user', JSON.stringify(userData));
@@ -85,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       is_active: true,
       is_suspended: false,
       aptech_student_id: res.data.aptech_student_id,
+      track_type: res.data.track_type,
     };
     setUser(userData);
     localStorage.setItem('aptech_user', JSON.stringify(userData));

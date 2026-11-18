@@ -9,6 +9,7 @@ export interface User {
   is_suspended: boolean;
   aptech_student_id?: string;
   phone?: string;
+  track_type?: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
 }
 
 export interface StudentDetail {

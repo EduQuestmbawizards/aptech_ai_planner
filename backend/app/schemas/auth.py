@@ -20,6 +20,7 @@ class TokenResponse(BaseModel):
     email: str
     full_name: str
     aptech_student_id: Optional[str] = None
+    track_type: Optional[str] = None
 
 class ActivateAccountRequest(BaseModel):
     token: str
@@ -41,5 +42,6 @@ class UserResponse(BaseModel):
     is_suspended: bool
     aptech_student_id: Optional[str] = None
     phone: Optional[str] = None
+    track_type: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

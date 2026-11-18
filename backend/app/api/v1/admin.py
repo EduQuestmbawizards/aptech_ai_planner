@@ -153,10 +153,16 @@ def create_student(
     if existing_id:
         raise HTTPException(status_code=400, detail="Aptech Student ID is already assigned to an existing profile.")
 
-    # Validate course
-    course = db.query(Course).filter(Course.id == payload.course_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Selected course not found.")
+    track_type = (payload.track_type or "COURSE").strip().upper()
+
+    # Validate course (only required for COURSE and BOTH tracks)
+    course = None
+    if payload.course_id and payload.course_id.strip():
+        course = db.query(Course).filter(Course.id == payload.course_id.strip()).first()
+        if not course:
+            raise HTTPException(status_code=404, detail="Selected course not found.")
+    elif track_type in {"COURSE", "BOTH"}:
+        raise HTTPException(status_code=400, detail="Course selection is required for Course and Both tracks.")
 
     # Create user with no password hash (pending invitation activation)
     user = User(
@@ -170,7 +176,6 @@ def create_student(
     db.add(user)
     db.flush()
 
-    track_type = (payload.track_type or "COURSE").strip().upper()
     student = StudentProfile(
         user_id=user.id,
         aptech_student_id=payload.aptech_student_id.strip(),
@@ -180,21 +185,22 @@ def create_student(
     db.add(student)
     db.flush()
 
-    # Create approved active enrollment
-    normalized_access = (payload.access_type or AccessType.FULL.value).strip().upper()
-    if normalized_access not in {AccessType.FULL.value, AccessType.TRIAL.value}:
-        raise HTTPException(status_code=400, detail="access_type must be FULL or TRIAL.")
+    # Create approved active enrollment if a course was assigned
+    if course:
+        normalized_access = (payload.access_type or AccessType.FULL.value).strip().upper()
+        if normalized_access not in {AccessType.FULL.value, AccessType.TRIAL.value}:
+            raise HTTPException(status_code=400, detail="access_type must be FULL or TRIAL.")
 
-    enrollment = Enrollment(
-        student_id=student.id,
-        course_id=course.id,
-        status=EnrollmentStatus.ACTIVE.value,
-        access_type=normalized_access,
-        payment_reference=payload.payment_reference,
-        notes=payload.notes
-    )
-    db.add(enrollment)
-    db.flush()
+        enrollment = Enrollment(
+            student_id=student.id,
+            course_id=course.id,
+            status=EnrollmentStatus.ACTIVE.value,
+            access_type=normalized_access,
+            payment_reference=payload.payment_reference,
+            notes=payload.notes
+        )
+        db.add(enrollment)
+        db.flush()
 
     # Generate single-use invitation token
     token_str = generate_secure_token()
@@ -212,7 +218,7 @@ def create_student(
         action="ADMIN_CREATE_STUDENT",
         resource_type="STUDENT",
         resource_id=student.id,
-        details={"student_email": user.email, "course_code": course.course_code}
+        details={"student_email": user.email, "course_code": course.course_code if course else "PROFILE_BUILDING_ONLY", "track_type": track_type}
     )
     db.add(audit)
     db.commit()

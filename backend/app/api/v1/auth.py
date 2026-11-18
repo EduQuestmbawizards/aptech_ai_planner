@@ -74,8 +74,10 @@ def login(payload: LoginRequest, response: Response, request: Request, db: Sessi
     )
 
     apt_id = None
+    track_type = None
     if user.student_profile:
         apt_id = user.student_profile.aptech_student_id
+        track_type = user.student_profile.track_type
 
     # Audit log
     audit = AuditLog(
@@ -95,7 +97,8 @@ def login(payload: LoginRequest, response: Response, request: Request, db: Sessi
         user_id=user.id,
         email=user.email,
         full_name=user.full_name,
-        aptech_student_id=apt_id
+        aptech_student_id=apt_id,
+        track_type=track_type
     )
 
 @router.post("/trial-signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -336,9 +339,11 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 def get_current_user_profile(current_user: User = Depends(get_current_user)):
     apt_id = None
     phone = None
+    track_type = None
     if current_user.student_profile:
         apt_id = current_user.student_profile.aptech_student_id
         phone = current_user.student_profile.phone
+        track_type = current_user.student_profile.track_type
 
     return UserResponse(
         id=current_user.id,
@@ -348,6 +353,7 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
         is_active=current_user.is_active,
         is_suspended=current_user.is_suspended,
         aptech_student_id=apt_id,
-        phone=phone
+        phone=phone,
+        track_type=track_type
     )
 
