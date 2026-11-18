@@ -22,9 +22,11 @@ import { AdminEnrollmentsPage } from './features/admin/AdminEnrollmentsPage';
 import { AdminStudyPlansPage } from './features/admin/AdminStudyPlansPage';
 import { AdminAIUsagePage } from './features/admin/AdminAIUsagePage';
 import { AdminAttendancePage } from './features/admin/AdminAttendancePage';
+import { AdminProfileRoadmapPage } from './features/admin/AdminProfileRoadmapPage';
 
 // Student Pages
 import { StudentDashboardPage } from './features/students/StudentDashboardPage';
+import { StudentProfileRoadmapPage } from './features/students/StudentProfileRoadmapPage';
 import { MyCoursesPage } from './features/students/MyCoursesPage';
 import { MyPlannerPage } from './features/planner/MyPlannerPage';
 import { PlannerOnboardingWizard } from './features/planner/PlannerOnboardingWizard';
@@ -70,6 +72,7 @@ export const App: React.FC = () => {
                 <Route path="/admin/courses" element={<AdminCoursesPage />} />
                 <Route path="/admin/enrollments" element={<AdminEnrollmentsPage />} />
                 <Route path="/admin/study-plans" element={<AdminStudyPlansPage />} />
+                <Route path="/admin/profile-roadmap" element={<AdminProfileRoadmapPage />} />
                 <Route path="/admin/attendance" element={<AdminAttendancePage />} />
                 <Route path="/admin/ai-usage" element={<AdminAIUsagePage />} />
               </Route>
@@ -81,6 +84,7 @@ export const App: React.FC = () => {
                 <Route path="/dashboard" element={<StudentDashboardPage />} />
                 <Route path="/courses" element={<MyCoursesPage />} />
                 <Route path="/planner" element={<MyPlannerPage />} />
+                <Route path="/profile-roadmap" element={<StudentProfileRoadmapPage />} />
                 <Route path="/planner/onboarding" element={<PlannerOnboardingWizard />} />
                 <Route path="/tasks" element={<DailyTasksPage />} />
                 <Route path="/weekly" element={<WeeklySchedulePage />} />

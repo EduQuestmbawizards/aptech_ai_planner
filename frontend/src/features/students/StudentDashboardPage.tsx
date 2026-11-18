@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../../context/StudyTimerContext';
-import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats } from '../../types';
+import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary } from '../../types';
 import {
   CalendarCheck2,
   CalendarCheck,
@@ -43,6 +43,7 @@ export const StudentDashboardPage: React.FC = () => {
   const [overview, setOverview] = useState<ProgressOverview | null>(null);
   const [enrolledCourses, setEnrolledCourses] = useState<MyEnrolledCourse[]>([]);
   const [attendanceStats, setAttendanceStats] = useState<StudentAttendanceStats | null>(null);
+  const [profileRoadmap, setProfileRoadmap] = useState<ProfileRoadmapStudentSummary | null>(null);
   const [selectedTimerTaskId, setSelectedTimerTaskId] = useState<string>('');
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,14 +51,18 @@ export const StudentDashboardPage: React.FC = () => {
   const fetchDashboardData = useCallback(async (showSpinner = false) => {
     try {
       if (showSpinner) setLoading(true);
-      // 1. Fetch enrolled courses and attendance in parallel
-      const [enrRes, attRes] = await Promise.all([
+      // 1. Fetch enrolled courses, attendance, and profile roadmap in parallel
+      const [enrRes, attRes, roadmapRes] = await Promise.all([
         api.get('/enrollments/my'),
         api.get<StudentAttendanceStats>('/attendance/my').catch(() => null),
+        api.get<ProfileRoadmapStudentSummary>('/profile-roadmap/my').catch(() => null),
       ]);
       setEnrolledCourses(enrRes.data.items);
       if (attRes?.data) {
         setAttendanceStats(attRes.data);
+      }
+      if (roadmapRes?.data) {
+        setProfileRoadmap(roadmapRes.data);
       }
 
       // 2. Fetch active plan
@@ -271,6 +276,38 @@ export const StudentDashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Profile Building Mentorship Progress Widget (if enrolled or roadmap exists) */}
+      {profileRoadmap && profileRoadmap.items.length > 0 && (
+        <div className="bg-gradient-to-r from-amber-900/90 via-slate-900 to-amber-950 text-white p-5 rounded-2xl border border-amber-500/30 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+              <Compass className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm md:text-base font-bold text-white">
+                  Profile Building &amp; Mentorship Execution Plan
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-400/20 text-amber-300 rounded-full border border-amber-400/30">
+                  {profileRoadmap.stats.completion_percentage}% Done
+                </span>
+              </div>
+              <p className="text-xs text-amber-100/80 mt-0.5">
+                Sessions Completed: <span className="font-bold text-white">{profileRoadmap.stats.completed} of {profileRoadmap.stats.total_items}</span> • Logged Time: <span className="font-bold text-white">{(profileRoadmap.stats.total_session_minutes / 60).toFixed(1)} hrs</span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/profile-roadmap')}
+            className="w-full md:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center whitespace-nowrap"
+          >
+            <span>View Roadmap &amp; MoM Logs</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+          </button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

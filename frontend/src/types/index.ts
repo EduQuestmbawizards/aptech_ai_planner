@@ -27,6 +27,7 @@ export interface StudentDetail {
   active_plan_id?: string | null;
   access_type?: 'FULL' | 'TRIAL';
   has_trial_enrollment?: boolean;
+  track_type?: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
 }
 
 export type AttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
@@ -417,4 +418,44 @@ export interface AIUsageMetrics {
   estimated_cost_usd: number;
   by_feature: Record<string, number>;
 }
+
+export type RoadmapItemStatusType = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+
+export interface ProfileRoadmapItem {
+  id: string;
+  student_id: string;
+  period: string;
+  order_index: number;
+  main_actions: string;
+  milestones_outputs?: string | null;
+  status: RoadmapItemStatusType;
+  meeting_topic?: string | null;
+  session_date?: string | null;
+  session_duration_minutes?: number | null;
+  meeting_notes?: string | null;
+  completed_at?: string | null;
+  marked_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProfileRoadmapStats {
+  total_items: number;
+  completed: number;
+  in_progress: number;
+  pending: number;
+  completion_percentage: number;
+  total_session_minutes: number;
+}
+
+export interface ProfileRoadmapStudentSummary {
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  aptech_student_id: string;
+  track_type: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
+  stats: ProfileRoadmapStats;
+  items: ProfileRoadmapItem[];
+}
+
 

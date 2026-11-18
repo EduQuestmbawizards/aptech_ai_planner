@@ -13,6 +13,7 @@ import {
   X,
   ShieldCheck,
   ChevronRight,
+  Compass,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -26,6 +27,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Courses', to: '/admin/courses', icon: BookOpen },
     { label: 'Enrollments', to: '/admin/enrollments', icon: ClipboardList },
     { label: 'Study Plans', to: '/admin/study-plans', icon: CalendarCheck },
+    { label: 'Profile Building', to: '/admin/profile-roadmap', icon: Compass },
     { label: 'Attendance', to: '/admin/attendance', icon: CalendarCheck },
     { label: 'AI Operations & Usage', to: '/admin/ai-usage', icon: Sparkles },
   ];

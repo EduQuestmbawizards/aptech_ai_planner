@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Timer,
   Sparkles,
+  Target,
 } from 'lucide-react';
 
 export const StudentLayout: React.FC = () => {
@@ -45,6 +46,7 @@ export const StudentLayout: React.FC = () => {
     { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
     { label: 'My Courses', to: '/courses', icon: GraduationCap },
     { label: 'Study Planner', to: '/planner', icon: Compass },
+    { label: 'Profile Roadmap', to: '/profile-roadmap', icon: Target },
     { label: 'Daily Tasks', to: '/tasks', icon: ListTodo },
     { label: 'Weekly Schedule', to: '/weekly', icon: Calendar },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },

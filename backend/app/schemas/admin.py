@@ -11,6 +11,7 @@ class StudentCreateRequest(BaseModel):
     access_type: str = "FULL" # FULL or TRIAL
     payment_reference: Optional[str] = None
     notes: Optional[str] = None
+    track_type: Optional[str] = "COURSE" # COURSE, PROFILE_BUILDING, BOTH
 
 class StudentUpdateRequest(BaseModel):
     full_name: Optional[str] = None

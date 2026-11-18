@@ -38,6 +38,7 @@ class StudentProfile(Base):
     phone = Column(String(32), nullable=True)
     current_level = Column(String(32), default="BEGINNER")
     target_career = Column(String(128), nullable=True)
+    track_type = Column(String(32), default="COURSE", nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -45,4 +46,5 @@ class StudentProfile(Base):
     enrollments = relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
     study_plans = relationship("StudyPlan", back_populates="student", cascade="all, delete-orphan")
     study_sessions = relationship("StudySession", back_populates="student", cascade="all, delete-orphan")
+    profile_roadmap_items = relationship("ProfileRoadmapItem", back_populates="student", cascade="all, delete-orphan")
 

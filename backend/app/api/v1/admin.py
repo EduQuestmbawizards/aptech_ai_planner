@@ -132,6 +132,7 @@ def list_students(
             "active_plan_id": active_plans[0].id if active_plans else None,
             "access_type": access_type,
             "has_trial_enrollment": has_trial,
+            "track_type": getattr(p, "track_type", "COURSE"),
         })
 
     return {"total": total, "items": results}
@@ -169,10 +170,12 @@ def create_student(
     db.add(user)
     db.flush()
 
+    track_type = (payload.track_type or "COURSE").strip().upper()
     student = StudentProfile(
         user_id=user.id,
         aptech_student_id=payload.aptech_student_id.strip(),
-        phone=payload.phone
+        phone=payload.phone,
+        track_type=track_type
     )
     db.add(student)
     db.flush()

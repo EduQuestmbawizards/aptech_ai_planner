@@ -19,7 +19,8 @@ from app.api.v1 import (
     progress,
     ai,
     integrations,
-    attendance
+    attendance,
+    profile_roadmap
 )
 
 # Path to frontend build
@@ -60,6 +61,33 @@ def _ensure_study_plan_columns():
             logger.info(f"Migrated study_plans columns: {len(statements)} added.")
     except Exception as e:
         logger.warning(f"Column migration notice: {str(e)}")
+
+
+def _ensure_student_profile_columns():
+    try:
+        inspector = inspect(engine)
+        if "student_profiles" not in inspector.get_table_names():
+            return
+        existing_cols = {col["name"] for col in inspector.get_columns("student_profiles")}
+        statements = []
+        if "track_type" not in existing_cols:
+            statements.append("ALTER TABLE student_profiles ADD COLUMN track_type VARCHAR(32) NOT NULL DEFAULT 'COURSE'")
+
+        if statements:
+            with engine.begin() as conn:
+                for stmt in statements:
+                    conn.execute(text(stmt))
+            logger.info(f"Migrated student_profiles columns: {len(statements)} added.")
+    except Exception as e:
+        logger.warning(f"Student profile column migration notice: {str(e)}")
+
+# Ensure schema and column updates are applied on import
+try:
+    Base.metadata.create_all(bind=engine)
+    _ensure_study_plan_columns()
+    _ensure_student_profile_columns()
+except Exception as e:
+    logger.warning(f"Schema auto-check notice: {str(e)}")
 
 
 def _ensure_initial_data():
@@ -161,6 +189,7 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         _ensure_study_plan_columns()
+        _ensure_student_profile_columns()
         _ensure_initial_data()
         logger.info("Database tables and seed data initialized successfully.")
     except Exception as e:
@@ -231,7 +260,8 @@ api_routers = [
     progress.router,
     ai.router,
     integrations.router,
-    attendance.router
+    attendance.router,
+    profile_roadmap.router
 ]
 
 for r in api_routers:

@@ -15,6 +15,7 @@ from app.models.planner import (
 from app.models.tokens import InvitationToken, PasswordResetToken
 from app.models.logs import AIUsageLog, AuditLog
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus
 
 __all__ = [
     "Base",
@@ -41,5 +42,7 @@ __all__ = [
     "AuditLog",
     "Attendance",
     "AttendanceStatus",
+    "ProfileRoadmapItem",
+    "RoadmapItemStatus",
 ]
 

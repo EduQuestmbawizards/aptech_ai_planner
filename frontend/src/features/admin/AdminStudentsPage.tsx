@@ -17,6 +17,8 @@ import {
   Trash2,
   RotateCw,
   ArrowUpCircle,
+  Compass,
+  Upload,
 } from 'lucide-react';
 
 export const AdminStudentsPage: React.FC = () => {
@@ -45,7 +47,9 @@ export const AdminStudentsPage: React.FC = () => {
     access_type: 'FULL' as 'FULL' | 'TRIAL',
     payment_reference: '',
     notes: '',
+    track_type: 'COURSE' as 'COURSE' | 'PROFILE_BUILDING' | 'BOTH',
   });
+  const [excelFile, setExcelFile] = useState<File | null>(null);
 
   const fetchStudents = async () => {
     try {
@@ -92,8 +96,26 @@ export const AdminStudentsPage: React.FC = () => {
 
     try {
       const res = await api.post('/admin/students', formData);
+      const studentId = res.data.student_id;
+      let roadmapMsg = '';
+
+      if (excelFile && studentId) {
+        try {
+          const uploadData = new FormData();
+          uploadData.append('student_id', studentId);
+          uploadData.append('replace_existing', 'true');
+          uploadData.append('file', excelFile);
+          const roadmapRes = await api.post('/profile-roadmap/upload-excel', uploadData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          roadmapMsg = ` • Profile Execution Plan (${roadmapRes.data.items.length} months) successfully imported!`;
+        } catch (uploadErr: any) {
+          roadmapMsg = ` • Warning: Could not parse Excel roadmap: ${uploadErr.response?.data?.detail || uploadErr.message}`;
+        }
+      }
+
       setAddSuccessMsg(
-        `Student created! Invitation token generated: ${res.data.invitation_token || 'Dispatched via email'}`
+        `Student created! Invitation token generated: ${res.data.invitation_token || 'Dispatched via email'}${roadmapMsg}`
       );
       fetchStudents();
       setFormData({
@@ -105,7 +127,9 @@ export const AdminStudentsPage: React.FC = () => {
         access_type: 'FULL',
         payment_reference: '',
         notes: '',
+        track_type: 'COURSE',
       });
+      setExcelFile(null);
     } catch (err: any) {
       setAddErrorMsg(err.response?.data?.detail || 'Failed to create student.');
     } finally {
@@ -286,6 +310,11 @@ export const AdminStudentsPage: React.FC = () => {
                             TRIAL (20%)
                           </span>
                         )}
+                        {st.track_type && st.track_type !== 'COURSE' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            {st.track_type === 'BOTH' ? 'Course + Profile' : 'Profile Track'}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="py-3.5 px-4">{st.enrollments_count} Course(s)</td>
@@ -310,6 +339,13 @@ export const AdminStudentsPage: React.FC = () => {
                           <Eye className="w-4 h-4 inline" />
                         </button>
                       )}
+                      <button
+                        onClick={() => navigate(`/admin/profile-roadmap?studentId=${st.id}`)}
+                        className="p-1.5 text-amber-600 hover:text-amber-800 rounded-md hover:bg-amber-50"
+                        title="Manage Profile Building Roadmap & MoM"
+                      >
+                        <Compass className="w-4 h-4 inline" />
+                      </button>
                       <button
                         onClick={() => handleResendInvite(st.id, st.email)}
                         className="p-1.5 text-slate-500 hover:text-brand-600 rounded-md hover:bg-slate-100"
@@ -422,6 +458,66 @@ export const AdminStudentsPage: React.FC = () => {
                   className="mt-1 w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Track Type *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, track_type: 'COURSE' })}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold border transition-colors ${
+                      formData.track_type === 'COURSE'
+                        ? 'bg-brand-600 text-white border-brand-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Course Only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, track_type: 'PROFILE_BUILDING' })}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold border transition-colors ${
+                      formData.track_type === 'PROFILE_BUILDING'
+                        ? 'bg-amber-600 text-white border-amber-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Profile Building
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, track_type: 'BOTH' })}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold border transition-colors ${
+                      formData.track_type === 'BOTH'
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Both Tracks
+                  </button>
+                </div>
+              </div>
+
+              {/* Upload Profile Execution Plan (.xlsx) when Profile Building or Both is selected */}
+              {(formData.track_type === 'PROFILE_BUILDING' || formData.track_type === 'BOTH') && (
+                <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/90 space-y-2">
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900">
+                    <Compass className="w-4 h-4 text-amber-600" />
+                    <span>Upload Profile Execution Plan (.xlsx)</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xlsm"
+                    onChange={(e) => setExcelFile(e.target.files ? e.target.files[0] : null)}
+                    className="w-full text-xs px-2.5 py-1.5 bg-white border border-amber-200 rounded-lg file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200"
+                  />
+                  <p className="text-[11px] text-amber-800/80 leading-normal">
+                    Excel columns: <b>Period / Month</b>, <b>Main actions</b>, and <b>Milestones and outputs</b>. The system will automatically parse and generate month-wise roadmap milestones for mentorship tracking.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Access Level *</label>
