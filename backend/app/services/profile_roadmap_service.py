@@ -72,31 +72,45 @@ def parse_profile_roadmap_excel(file_bytes: bytes) -> List[Dict[str, Any]]:
     # Detect header row and column indexes
     col_period = 0
     col_actions = 1
-    col_milestones = 2
+    col_milestones = -1
     header_row_index = -1
 
-    for r_idx, row in enumerate(rows[:10]):
+    for r_idx, row in enumerate(rows[:15]):
         row_str_lower = [str(c or "").strip().lower() for c in row]
         p_idx = -1
         a_idx = -1
         m_idx = -1
 
         for c_idx, cell_str in enumerate(row_str_lower):
-            if any(k in cell_str for k in ["period", "month", "timeline", "duration"]):
+            # Header cells are concise column titles, not multi-sentence paragraphs
+            if not cell_str or len(cell_str) > 35:
+                continue
+
+            if any(k in cell_str for k in ["period", "month", "timeline", "duration", "timeframe"]):
                 p_idx = c_idx
-            elif any(k in cell_str for k in ["main action", "action", "activity", "task", "scope", "work"]):
+            elif any(k in cell_str for k in ["main action", "action", "activity", "activities", "task", "scope", "work"]):
                 a_idx = c_idx
             elif any(k in cell_str for k in ["milestone", "output", "deliverable", "result", "outcome", "goal"]):
                 m_idx = c_idx
 
-        # If at least period or actions matched, mark this as header row
-        if p_idx != -1 or a_idx != -1:
+        # If both period and actions matched in a row, this is definitively the header row
+        if p_idx != -1 and a_idx != -1 and p_idx != a_idx:
+            header_row_index = r_idx
+            col_period = p_idx
+            col_actions = a_idx
+            col_milestones = m_idx
+            break
+        elif (p_idx != -1 or a_idx != -1) and header_row_index == -1:
             header_row_index = r_idx
             col_period = p_idx if p_idx != -1 else 0
             col_actions = a_idx if a_idx != -1 else 1
             if m_idx != -1:
                 col_milestones = m_idx
-            break
+
+    # Guard against accidental same column index
+    if col_period == col_actions:
+        col_period = 0
+        col_actions = 1
 
     data_rows = rows[(header_row_index + 1):] if header_row_index != -1 else rows
 
@@ -107,16 +121,24 @@ def parse_profile_roadmap_excel(file_bytes: bytes) -> List[Dict[str, Any]]:
         if not row or all(c is None or str(c).strip() == "" for c in row):
             continue
 
-        raw_period = row[col_period] if col_period < len(row) else None
-        raw_actions = row[col_actions] if col_actions < len(row) else None
-        raw_milestones = row[col_milestones] if col_milestones < len(row) else None
+        raw_period = row[col_period] if 0 <= col_period < len(row) else None
+        raw_actions = row[col_actions] if 0 <= col_actions < len(row) else None
+        raw_milestones = row[col_milestones] if 0 <= col_milestones < len(row) else None
 
         period_str = _format_cell_value(raw_period)
         actions_str = _format_cell_value(raw_actions)
-        milestones_str = _format_cell_value(raw_milestones)
+        milestones_str = _format_cell_value(raw_milestones) if col_milestones != -1 else None
 
         # Skip rows where both period and main actions are empty
         if not period_str and not actions_str:
+            continue
+
+        # Skip repeated header row
+        if period_str.strip().lower() in ["period", "month", "period / month", "timeline", "time period"]:
+            continue
+
+        # Skip introductory / explanatory preamble rows (sentences > 45 chars in period column)
+        if len(period_str) > 45 and not any(m in period_str.lower() for m in ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]):
             continue
 
         # If period is empty but actions exists, supply a fallback
