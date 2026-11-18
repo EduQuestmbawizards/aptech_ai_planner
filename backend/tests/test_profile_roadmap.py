@@ -122,3 +122,19 @@ def test_profile_roadmap_admin_upload_and_student_flow():
     assert my_data["items"][0]["meeting_topic"] == "Research Methodology & Doctor Shadowing Outreach"
     assert "Discussed primary research question" in my_data["items"][0]["meeting_notes"]
 
+    # 6. Admin updates actions and milestones/outputs directly via PATCH
+    second_item_id = summary["items"][1]["id"]
+    patch_res = client.patch(
+        f"/api/profile-roadmap/items/{second_item_id}",
+        headers=admin_headers,
+        json={
+            "main_actions": "Updated syllabus: Advanced Literature Review & Ethics Protocol",
+            "milestones_outputs": "• Completed comprehensive 20-page ethics protocol\n• Signed hospital ethics board approval"
+        }
+    )
+    assert patch_res.status_code == 200
+    patched_data = patch_res.json()
+    assert "Advanced Literature Review & Ethics Protocol" in patched_data["main_actions"]
+    assert "Signed hospital ethics board approval" in patched_data["milestones_outputs"]
+
+

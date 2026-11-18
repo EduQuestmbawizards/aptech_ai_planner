@@ -19,6 +19,8 @@ import {
   Save,
   Check,
   Lock,
+  BookOpen,
+  Target,
 } from 'lucide-react';
 
 export const StudentDashboardPage: React.FC = () => {
@@ -304,21 +306,35 @@ export const StudentDashboardPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="pt-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                Planned Actions &amp; Scope:
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
+              {/* 1. Planned Actions */}
+              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center space-x-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Key Actions &amp; Study Focus (क्या पढ़ना है)</span>
+                </div>
+                <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
+                  {currentMilestone.main_actions}
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">
-                {currentMilestone.main_actions}
-              </p>
-            </div>
 
-            {currentMilestone.milestones_outputs && (
-              <div className="mt-3 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs">
-                <span className="font-bold text-amber-900">Deliverables &amp; Outputs: </span>
-                <span className="text-amber-950 font-medium">{currentMilestone.milestones_outputs}</span>
+              {/* 2. Expected Deliverables & Outputs */}
+              <div className="p-3.5 bg-gradient-to-br from-amber-50/80 to-orange-50/30 border border-amber-200/90 rounded-xl">
+                <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1.5 flex items-center space-x-1.5">
+                  <Target className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Expected Deliverables (क्या आउटपुट होगा)</span>
+                </div>
+                {currentMilestone.milestones_outputs ? (
+                  <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
+                    {currentMilestone.milestones_outputs}
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-800/80 italic">
+                    Deliverables are currently being outlined with your mentor.
+                  </p>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
 

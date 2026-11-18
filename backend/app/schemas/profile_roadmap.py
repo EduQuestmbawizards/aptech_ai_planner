@@ -19,6 +19,18 @@ class ProfileRoadmapItemCreate(ProfileRoadmapItemBase):
     pass
 
 
+class ProfileRoadmapItemUpdate(BaseModel):
+    period: Optional[str] = None
+    order_index: Optional[int] = None
+    main_actions: Optional[str] = None
+    milestones_outputs: Optional[str] = None
+    status: Optional[str] = None
+    meeting_topic: Optional[str] = None
+    session_date: Optional[str] = None
+    session_duration_minutes: Optional[int] = None
+    meeting_notes: Optional[str] = None
+
+
 class ProfileRoadmapCompleteRequest(BaseModel):
     meeting_topic: Optional[str] = Field(None, description="Topic or agenda covered in the meeting")
     session_date: Optional[str] = Field(None, description="Date of the session e.g. YYYY-MM-DD")

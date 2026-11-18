@@ -9,6 +9,7 @@ from app.models.user import User, StudentProfile
 from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus
 from app.schemas.profile_roadmap import (
     ProfileRoadmapItemResponse,
+    ProfileRoadmapItemUpdate,
     ProfileRoadmapCompleteRequest,
     ProfileRoadmapStatusUpdateRequest,
     ProfileRoadmapStudentSummary,
@@ -134,6 +135,26 @@ def get_student_roadmap(
         stats=ProfileRoadmapStats(**stats),
         items=[ProfileRoadmapItemResponse.model_validate(i) for i in items]
     )
+
+
+@router.patch("/items/{item_id}", response_model=ProfileRoadmapItemResponse)
+def update_roadmap_item(
+    item_id: str,
+    body: ProfileRoadmapItemUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin/Teacher updates roadmap item details:
+    period, main_actions (what to study/do), milestones_outputs (deliverables/outputs), status, etc.
+    """
+    update_data = body.model_dump(exclude_unset=True)
+    updated_item = ProfileRoadmapService.update_roadmap_item(
+        db=db,
+        item_id=item_id,
+        update_data=update_data
+    )
+    return ProfileRoadmapItemResponse.model_validate(updated_item)
 
 
 @router.patch("/items/{item_id}/complete", response_model=ProfileRoadmapItemResponse)

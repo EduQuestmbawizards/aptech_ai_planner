@@ -112,6 +112,16 @@ def parse_profile_roadmap_excel(file_bytes: bytes) -> List[Dict[str, Any]]:
         col_period = 0
         col_actions = 1
 
+    # If milestones/outputs column was not explicitly identified by header keywords,
+    # but the sheet has 3 or more columns, automatically treat the first unused column
+    # as the milestones & deliverables column
+    if col_milestones == -1 and rows:
+        first_row_len = len(rows[0])
+        for possible_col in range(first_row_len):
+            if possible_col not in (col_period, col_actions):
+                col_milestones = possible_col
+                break
+
     data_rows = rows[(header_row_index + 1):] if header_row_index != -1 else rows
 
     items: List[Dict[str, Any]] = []
@@ -221,6 +231,49 @@ class ProfileRoadmapService:
             .order_by(ProfileRoadmapItem.order_index.asc())
             .all()
         )
+
+    @staticmethod
+    def update_roadmap_item(
+        db: Session,
+        item_id: str,
+        update_data: Dict[str, Any]
+    ) -> ProfileRoadmapItem:
+        item = db.query(ProfileRoadmapItem).filter(ProfileRoadmapItem.id == item_id).first()
+        if not item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Roadmap item with ID {item_id} not found."
+            )
+
+        allowed_fields = [
+            "period",
+            "order_index",
+            "main_actions",
+            "milestones_outputs",
+            "status",
+            "meeting_topic",
+            "session_date",
+            "session_duration_minutes",
+            "meeting_notes",
+        ]
+
+        for field in allowed_fields:
+            if field in update_data and update_data[field] is not None:
+                val = update_data[field]
+                if isinstance(val, str):
+                    val = val.strip()
+                setattr(item, field, val)
+
+        if "status" in update_data and update_data["status"] is not None:
+            new_status = update_data["status"]
+            if new_status == RoadmapItemStatus.COMPLETED.value and not item.completed_at:
+                item.completed_at = datetime.now(timezone.utc)
+            elif new_status != RoadmapItemStatus.COMPLETED.value:
+                item.completed_at = None
+
+        db.commit()
+        db.refresh(item)
+        return item
 
     @staticmethod
     def complete_roadmap_item(

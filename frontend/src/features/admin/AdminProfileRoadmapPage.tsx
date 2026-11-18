@@ -25,6 +25,10 @@ import {
   X,
   PlayCircle,
   Clock3,
+  Edit3,
+  BookOpen,
+  Target,
+  Award,
 } from 'lucide-react';
 
 export const AdminProfileRoadmapPage: React.FC = () => {
@@ -52,6 +56,14 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const [momNotes, setMomNotes] = useState<string>('');
   const [momLoading, setMomLoading] = useState<boolean>(false);
   const [momError, setMomError] = useState<string | null>(null);
+
+  // Edit Milestone & Deliverables modal state
+  const [activeItemForEdit, setActiveItemForEdit] = useState<ProfileRoadmapItem | null>(null);
+  const [editPeriod, setEditPeriod] = useState<string>('');
+  const [editMainActions, setEditMainActions] = useState<string>('');
+  const [editMilestonesOutputs, setEditMilestonesOutputs] = useState<string>('');
+  const [editLoading, setEditLoading] = useState<boolean>(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fetchStudents = async () => {
     try {
@@ -130,6 +142,36 @@ export const AdminProfileRoadmapPage: React.FC = () => {
       setMomError(err.response?.data?.detail || 'Failed to save session completion & MoM.');
     } finally {
       setMomLoading(false);
+    }
+  };
+
+  const handleOpenEditModal = (item: ProfileRoadmapItem) => {
+    setActiveItemForEdit(item);
+    setEditPeriod(item.period || '');
+    setEditMainActions(item.main_actions || '');
+    setEditMilestonesOutputs(item.milestones_outputs || '');
+    setEditError(null);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeItemForEdit || !selectedStudent) return;
+    setEditLoading(true);
+    setEditError(null);
+
+    try {
+      await api.patch(`/profile-roadmap/items/${activeItemForEdit.id}`, {
+        period: editPeriod,
+        main_actions: editMainActions,
+        milestones_outputs: editMilestonesOutputs,
+      });
+
+      await loadStudentDetails(selectedStudent.student_id);
+      setActiveItemForEdit(null);
+    } catch (err: any) {
+      setEditError(err.response?.data?.detail || 'Failed to update milestone details.');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -422,21 +464,57 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                                   {item.status.replace('_', ' ')}
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-700 font-medium mt-1.5 whitespace-pre-line leading-relaxed">
-                                {item.main_actions}
-                              </p>
-
-                              {item.milestones_outputs && (
-                                <div className="mt-2 text-xs bg-slate-50 border border-slate-200/80 rounded-lg p-2 text-slate-600">
-                                  <span className="font-semibold text-slate-700">Expected Deliverables: </span>
-                                  {item.milestones_outputs}
+                              
+                              {/* 1. Key Actions & Study Scope */}
+                              <div className="mt-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/70">
+                                <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>Key Actions &amp; Study Scope (क्या पढ़ना और करना है)</span>
                                 </div>
-                              )}
+                                <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
+                                  {item.main_actions}
+                                </p>
+                              </div>
+
+                              {/* 2. Milestones & Expected Outputs */}
+                              <div className="mt-2.5 p-3 bg-amber-50/70 rounded-xl border border-amber-200/80">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                                    <Target className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Milestones &amp; Expected Deliverables (क्या आउटपुट और डिलीवरेबल होगा)</span>
+                                  </div>
+                                </div>
+                                {item.milestones_outputs ? (
+                                  <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
+                                    {item.milestones_outputs}
+                                  </p>
+                                ) : (
+                                  <div className="flex items-center justify-between text-xs text-amber-800/80 italic">
+                                    <span>No specific deliverables defined yet for this month.</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(item)}
+                                      className="text-amber-700 underline font-semibold hover:text-amber-900 not-italic ml-2"
+                                    >
+                                      + Add Deliverables
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex sm:flex-col items-end gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => handleOpenEditModal(item)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
+                              title="Edit milestone focus area, actions and deliverables"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+                              Edit Actions &amp; Outputs
+                            </button>
+
                             <button
                               onClick={() => handleOpenMoMModal(item)}
                               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center shadow-sm transition-colors ${
@@ -505,6 +583,115 @@ export const AdminProfileRoadmapPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Edit Milestone & Deliverables Modal */}
+      {activeItemForEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Edit Milestone Actions &amp; Deliverables
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Configure study actions and tangible outputs for this stage
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveItemForEdit(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 mt-4">
+              {/* Period / Month */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Period / Month *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPeriod}
+                  onChange={(e) => setEditPeriod(e.target.value)}
+                  placeholder="e.g. November 2026"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Main Actions (Kya padhna aur karna hai) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Key Actions &amp; Study Scope (क्या पढ़ना और करना है) *</span>
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={editMainActions}
+                  onChange={(e) => setEditMainActions(e.target.value)}
+                  placeholder="Detail what the student needs to learn, read, organize, or conduct..."
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed"
+                />
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Guides the student on what specific syllabus, research, or shadowing actions to execute.
+                </p>
+              </div>
+
+              {/* Milestones & Outputs (Kya output hoga) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
+                  <Target className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Milestones &amp; Expected Deliverables (क्या आउटपुट और डिलीवरेबल होगा)</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={editMilestonesOutputs}
+                  onChange={(e) => setEditMilestonesOutputs(e.target.value)}
+                  placeholder="e.g. &#10;• Literature review draft (min 15 citations) completed.&#10;• Completed first 10 hours at elderly care center (Project CARE).&#10;• Clinical shadowing clearance received from host physician."
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed"
+                />
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Tangible evidence, competition entries, documents, or logs the mentor will evaluate.
+                </p>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setActiveItemForEdit(null)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  {editLoading ? 'Saving...' : 'Save Milestone Details'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Mark Completed & Log MoM Modal */}
       {activeItemForMoM && (

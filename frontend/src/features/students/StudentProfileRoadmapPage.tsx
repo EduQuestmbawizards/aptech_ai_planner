@@ -242,28 +242,33 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Main Actions */}
-                <div className="mt-4">
-                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Key Actions &amp; Focus Area
+                {/* 1. Key Actions & Study Scope */}
+                <div className="mt-4 p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Key Actions &amp; Study Focus (क्या पढ़ना और तैयार करना है)</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">
                     {item.main_actions}
                   </p>
                 </div>
 
-                {/* Milestones / Outputs */}
-                {item.milestones_outputs && (
-                  <div className="mt-3.5 p-3 bg-amber-50/60 border border-amber-200/70 rounded-xl">
-                    <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900 mb-1">
-                      <Target className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Expected Deliverables &amp; Outputs:</span>
-                    </div>
-                    <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
+                {/* 2. Milestones & Deliverables / Outputs */}
+                <div className="mt-3 p-3.5 bg-gradient-to-br from-amber-50/80 via-amber-50/50 to-orange-50/30 border border-amber-200/90 rounded-xl shadow-xs">
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900 mb-1.5">
+                    <Target className="w-4 h-4 text-amber-600" />
+                    <span>Expected Deliverables &amp; Outputs (क्या आउटपुट और सबमिशन होगा):</span>
+                  </div>
+                  {item.milestones_outputs ? (
+                    <p className="text-xs sm:text-sm text-amber-950 font-medium whitespace-pre-line leading-relaxed">
                       {item.milestones_outputs}
                     </p>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-amber-800/80 italic">
+                      Specific output criteria and deliverables for this milestone are being finalized with your faculty mentor.
+                    </p>
+                  )}
+                </div>
 
                 {/* Completed Session MoM Card */}
                 {isCompleted && item.meeting_notes && (
