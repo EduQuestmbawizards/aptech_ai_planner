@@ -100,7 +100,6 @@ export const App: React.FC = () => {
               </Route>
             </Route>
 
-            {/*Hello Ankit     ,, */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

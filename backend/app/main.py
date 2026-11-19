@@ -126,49 +126,7 @@ def _ensure_initial_data():
                 existing_admin.is_suspended = False
                 db.commit()
 
-            # 2. Also ensure default admin@aptech.edu exists
-            if admin_email != "admin@aptech.edu":
-                default_admin = db.query(User).filter(User.email == "admin@aptech.edu").first()
-                if not default_admin:
-                    alt_admin = User(
-                        email="admin@aptech.edu",
-                        full_name="Default Administrator",
-                        role=UserRole.ADMIN.value,
-                        password_hash=get_password_hash("AptechAdmin@2026!"),
-                        is_active=True,
-                        is_suspended=False
-                    )
-                    db.add(alt_admin)
-                    db.commit()
-
-            # 3. Ensure demo student account exists
-            student_email = "student.demo@aptech.edu"
-            existing_student = db.query(User).filter(User.email == student_email).first()
-            if not existing_student:
-                logger.info(f"Auto-creating demo student ({student_email})...")
-                st_user = User(
-                    email=student_email,
-                    full_name="Aarav Mehta",
-                    role=UserRole.STUDENT.value,
-                    password_hash=get_password_hash("StudentDemo@2026!"),
-                    is_active=True,
-                    is_suspended=False
-                )
-                db.add(st_user)
-                db.flush()
-
-                st_profile = StudentProfile(
-                    user_id=st_user.id,
-                    aptech_student_id="APT-MUM-2026-1001",
-                    phone="+91 98200 12345",
-                    current_level="INTERMEDIATE",
-                    target_career="Full Stack Python Developer"
-                )
-                db.add(st_profile)
-                db.commit()
-                logger.info("Demo student created successfully.")
-
-            # 4. Auto-seed courses if empty
+            # 2. Auto-seed courses if empty
             if db.query(Course).count() == 0:
                 logger.info("No courses found in database. Loading courses...")
                 root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"

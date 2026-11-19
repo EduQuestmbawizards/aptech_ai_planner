@@ -117,17 +117,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillCredentials = (type: 'admin' | 'student') => {
-    if (type === 'admin') {
-      setEmail('admin@aptech.edu');
-      setPassword('AptechAdmin@2026!');
-    } else {
-      setEmail('student.demo@aptech.edu');
-      setPassword('StudentDemo@2026!');
-    }
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -175,7 +164,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="student@aptech.edu"
+                  placeholder="you@example.com"
                   className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                 />
               </div>
@@ -231,29 +220,6 @@ export const LoginPage: React.FC = () => {
             <p className="mt-1.5 text-[11px] text-center text-slate-500">
               Preview your personalized study planner for 20% of any course before enrolling.
             </p>
-          </div>
-
-          {/* Quick Development Credentials Autofill */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-500 text-center uppercase tracking-wider mb-2.5">
-              Quick Test Credentials
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillCredentials('student')}
-                className="py-2 px-3 bg-amber-50 hover:bg-amber-100/90 text-amber-900 border border-amber-200/80 rounded-xl text-xs font-bold text-center transition-colors"
-              >
-                Demo Student
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin')}
-                className="py-2 px-3 bg-amber-50 hover:bg-amber-100/90 text-amber-900 border border-amber-200/80 rounded-xl text-xs font-bold text-center transition-colors"
-              >
-                Admin User
-              </button>
-            </div>
           </div>
         </div>
       </div>
