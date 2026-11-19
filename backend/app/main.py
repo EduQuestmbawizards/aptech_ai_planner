@@ -126,25 +126,25 @@ def _ensure_initial_data():
                 existing_admin.is_suspended = False
                 db.commit()
 
-            # 2. Ensure Admin Ankit account exists with password
+            # 2. Ensure Super Admin Ankit account exists with password
             ankit_email = "ankitk629990@gmail.com"
             ankit_pass = os.getenv("ANKIT_ADMIN_PASSWORD", "12345678")
             existing_ankit = db.query(User).filter(User.email == ankit_email).first()
             if not existing_ankit:
-                logger.info(f"Auto-creating Admin account ({ankit_email})...")
+                logger.info(f"Auto-creating Super Admin account ({ankit_email})...")
                 ankit_user = User(
                     email=ankit_email,
                     full_name="ANKIT KUMAR GUPTA",
-                    role=UserRole.ADMIN.value,
+                    role=UserRole.SUPER_ADMIN.value,
                     password_hash=get_password_hash(ankit_pass),
                     is_active=True,
                     is_suspended=False
                 )
                 db.add(ankit_user)
                 db.commit()
-                logger.info("Admin Ankit created successfully.")
+                logger.info("Super Admin Ankit created successfully.")
             else:
-                existing_ankit.role = UserRole.ADMIN.value
+                existing_ankit.role = UserRole.SUPER_ADMIN.value
                 existing_ankit.full_name = "ANKIT KUMAR GUPTA"
                 existing_ankit.password_hash = get_password_hash(ankit_pass)
                 existing_ankit.is_active = True

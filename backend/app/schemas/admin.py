@@ -46,6 +46,21 @@ class AdminCreateRequest(BaseModel):
     email: EmailStr
     password: str
 
+class AdminUserResponse(BaseModel):
+    id: str
+    full_name: str
+    email: str
+    role: str
+    is_active: bool
+    is_suspended: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AdminStatusUpdateRequest(BaseModel):
+    is_active: Optional[bool] = None
+    is_suspended: Optional[bool] = None
+
 class AdminDashboardMetrics(BaseModel):
     total_students: int
     active_students: int

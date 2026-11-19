@@ -72,7 +72,7 @@ def start_conversation(
         admin_id = payload.admin_id
         if not admin_id:
             # Default to first active admin
-            first_admin = db.query(User).filter(User.role == UserRole.ADMIN.value, User.is_active == True).first()
+            first_admin = db.query(User).filter(User.role.in_([UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value]), User.is_active == True).first()
             if not first_admin:
                 raise HTTPException(status_code=404, detail="No faculty admin available.")
             admin_id = first_admin.id

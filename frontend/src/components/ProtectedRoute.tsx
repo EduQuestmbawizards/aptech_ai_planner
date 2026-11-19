@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // If student attempts to access admin or vice versa, redirect to their home
-    return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? '/admin' : '/dashboard'} replace />;
   }
 
   return <Outlet />;

@@ -53,10 +53,18 @@ def get_current_user(
     return user
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != UserRole.ADMIN.value:
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrative privileges required to perform this action."
+        )
+    return current_user
+
+def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.SUPER_ADMIN.value and current_user.email.lower() != "ankitk629990@gmail.com":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super Administrator privileges required to perform this action."
         )
     return current_user
 

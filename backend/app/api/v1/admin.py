@@ -31,13 +31,15 @@ from app.schemas.admin import (
     StudentStatusUpdateRequest,
     StudentDetailResponse,
     AdminDashboardMetrics,
-    AdminCreateRequest
+    AdminCreateRequest,
+    AdminUserResponse,
+    AdminStatusUpdateRequest
 )
 from app.schemas.planner import AdminPlanReviewRequest, AdminPlanEditReviewRequest, TaskResponse
 from app.services.email_service import EmailService
 from app.services.scheduler_engine import SchedulerEngine
 from app.api.v1.planner import serialize_study_plan
-from app.api.deps import require_admin
+from app.api.deps import require_admin, require_super_admin
 
 router = APIRouter(prefix="/admin", tags=["Admin Management"], dependencies=[Depends(require_admin)])
 
@@ -487,6 +489,8 @@ def delete_student(
         raise HTTPException(status_code=404, detail="Student not found.")
 
     user = profile.user
+    if user and (user.email.lower() == "ankitk629990@gmail.com" or user.role == UserRole.SUPER_ADMIN.value):
+        raise HTTPException(status_code=403, detail="Super Administrator account cannot be deleted.")
     student_name = user.full_name if user else "Unknown"
     student_email = user.email if user else ""
     apt_id = profile.aptech_student_id
@@ -974,5 +978,217 @@ def admin_mark_task_complete(
             personal_notes=task.personal_notes,
         ),
     }
+
+
+# -------------------------------------------------------------
+# Admin & Super Admin Management Endpoints
+# -------------------------------------------------------------
+
+@router.get("/admins", response_model=List[AdminUserResponse])
+def list_admins(
+    current_admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Lists all admin and super-admin accounts."""
+    admins = (
+        db.query(User)
+        .filter(User.role.in_([UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value]))
+        .order_by(User.created_at.asc())
+        .all()
+    )
+    return admins
+
+
+@router.post("/admins", response_model=AdminUserResponse, status_code=status.HTTP_201_CREATED)
+def create_admin_user(
+    payload: AdminCreateRequest,
+    current_admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Create a new administrator account."""
+    clean_email = payload.email.lower().strip()
+    if len(payload.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long."
+        )
+
+    existing = db.query(User).filter(User.email == clean_email).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"An account with email '{clean_email}' already exists."
+        )
+
+    new_admin = User(
+        email=clean_email,
+        full_name=payload.full_name.strip(),
+        role=UserRole.ADMIN.value,
+        password_hash=get_password_hash(payload.password),
+        is_active=True,
+        is_suspended=False
+    )
+    db.add(new_admin)
+    db.flush()
+
+    audit = AuditLog(
+        actor_id=current_admin.id,
+        action="ADMIN_CREATED",
+        resource_type="USER",
+        resource_id=new_admin.id,
+        details={"created_email": clean_email, "role": new_admin.role, "full_name": new_admin.full_name}
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(new_admin)
+    return new_admin
+
+
+@router.delete("/admins/{admin_id}")
+def delete_admin_user(
+    admin_id: str,
+    current_admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes an administrator account.
+    - Super Admin Ankit can never be deleted.
+    - No administrator can delete themselves.
+    - Only Super Admin has authority to delete other administrators.
+    """
+    target = db.query(User).filter(User.id == admin_id).first()
+    if not target or target.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value):
+        raise HTTPException(status_code=404, detail="Administrator account not found.")
+
+    # 1. Super Admin Ankit protection
+    if target.email.lower() == "ankitk629990@gmail.com" or target.role == UserRole.SUPER_ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super Administrator account cannot be deleted under any circumstances."
+        )
+
+    # 2. Cannot delete own account
+    if target.id == current_admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot delete your own administrator account."
+        )
+
+    # 3. Only Super Admin has authority to delete administrators
+    is_caller_super_admin = (
+        current_admin.role == UserRole.SUPER_ADMIN.value or
+        current_admin.email.lower() == "ankitk629990@gmail.com"
+    )
+    if not is_caller_super_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Super Administrator has authority to delete other administrator accounts."
+        )
+
+    # 4. Safe cascading cleanup across dependencies
+    try:
+        # Chat messages & conversations
+        db.query(ChatMessage).filter(ChatMessage.sender_id == target.id).delete(synchronize_session=False)
+        db.query(ChatConversation).filter(
+            or_(ChatConversation.admin_id == target.id, ChatConversation.student_id == target.id)
+        ).delete(synchronize_session=False)
+
+        # Attendances marked by this admin
+        db.query(Attendance).filter(Attendance.marked_by == target.id).update(
+            {Attendance.marked_by: None}, synchronize_session=False
+        )
+
+        # Audit logs actor
+        db.query(AuditLog).filter(AuditLog.actor_id == target.id).update(
+            {AuditLog.actor_id: None}, synchronize_session=False
+        )
+
+        # Tokens
+        db.query(PasswordResetToken).filter(PasswordResetToken.user_id == target.id).delete(synchronize_session=False)
+        db.query(InvitationToken).filter(InvitationToken.user_id == target.id).delete(synchronize_session=False)
+
+        deleted_name = target.full_name
+        deleted_email = target.email
+        db.delete(target)
+
+        audit = AuditLog(
+            actor_id=current_admin.id,
+            action="ADMIN_DELETED",
+            resource_type="USER",
+            resource_id=admin_id,
+            details={"deleted_email": deleted_email, "deleted_name": deleted_name}
+        )
+        db.add(audit)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"Administrator '{deleted_name}' ({deleted_email}) deleted successfully."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete administrator account: {str(e)}"
+        )
+
+
+@router.patch("/admins/{admin_id}/status", response_model=AdminUserResponse)
+def update_admin_status(
+    admin_id: str,
+    payload: AdminStatusUpdateRequest,
+    current_admin: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Update administrator active or suspended status.
+    - Super Admin Ankit cannot be suspended or deactivated.
+    - Only Super Admin can change admin status.
+    """
+    target = db.query(User).filter(User.id == admin_id).first()
+    if not target or target.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value):
+        raise HTTPException(status_code=404, detail="Administrator account not found.")
+
+    is_caller_super_admin = (
+        current_admin.role == UserRole.SUPER_ADMIN.value or
+        current_admin.email.lower() == "ankitk629990@gmail.com"
+    )
+    if not is_caller_super_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Super Administrator has authority to modify administrator status."
+        )
+
+    # Protect Super Admin Ankit
+    if (target.email.lower() == "ankitk629990@gmail.com" or target.role == UserRole.SUPER_ADMIN.value) and (
+        payload.is_active is False or payload.is_suspended is True
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Super Administrator cannot be deactivated or suspended."
+        )
+
+    if payload.is_active is not None:
+        target.is_active = payload.is_active
+    if payload.is_suspended is not None:
+        target.is_suspended = payload.is_suspended
+
+    target.updated_at = datetime.now(timezone.utc)
+
+    audit = AuditLog(
+        actor_id=current_admin.id,
+        action="ADMIN_STATUS_UPDATED",
+        resource_type="USER",
+        resource_id=target.id,
+        details={
+            "target_email": target.email,
+            "is_active": target.is_active,
+            "is_suspended": target.is_suspended
+        }
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(target)
+    return target
 
 

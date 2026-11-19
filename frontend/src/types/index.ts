@@ -1,4 +1,14 @@
-export type Role = 'ADMIN' | 'STUDENT' | 'STAFF';
+export type Role = 'SUPER_ADMIN' | 'ADMIN' | 'STUDENT' | 'STAFF';
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: Role | string;
+  is_active: boolean;
+  is_suspended: boolean;
+  created_at: string;
+}
 
 export interface User {
   id: string;

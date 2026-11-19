@@ -90,7 +90,7 @@ class ChatService:
         if not student:
             raise HTTPException(status_code=404, detail="Student user not found.")
 
-        admin = db.query(User).filter(User.id == admin_id, User.role == UserRole.ADMIN.value).first()
+        admin = db.query(User).filter(User.id == admin_id, User.role.in_([UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value])).first()
         if not admin:
             raise HTTPException(status_code=404, detail="Admin user not found.")
 
@@ -114,7 +114,7 @@ class ChatService:
     @staticmethod
     def list_admins_for_student(db: Session, student_id: str) -> List[Dict[str, Any]]:
         """List all active admin/mentor users for the student to start or continue a conversation with."""
-        admins = db.query(User).filter(User.role == UserRole.ADMIN.value, User.is_active == True).all()
+        admins = db.query(User).filter(User.role.in_([UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value]), User.is_active == True).all()
 
         results = []
         for adm in admins:
@@ -211,7 +211,7 @@ class ChatService:
         if conv.student_id != current_user_id and conv.admin_id != current_user_id:
             # If current user is an admin, allow viewing
             cur_user = db.query(User).filter(User.id == current_user_id).first()
-            if not cur_user or cur_user.role != UserRole.ADMIN.value:
+            if not cur_user or cur_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value):
                 raise HTTPException(status_code=403, detail="You do not have access to this conversation.")
 
         messages = db.query(ChatMessage).filter(

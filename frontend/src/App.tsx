@@ -24,6 +24,7 @@ import { AdminAIUsagePage } from './features/admin/AdminAIUsagePage';
 import { AdminAttendancePage } from './features/admin/AdminAttendancePage';
 import { AdminProfileRoadmapPage } from './features/admin/AdminProfileRoadmapPage';
 import { AdminChatPage } from './features/admin/AdminChatPage';
+import { AdminManagementPage } from './features/admin/AdminManagementPage';
 
 // Student Pages
 import { StudentDashboardPage } from './features/students/StudentDashboardPage';
@@ -50,7 +51,7 @@ const RootRedirect: React.FC = () => {
     );
   }
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+  return <Navigate to={(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? '/admin' : '/dashboard'} replace />;
 };
 
 export const App: React.FC = () => {
@@ -67,9 +68,10 @@ export const App: React.FC = () => {
             <Route path="/" element={<RootRedirect />} />
 
             {/* Admin Protected Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']} />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/admins" element={<AdminManagementPage />} />
                 <Route path="/admin/students" element={<AdminStudentsPage />} />
                 <Route path="/admin/courses" element={<AdminCoursesPage />} />
                 <Route path="/admin/enrollments" element={<AdminEnrollmentsPage />} />

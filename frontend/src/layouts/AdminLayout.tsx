@@ -40,6 +40,7 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     { label: 'Overview', to: '/admin', icon: LayoutDashboard },
+    { label: 'Admins & Staff', to: '/admin/admins', icon: ShieldCheck },
     { label: 'Students', to: '/admin/students', icon: Users },
     { label: 'Courses', to: '/admin/courses', icon: BookOpen },
     { label: 'Enrollments', to: '/admin/enrollments', icon: ClipboardList },
@@ -100,8 +101,15 @@ export const AdminLayout: React.FC = () => {
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md">
               {user?.full_name?.charAt(0) || 'A'}
             </div>
-            <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">{user?.full_name}</div>
+            <div className="overflow-hidden flex-1">
+              <div className="flex items-center space-x-1.5">
+                <span className="text-xs font-bold text-white truncate">{user?.full_name}</span>
+                {(user?.role === 'SUPER_ADMIN' || user?.email?.toLowerCase() === 'ankitk629990@gmail.com') && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 tracking-wider">
+                    SUPER
+                  </span>
+                )}
+              </div>
               <div className="text-[10px] text-amber-200/80 truncate font-mono mt-0.5">{user?.email}</div>
             </div>
           </div>
