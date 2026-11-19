@@ -1,6 +1,7 @@
+import os
 from datetime import datetime, date, timezone, timedelta
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from app.core.database import get_db
@@ -39,6 +40,35 @@ from app.api.v1.planner import serialize_study_plan
 from app.api.deps import require_admin
 
 router = APIRouter(prefix="/admin", tags=["Admin Management"], dependencies=[Depends(require_admin)])
+
+
+def resolve_frontend_url(request: Optional[Request] = None) -> str:
+    # 1. First priority: Request Origin header (e.g. https://ai-planner.eduquest.org.in)
+    if request:
+        origin = request.headers.get("origin")
+        if origin and "localhost" not in origin and "127.0.0.1" not in origin:
+            return origin.rstrip("/")
+        referer = request.headers.get("referer")
+        if referer and "localhost" not in referer and "127.0.0.1" not in referer:
+            from urllib.parse import urlparse
+            p = urlparse(referer)
+            if p.scheme and p.netloc:
+                return f"{p.scheme}://{p.netloc}".rstrip("/")
+
+    # 2. Configured non-localhost FRONTEND_URL
+    f_url = (settings.FRONTEND_URL or "").strip().rstrip("/")
+    if f_url and "localhost" not in f_url and "127.0.0.1" not in f_url:
+        return f_url
+
+    # 3. Always default to production domain on cloud containers / Render
+    if os.getenv("RENDER") or os.getenv("PORT") or os.getenv("RENDER_SERVICE_ID"):
+        return "https://ai-planner.eduquest.org.in"
+
+    # 4. If request origin is localhost in local development
+    if request and request.headers.get("origin") and "localhost" in request.headers.get("origin"):
+        return request.headers.get("origin").rstrip("/")
+
+    return "https://ai-planner.eduquest.org.in"
 
 @router.get("/dashboard", response_model=AdminDashboardMetrics)
 def get_admin_dashboard(db: Session = Depends(get_db)):
@@ -85,6 +115,7 @@ def get_admin_dashboard(db: Session = Depends(get_db)):
 
 @router.get("/students")
 def list_students(
+    request: Request,
     search: Optional[str] = None,
     course_id: Optional[str] = None,
     status_filter: Optional[str] = None, # ACTIVE, SUSPENDED, PENDING
@@ -140,7 +171,7 @@ def list_students(
             )
             if latest_inv:
                 invitation_token = latest_inv.token
-                base_url = settings.FRONTEND_URL.rstrip('/')
+                base_url = resolve_frontend_url(request)
                 activation_url = f"{base_url}/activate?token={latest_inv.token}"
 
         results.append({
@@ -169,6 +200,7 @@ def list_students(
 @router.post("/students", status_code=status.HTTP_201_CREATED)
 def create_student(
     payload: StudentCreateRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     admin_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
@@ -254,11 +286,11 @@ def create_student(
     db.commit()
 
     # Build direct activation URL
-    base_url = settings.FRONTEND_URL.rstrip('/')
+    base_url = resolve_frontend_url(request)
     activation_url = f"{base_url}/activate?token={token_str}"
 
     # Queue invitation email in background (non-blocking, instant response for admin)
-    background_tasks.add_task(EmailService.send_invitation_email, user.email, user.full_name, token_str)
+    background_tasks.add_task(EmailService.send_invitation_email, user.email, user.full_name, token_str, base_url)
 
     return {
         "success": True,
@@ -370,6 +402,7 @@ def update_student(id: str, payload: StudentUpdateRequest, db: Session = Depends
 @router.post("/students/{id}/invite")
 def resend_student_invitation(
     id: str,
+    request: Request,
     background_tasks: BackgroundTasks,
     admin_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
@@ -398,9 +431,9 @@ def resend_student_invitation(
     db.add(audit)
     db.commit()
 
-    base_url = settings.FRONTEND_URL.rstrip('/')
+    base_url = resolve_frontend_url(request)
     activation_url = f"{base_url}/activate?token={token_str}"
-    background_tasks.add_task(EmailService.send_invitation_email, u.email, u.full_name, token_str)
+    background_tasks.add_task(EmailService.send_invitation_email, u.email, u.full_name, token_str, base_url)
 
     return {
         "success": True,

@@ -43,11 +43,8 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "rupali.eduquest@gmail.com")
 
     # URLs
-    FRONTEND_URL: str = os.getenv(
-        "FRONTEND_URL",
-        "https://ai-planner.eduquest.org.in" if (os.getenv("RENDER") or os.getenv("PORT")) else "http://localhost:5173"
-    )
-    BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://ai-planner.eduquest.org.in")
+    BACKEND_URL: str = os.getenv("BACKEND_URL", "https://aptech-ai-planner.onrender.com" if (os.getenv("RENDER") or os.getenv("PORT")) else "http://localhost:8000")
 
     # EduQuest Integration
     EDUQUEST_INTEGRATION_SECRET: str = os.getenv("EDUQUEST_INTEGRATION_SECRET", "eduquest-shared-secret-key-32chars")

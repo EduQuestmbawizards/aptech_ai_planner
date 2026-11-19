@@ -1,5 +1,7 @@
+import os
 import logging
 import smtplib
+from typing import Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
@@ -8,8 +10,11 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     @staticmethod
-    def send_invitation_email(recipient_email: str, student_name: str, invitation_token: str) -> bool:
-        activation_url = f"{settings.FRONTEND_URL}/activate?token={invitation_token}"
+    def send_invitation_email(recipient_email: str, student_name: str, invitation_token: str, frontend_url: Optional[str] = None) -> bool:
+        base_url = (frontend_url or settings.FRONTEND_URL or "https://ai-planner.eduquest.org.in").rstrip('/')
+        if ("localhost" in base_url or "127.0.0.1" in base_url) and (os.getenv("RENDER") or os.getenv("PORT") or os.getenv("RENDER_SERVICE_ID")):
+            base_url = "https://ai-planner.eduquest.org.in"
+        activation_url = f"{base_url}/activate?token={invitation_token}"
         subject = "Welcome to Aptech AI Career & Study Planner — Activate Your Account"
         
         text_content = f"""Hello {student_name},
@@ -43,8 +48,11 @@ Aptech Learning Administration
         return EmailService._send(recipient_email, subject, text_content, html_content)
 
     @staticmethod
-    def send_password_reset_email(recipient_email: str, reset_token: str, full_name: str = "Student") -> bool:
-        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+    def send_password_reset_email(recipient_email: str, reset_token: str, full_name: str = "Student", frontend_url: Optional[str] = None) -> bool:
+        base_url = (frontend_url or settings.FRONTEND_URL or "https://ai-planner.eduquest.org.in").rstrip('/')
+        if ("localhost" in base_url or "127.0.0.1" in base_url) and (os.getenv("RENDER") or os.getenv("PORT") or os.getenv("RENDER_SERVICE_ID")):
+            base_url = "https://ai-planner.eduquest.org.in"
+        reset_url = f"{base_url}/reset-password?token={reset_token}"
         subject = "Aptech AI Career & Study Planner — Password Reset Request"
         text_content = f"""Hello {full_name},
 
