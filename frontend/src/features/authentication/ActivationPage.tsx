@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
-import { GraduationCap, Lock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { GraduationCap, Lock, CheckCircle2, AlertCircle, ArrowRight, Key } from 'lucide-react';
 
 export const ActivationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const tokenFromUrl = searchParams.get('token');
   const navigate = useNavigate();
 
+  const [tokenInput, setTokenInput] = useState(tokenFromUrl || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,14 +16,23 @@ export const ActivationPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setError('Missing invitation token. Please use the exact link sent to your registered email.');
+    if (tokenFromUrl) {
+      setTokenInput(tokenFromUrl.trim());
     }
-  }, [token]);
+  }, [tokenFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    let cleanToken = tokenInput.trim();
+    if (cleanToken.includes('token=')) {
+      cleanToken = cleanToken.split('token=')[1].split('&')[0].trim();
+    }
+    if (!cleanToken) {
+      setError('Please provide your invitation token or full activation link.');
+      return;
+    }
 
     if (password.length < 8) {
       setError('Password must contain at least 8 characters.');
@@ -37,7 +47,7 @@ export const ActivationPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await api.post('/auth/activate', {
-        token,
+        token: cleanToken,
         password,
       });
       setSuccess(res.data.message || 'Account activated successfully! Redirecting to login...');
@@ -87,6 +97,30 @@ export const ActivationPage: React.FC = () => {
               )}
 
               <form className="space-y-4" onSubmit={handleSubmit}>
+                {!tokenFromUrl && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Invitation Token or Activation Link *
+                    </label>
+                    <div className="mt-1.5 relative rounded-xl shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Key className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={tokenInput}
+                        onChange={(e) => {
+                          setTokenInput(e.target.value);
+                          setError(null);
+                        }}
+                        placeholder="Paste invitation token or full link here..."
+                        className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     New Password (min 8 chars)
@@ -127,7 +161,7 @@ export const ActivationPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={loading || !token}
+                  disabled={loading || !tokenInput.trim()}
                   className="w-full flex justify-center items-center py-3 px-4 rounded-xl shadow-lg shadow-amber-500/25 text-sm font-extrabold text-slate-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all disabled:opacity-50 mt-3"
                 >
                   {loading ? 'Activating Account...' : 'Set Password & Activate'}

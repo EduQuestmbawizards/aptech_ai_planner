@@ -193,24 +193,41 @@ def activate_account(payload: ActivateAccountRequest, db: Session = Depends(get_
     if len(payload.password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
 
+    # Clean raw token: strip, unquote, extract token= if whole URL was pasted
+    raw_token = (payload.token or "").strip()
+    if "token=" in raw_token:
+        raw_token = raw_token.split("token=")[-1].split("&")[0].strip()
+    import urllib.parse
+    raw_token = urllib.parse.unquote(raw_token).strip().strip("'\"")
+
+    if not raw_token:
+        raise HTTPException(status_code=400, detail="Invitation token is missing. Please provide a valid invitation token or link.")
+
     invitation = db.query(InvitationToken).filter(
-        InvitationToken.token == payload.token,
-        InvitationToken.is_used == False
+        InvitationToken.token == raw_token
     ).first()
 
     if not invitation:
-        raise HTTPException(status_code=400, detail="Invalid, expired or already used invitation token.")
+        raise HTTPException(status_code=400, detail="Invalid invitation token. Please check the link or ask admin to resend your invite.")
+
+    if invitation.is_used:
+        raise HTTPException(status_code=400, detail="This invitation link has already been used. Please log in with your email and password.")
 
     expires_at = invitation.expires_at
-    if expires_at.tzinfo is None:
+    if isinstance(expires_at, str):
+        try:
+            expires_at = datetime.fromisoformat(expires_at)
+        except Exception:
+            pass
+    if hasattr(expires_at, "tzinfo") and expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
-    if expires_at < now:
+    if hasattr(expires_at, "__lt__") and expires_at < now:
         raise HTTPException(status_code=400, detail="Invitation link has expired. Please contact admin for a new link.")
 
     user = db.query(User).filter(User.id == invitation.user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(status_code=404, detail="Student account not found.")
 
     user.password_hash = get_password_hash(payload.password)
     user.is_active = True

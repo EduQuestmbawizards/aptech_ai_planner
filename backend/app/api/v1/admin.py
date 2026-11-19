@@ -9,9 +9,20 @@ from app.core.config import settings
 from app.models.user import User, StudentProfile, UserRole
 from app.models.course import Course
 from app.models.enrollment import Enrollment, EnrollmentStatus, AccessType
-from app.models.planner import StudyPlan, StudyTask, StudySession, TaskStatus, PlanApprovalStatus
+from app.models.planner import (
+    StudyPlan,
+    StudyTask,
+    StudySession,
+    TaskStatus,
+    PlanApprovalStatus,
+    StudyPlanMilestone,
+    StudyPlanVersion,
+    PlannerPreference
+)
 from app.models.attendance import Attendance, AttendanceStatus
-from app.models.tokens import InvitationToken
+from app.models.profile_roadmap import ProfileRoadmapItem, ProfileSessionAttendance
+from app.models.chat import ChatConversation, ChatMessage
+from app.models.tokens import InvitationToken, PasswordResetToken
 from app.models.logs import AuditLog, AIUsageLog
 from app.schemas.admin import (
     StudentCreateRequest,
@@ -448,23 +459,70 @@ def delete_student(
     apt_id = profile.aptech_student_id
     user_id = user.id if user else None
 
-    if user_id:
-        db.query(AuditLog).filter(AuditLog.actor_id == user_id).update({"actor_id": None})
-        db.query(AIUsageLog).filter(AIUsageLog.user_id == user_id).update({"user_id": None})
-        db.query(StudyPlan).filter(StudyPlan.reviewed_by == user_id).update({"reviewed_by": None})
-        db.delete(user)
-    else:
-        db.delete(profile)
+    # Safe cascade cleanup across all related tables
+    try:
+        # 1. Chat conversations and messages
+        if user_id:
+            chat_conv_ids = [c.id for c in db.query(ChatConversation).filter(
+                or_(ChatConversation.student_id == user_id, ChatConversation.admin_id == user_id)
+            ).all()]
+            if chat_conv_ids:
+                db.query(ChatMessage).filter(ChatMessage.conversation_id.in_(chat_conv_ids)).delete(synchronize_session=False)
+                db.query(ChatConversation).filter(ChatConversation.id.in_(chat_conv_ids)).delete(synchronize_session=False)
+            db.query(ChatMessage).filter(ChatMessage.sender_id == user_id).delete(synchronize_session=False)
 
-    audit = AuditLog(
-        actor_id=current_admin.id,
-        action="ADMIN_DELETED_STUDENT",
-        resource_type="STUDENT",
-        resource_id=student_id,
-        details={"deleted_email": student_email, "deleted_name": student_name, "aptech_student_id": apt_id},
-    )
-    db.add(audit)
-    db.commit()
+        # 2. Profile Session Attendance & Profile Roadmap Items
+        db.query(ProfileSessionAttendance).filter(ProfileSessionAttendance.student_id == student_id).delete(synchronize_session=False)
+        db.query(ProfileRoadmapItem).filter(ProfileRoadmapItem.student_id == student_id).delete(synchronize_session=False)
+
+        # 3. Academic Attendances
+        db.query(Attendance).filter(Attendance.student_id == student_id).delete(synchronize_session=False)
+
+        # 4. Study plans, tasks, sessions, milestones, preferences, versions
+        plans = db.query(StudyPlan).filter(StudyPlan.student_id == student_id).all()
+        plan_ids = [p.id for p in plans]
+        if plan_ids:
+            task_ids = [t.id for t in db.query(StudyTask.id).filter(StudyTask.study_plan_id.in_(plan_ids)).all()]
+            if task_ids:
+                db.query(StudySession).filter(StudySession.task_id.in_(task_ids)).delete(synchronize_session=False)
+            db.query(StudyTask).filter(StudyTask.study_plan_id.in_(plan_ids)).delete(synchronize_session=False)
+            db.query(StudyPlanMilestone).filter(StudyPlanMilestone.study_plan_id.in_(plan_ids)).delete(synchronize_session=False)
+            db.query(StudyPlanVersion).filter(StudyPlanVersion.study_plan_id.in_(plan_ids)).delete(synchronize_session=False)
+            db.query(PlannerPreference).filter(PlannerPreference.study_plan_id.in_(plan_ids)).delete(synchronize_session=False)
+            db.query(StudyPlan).filter(StudyPlan.id.in_(plan_ids)).delete(synchronize_session=False)
+
+        # 5. Direct study sessions
+        db.query(StudySession).filter(StudySession.student_id == student_id).delete(synchronize_session=False)
+
+        # 6. Enrollments
+        db.query(Enrollment).filter(Enrollment.student_id == student_id).delete(synchronize_session=False)
+
+        # 7. Invitations & password resets & user logs
+        if user_id:
+            db.query(InvitationToken).filter(InvitationToken.user_id == user_id).delete(synchronize_session=False)
+            db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).delete(synchronize_session=False)
+            db.query(AuditLog).filter(AuditLog.actor_id == user_id).update({"actor_id": None})
+            db.query(AuditLog).filter(AuditLog.resource_id.in_([student_id, user_id])).delete(synchronize_session=False)
+            db.query(AIUsageLog).filter(AIUsageLog.user_id == user_id).update({"user_id": None})
+            db.query(StudyPlan).filter(StudyPlan.reviewed_by == user_id).update({"reviewed_by": None})
+
+        # 8. Profile & User
+        db.delete(profile)
+        if user:
+            db.delete(user)
+
+        audit = AuditLog(
+            actor_id=current_admin.id,
+            action="ADMIN_DELETED_STUDENT",
+            resource_type="STUDENT",
+            resource_id=student_id,
+            details={"deleted_email": student_email, "deleted_name": student_name, "aptech_student_id": apt_id},
+        )
+        db.add(audit)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete student: {str(e)}")
 
     return {
         "success": True,
