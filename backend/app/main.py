@@ -153,16 +153,7 @@ def _ensure_initial_data():
                     db.delete(existing_ankit.student_profile)
                 db.commit()
 
-            # 3. Clean up legacy demo accounts from production DB
-            for demo_email in ("admin@aptech.edu", "student.demo@aptech.edu"):
-                demo_user = db.query(User).filter(User.email == demo_email).first()
-                if demo_user:
-                    if demo_user.student_profile:
-                        db.delete(demo_user.student_profile)
-                    db.delete(demo_user)
-                    db.commit()
-
-            # 4. Auto-seed courses if empty
+            # 3. Auto-seed courses if empty
             if db.query(Course).count() == 0:
                 logger.info("No courses found in database. Loading courses...")
                 root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"
