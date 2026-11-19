@@ -271,6 +271,7 @@ def mark_batch_attendance(
     if not payload.records:
         raise HTTPException(status_code=400, detail="No attendance records provided.")
 
+    att_date = payload.attendance_date or date.today()
     valid_statuses = {s.value for s in AttendanceStatus}
     updated_count = 0
     created_count = 0
@@ -281,7 +282,7 @@ def mark_batch_attendance(
             continue
 
         # Handle Profile Building students who do not have an academic enrollment
-        if item.enrollment_id.startswith("pb_") or not item.enrollment_id:
+        if not item.enrollment_id or str(item.enrollment_id).startswith("pb_"):
             existing_pb = db.query(ProfileSessionAttendance).filter(
                 ProfileSessionAttendance.student_id == item.student_id,
                 ProfileSessionAttendance.session_date == att_date
@@ -311,7 +312,7 @@ def mark_batch_attendance(
 
         existing = db.query(Attendance).filter(
             Attendance.enrollment_id == item.enrollment_id,
-            Attendance.attendance_date == payload.attendance_date
+            Attendance.attendance_date == att_date
         ).first()
 
         if existing:
@@ -326,7 +327,7 @@ def mark_batch_attendance(
             new_att = Attendance(
                 student_id=item.student_id,
                 enrollment_id=item.enrollment_id,
-                attendance_date=payload.attendance_date,
+                attendance_date=att_date,
                 status=status_clean,
                 remarks=item.remarks,
                 study_task_id=item.study_task_id,
@@ -339,7 +340,7 @@ def mark_batch_attendance(
 
     return {
         "success": True,
-        "message": f"Saved attendance for {payload.attendance_date}: {created_count} created, {updated_count} updated.",
+        "message": f"Saved attendance for {att_date}: {created_count} created, {updated_count} updated.",
         "created_count": created_count,
         "updated_count": updated_count,
     }
