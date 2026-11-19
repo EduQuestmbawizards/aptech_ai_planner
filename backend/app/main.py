@@ -51,7 +51,7 @@ def _ensure_study_plan_columns():
         if "version_number" not in existing_cols:
             statements.append("ALTER TABLE study_plans ADD COLUMN version_number INTEGER NOT NULL DEFAULT 1")
         if "has_pending_edit" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN has_pending_edit BOOLEAN NOT NULL DEFAULT 0")
+            statements.append("ALTER TABLE study_plans ADD COLUMN has_pending_edit BOOLEAN NOT NULL DEFAULT FALSE")
         if "pending_edit_data" not in existing_cols:
             statements.append("ALTER TABLE study_plans ADD COLUMN pending_edit_data JSON")
 
