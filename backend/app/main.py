@@ -105,7 +105,7 @@ def _ensure_initial_data():
             admin_email = (settings.ADMIN_EMAIL or "admin@aptech.edu").lower().strip()
             admin_pass = os.getenv("ADMIN_PASSWORD", "AptechAdmin@2026!")
 
-            # 1. Ensure configured admin account exists
+            # 1. Ensure configured admin account exists (Rupali)
             existing_admin = db.query(User).filter(User.email == admin_email).first()
             if not existing_admin:
                 logger.info(f"Auto-creating initial admin account ({admin_email})...")
@@ -126,7 +126,43 @@ def _ensure_initial_data():
                 existing_admin.is_suspended = False
                 db.commit()
 
-            # 2. Auto-seed courses if empty
+            # 2. Ensure Admin Ankit account exists with password
+            ankit_email = "ankitk629990@gmail.com"
+            ankit_pass = os.getenv("ANKIT_ADMIN_PASSWORD", "12345678")
+            existing_ankit = db.query(User).filter(User.email == ankit_email).first()
+            if not existing_ankit:
+                logger.info(f"Auto-creating Admin account ({ankit_email})...")
+                ankit_user = User(
+                    email=ankit_email,
+                    full_name="ANKIT KUMAR GUPTA",
+                    role=UserRole.ADMIN.value,
+                    password_hash=get_password_hash(ankit_pass),
+                    is_active=True,
+                    is_suspended=False
+                )
+                db.add(ankit_user)
+                db.commit()
+                logger.info("Admin Ankit created successfully.")
+            else:
+                existing_ankit.role = UserRole.ADMIN.value
+                existing_ankit.full_name = "ANKIT KUMAR GUPTA"
+                existing_ankit.password_hash = get_password_hash(ankit_pass)
+                existing_ankit.is_active = True
+                existing_ankit.is_suspended = False
+                if existing_ankit.student_profile:
+                    db.delete(existing_ankit.student_profile)
+                db.commit()
+
+            # 3. Clean up legacy demo accounts from production DB
+            for demo_email in ("admin@aptech.edu", "student.demo@aptech.edu"):
+                demo_user = db.query(User).filter(User.email == demo_email).first()
+                if demo_user:
+                    if demo_user.student_profile:
+                        db.delete(demo_user.student_profile)
+                    db.delete(demo_user)
+                    db.commit()
+
+            # 4. Auto-seed courses if empty
             if db.query(Course).count() == 0:
                 logger.info("No courses found in database. Loading courses...")
                 root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"
