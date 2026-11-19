@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 
 from app.core.database import get_db
-from app.models.user import User, StudentProfile
+from app.models.user import User, StudentProfile, UserRole
 from app.models.enrollment import Enrollment, EnrollmentStatus
 from app.models.course import Course
 from app.models.planner import StudyTask
@@ -360,6 +360,7 @@ def get_students_attendance_overview(
     query = (
         db.query(StudentProfile)
         .join(User, StudentProfile.user_id == User.id)
+        .filter(User.role == UserRole.STUDENT.value)
     )
 
     if search:

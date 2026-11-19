@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.api.deps import get_current_user, require_admin
-from app.models.user import User, StudentProfile
+from app.models.user import User, StudentProfile, UserRole
 from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus, ProfileSessionAttendance
 from app.schemas.profile_roadmap import (
     ProfileRoadmapItemResponse,
@@ -116,6 +116,7 @@ def list_students_with_roadmaps(
     students = (
         db.query(StudentProfile)
         .join(User, StudentProfile.user_id == User.id)
+        .filter(User.role == UserRole.STUDENT.value)
         .order_by(User.full_name.asc())
         .all()
     )

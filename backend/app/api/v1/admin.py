@@ -84,6 +84,7 @@ def list_students(
     query = (
         db.query(StudentProfile)
         .join(User, StudentProfile.user_id == User.id)
+        .filter(User.role == UserRole.STUDENT.value)
     )
 
     if search:
