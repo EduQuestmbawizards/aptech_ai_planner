@@ -247,7 +247,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                 <div className="mt-4 p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
                   <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Key Actions &amp; Study Focus (क्या पढ़ना और तैयार करना है)</span>
+                    <span>Key Actions &amp; Study Focus</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-800 font-medium whitespace-pre-line leading-relaxed">
                     {item.main_actions}
@@ -258,7 +258,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                 <div className="mt-3 p-3.5 bg-gradient-to-br from-amber-50/80 via-amber-50/50 to-orange-50/30 border border-amber-200/90 rounded-xl shadow-xs">
                   <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900 mb-1.5">
                     <Target className="w-4 h-4 text-amber-600" />
-                    <span>Expected Deliverables &amp; Outputs (क्या आउटपुट और सबमिशन होगा):</span>
+                    <span>Expected Deliverables &amp; Outputs:</span>
                   </div>
                   {item.milestones_outputs ? (
                     <p className="text-xs sm:text-sm text-amber-950 font-medium whitespace-pre-line leading-relaxed">
@@ -324,8 +324,8 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Legacy Completed Session MoM Card (if no multi-sessions logged yet) */}
-                {(!item.sessions || item.sessions.length === 0) && isCompleted && item.meeting_notes && (
+                {/* Completed Session MoM Card */}
+                {isCompleted && item.meeting_notes && (
                   <div className="mt-4 p-4 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border border-emerald-200 rounded-xl">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-emerald-200/60">
                       <div className="flex items-center space-x-2">

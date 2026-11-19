@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../context/StudyTimerContext';
@@ -24,7 +24,9 @@ import {
   Timer,
   Sparkles,
   Target,
+  MessageSquare,
 } from 'lucide-react';
+import { api } from '../services/api';
 
 export const StudentLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -41,6 +43,21 @@ export const StudentLayout: React.FC = () => {
     saveTimerSession,
   } = useStudyTimer();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get('/chat/unread-count');
+        setUnreadMessages(res.data.total_unread);
+      } catch {
+        // ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isProfileBuildingOnly = user?.track_type === 'PROFILE_BUILDING';
 
@@ -52,6 +69,7 @@ export const StudentLayout: React.FC = () => {
     { label: 'Daily Tasks', to: '/tasks', icon: ListTodo, courseOnly: true },
     { label: 'Weekly Schedule', to: '/weekly', icon: Calendar, courseOnly: true },
     { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
+    { label: 'Messages', to: '/chat', icon: MessageSquare, badge: unreadMessages },
     { label: 'Course Syllabus', to: '/syllabus', icon: BookOpen, courseOnly: true },
     { label: 'Progress Analytics', to: '/analytics', icon: LineChart, courseOnly: true },
     { label: 'AI Learning Assistant', to: '/ai-assistant', icon: Bot, courseOnly: true },
@@ -141,8 +159,13 @@ export const StudentLayout: React.FC = () => {
                   }`
                 }
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && item.badge > 0 ? (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-950">
+                    {item.badge}
+                  </span>
+                ) : null}
               </NavLink>
             );
           })}

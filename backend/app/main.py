@@ -20,7 +20,8 @@ from app.api.v1 import (
     ai,
     integrations,
     attendance,
-    profile_roadmap
+    profile_roadmap,
+    chat
 )
 
 # Path to frontend build
@@ -261,7 +262,8 @@ api_routers = [
     ai.router,
     integrations.router,
     attendance.router,
-    profile_roadmap.router
+    profile_roadmap.router,
+    chat.router
 ]
 
 for r in api_routers:

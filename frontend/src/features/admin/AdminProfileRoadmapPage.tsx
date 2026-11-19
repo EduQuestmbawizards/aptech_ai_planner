@@ -601,7 +601,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                               <div className="mt-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/70">
                                 <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                                   <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                                  <span>Key Actions &amp; Study Scope (क्या पढ़ना और करना है)</span>
+                                  <span>Key Actions &amp; Focus Scope</span>
                                 </div>
                                 <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
                                   {item.main_actions}
@@ -613,7 +613,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                                 <div className="flex items-center justify-between mb-1">
                                   <div className="flex items-center space-x-1.5 text-[11px] font-bold text-amber-900 uppercase tracking-wider">
                                     <Target className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Milestones &amp; Expected Deliverables (क्या आउटपुट और डिलीवरेबल होगा)</span>
+                                    <span>Expected Milestones &amp; Deliverables</span>
                                   </div>
                                 </div>
                                 {item.milestones_outputs ? (
@@ -854,11 +854,11 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 />
               </div>
 
-              {/* Main Actions (Kya padhna aur karna hai) */}
+              {/* Main Actions */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
                   <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Key Actions &amp; Study Scope (क्या पढ़ना और करना है) *</span>
+                  <span>Key Actions &amp; Focus Scope *</span>
                 </label>
                 <textarea
                   rows={4}
@@ -873,11 +873,11 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Milestones & Outputs (Kya output hoga) */}
+              {/* Milestones & Outputs */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
                   <Target className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Milestones &amp; Expected Deliverables (क्या आउटपुट और डिलीवरेबल होगा)</span>
+                  <span>Expected Milestones &amp; Deliverables</span>
                 </label>
                 <textarea
                   rows={4}

@@ -478,4 +478,47 @@ export interface ProfileRoadmapStudentSummary {
   items: ProfileRoadmapItem[];
 }
 
+export interface ChatMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_role: 'STUDENT' | 'ADMIN';
+  message_text?: string | null;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: 'IMAGE' | 'PDF' | 'DOCUMENT' | null;
+  file_size_bytes?: number | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface AdminContact {
+  admin: {
+    id: string;
+    full_name: string;
+    email: string;
+    role: string;
+  };
+  conversation_id: string | null;
+  unread_count: number;
+  last_message_at: string | null;
+  last_message_text: string | null;
+}
+
+export interface StudentContact {
+  student: {
+    id: string;
+    full_name: string;
+    email: string;
+    role: string;
+    aptech_student_id?: string | null;
+  };
+  conversation_id: string | null;
+  unread_count: number;
+  last_message_at: string | null;
+  last_message_text: string | null;
+}
+
+
 

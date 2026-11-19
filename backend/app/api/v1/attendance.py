@@ -11,7 +11,7 @@ from app.models.enrollment import Enrollment, EnrollmentStatus
 from app.models.course import Course
 from app.models.planner import StudyTask
 from app.models.attendance import Attendance, AttendanceStatus
-from app.models.profile_roadmap import ProfileSessionAttendance
+from app.models.profile_roadmap import ProfileRoadmapItem, ProfileSessionAttendance
 from app.models.logs import AuditLog
 from app.schemas.attendance import (
     AttendanceRecordSchema,
@@ -94,9 +94,22 @@ def get_my_attendance(
             .order_by(ProfileSessionAttendance.session_date.desc())
             .all()
         )
+        existing_dates = set()
         for s in profile_sessions:
+            existing_dates.add(s.session_date)
             period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
             marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
+            desc_text = (s.description or "").strip()
+            rem_text = (s.remarks or "").strip()
+            parts = []
+            if desc_text:
+                parts.append(desc_text)
+            if s.duration_minutes:
+                parts.append(f"{s.duration_minutes} mins")
+            if rem_text and rem_text != desc_text:
+                parts.append(f"Note: {rem_text}")
+            formatted_remarks = " • ".join(parts) if parts else "Mentorship session attended"
+
             all_record_schemas.append(
                 AttendanceRecordSchema(
                     id=s.id,
@@ -111,11 +124,47 @@ def get_my_attendance(
                     task_title=f"{s.topic} ({period_str})",
                     attendance_date=s.session_date,
                     status=s.status,
-                    remarks=f"{s.description} • {s.duration_minutes} mins" + (f" • Note: {s.remarks}" if s.remarks else ""),
+                    remarks=formatted_remarks,
                     marked_by_name=marker_name,
                     created_at=s.created_at
                 )
             )
+
+        # Include any completed roadmap items with MoM notes not yet in profile_sessions
+        completed_items = (
+            db.query(ProfileRoadmapItem)
+            .filter(
+                ProfileRoadmapItem.student_id == student.id,
+                ProfileRoadmapItem.status == "COMPLETED",
+                ProfileRoadmapItem.session_date.isnot(None),
+                ProfileRoadmapItem.meeting_notes.isnot(None)
+            )
+            .all()
+        )
+        for item in completed_items:
+            if item.session_date not in existing_dates:
+                marker_name = item.marked_by or "Faculty Mentor"
+                desc_text = item.meeting_notes.strip()
+                dur = f" • {item.session_duration_minutes} mins" if item.session_duration_minutes else ""
+                all_record_schemas.append(
+                    AttendanceRecordSchema(
+                        id=f"mom_{item.id}",
+                        student_id=student.id,
+                        enrollment_id="",
+                        course_id="PROFILE_BUILDING",
+                        course_name="Profile Building & Mentorship",
+                        course_code="PROFILE",
+                        student_name=student.user.full_name if student.user else "Student",
+                        aptech_student_id=student.aptech_student_id,
+                        study_task_id=item.id,
+                        task_title=f"{item.meeting_topic or item.period} ({item.period})",
+                        attendance_date=item.session_date,
+                        status="PRESENT",
+                        remarks=f"{desc_text}{dur}",
+                        marked_by_name=marker_name,
+                        created_at=item.completed_at or item.updated_at
+                    )
+                )
 
     # Sort all records by attendance_date descending
     all_record_schemas.sort(key=lambda r: r.attendance_date, reverse=True)
@@ -235,19 +284,20 @@ def mark_batch_attendance(
         if item.enrollment_id.startswith("pb_") or not item.enrollment_id:
             existing_pb = db.query(ProfileSessionAttendance).filter(
                 ProfileSessionAttendance.student_id == item.student_id,
-                ProfileSessionAttendance.session_date == payload.attendance_date
+                ProfileSessionAttendance.session_date == att_date
             ).first()
             if existing_pb:
                 existing_pb.status = status_clean
                 if item.remarks:
                     existing_pb.remarks = item.remarks
+                    existing_pb.description = item.remarks
                 existing_pb.marked_by = admin_user.id
                 existing_pb.updated_at = datetime.now(timezone.utc)
                 updated_count += 1
             else:
                 new_pb = ProfileSessionAttendance(
                     student_id=item.student_id,
-                    session_date=payload.attendance_date,
+                    session_date=att_date,
                     topic="Mentorship & Profile Building Class",
                     description=item.remarks or "Session attendance logged by faculty mentor",
                     duration_minutes=45,
@@ -434,9 +484,22 @@ def get_student_attendance_admin(
         .order_by(ProfileSessionAttendance.session_date.desc())
         .all()
     )
+    admin_existing_dates = set()
     for s in profile_sessions:
+        admin_existing_dates.add(s.session_date)
         period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
         marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
+        desc_text = (s.description or "").strip()
+        rem_text = (s.remarks or "").strip()
+        parts = []
+        if desc_text:
+            parts.append(desc_text)
+        if s.duration_minutes:
+            parts.append(f"{s.duration_minutes} mins")
+        if rem_text and rem_text != desc_text:
+            parts.append(f"Note: {rem_text}")
+        formatted_remarks = " • ".join(parts) if parts else "Mentorship session attended"
+
         all_schemas.append(
             AttendanceRecordSchema(
                 id=s.id,
@@ -451,11 +514,47 @@ def get_student_attendance_admin(
                 task_title=f"{s.topic} ({period_str})",
                 attendance_date=s.session_date,
                 status=s.status,
-                remarks=f"{s.description} • {s.duration_minutes} mins" + (f" • Note: {s.remarks}" if s.remarks else ""),
+                remarks=formatted_remarks,
                 marked_by_name=marker_name,
                 created_at=s.created_at
             )
         )
+
+    # Include any completed roadmap items with MoM notes not yet in profile_sessions
+    admin_completed_items = (
+        db.query(ProfileRoadmapItem)
+        .filter(
+            ProfileRoadmapItem.student_id == student_id,
+            ProfileRoadmapItem.status == "COMPLETED",
+            ProfileRoadmapItem.session_date.isnot(None),
+            ProfileRoadmapItem.meeting_notes.isnot(None)
+        )
+        .all()
+    )
+    for item in admin_completed_items:
+        if item.session_date not in admin_existing_dates:
+            marker_name = item.marked_by or "Faculty Mentor"
+            desc_text = item.meeting_notes.strip()
+            dur = f" • {item.session_duration_minutes} mins" if item.session_duration_minutes else ""
+            all_schemas.append(
+                AttendanceRecordSchema(
+                    id=f"mom_{item.id}",
+                    student_id=student.id,
+                    enrollment_id="",
+                    course_id="PROFILE_BUILDING",
+                    course_name="Profile Building & Mentorship",
+                    course_code="PROFILE",
+                    student_name=student.user.full_name if student.user else "Student",
+                    aptech_student_id=student.aptech_student_id,
+                    study_task_id=item.id,
+                    task_title=f"{item.meeting_topic or item.period} ({item.period})",
+                    attendance_date=item.session_date,
+                    status="PRESENT",
+                    remarks=f"{desc_text}{dur}",
+                    marked_by_name=marker_name,
+                    created_at=item.completed_at or item.updated_at
+                )
+            )
 
     all_schemas.sort(key=lambda r: r.attendance_date, reverse=True)
 

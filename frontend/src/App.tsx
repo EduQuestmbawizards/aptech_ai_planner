@@ -23,10 +23,12 @@ import { AdminStudyPlansPage } from './features/admin/AdminStudyPlansPage';
 import { AdminAIUsagePage } from './features/admin/AdminAIUsagePage';
 import { AdminAttendancePage } from './features/admin/AdminAttendancePage';
 import { AdminProfileRoadmapPage } from './features/admin/AdminProfileRoadmapPage';
+import { AdminChatPage } from './features/admin/AdminChatPage';
 
 // Student Pages
 import { StudentDashboardPage } from './features/students/StudentDashboardPage';
 import { StudentProfileRoadmapPage } from './features/students/StudentProfileRoadmapPage';
+import { StudentChatPage } from './features/students/StudentChatPage';
 import { MyCoursesPage } from './features/students/MyCoursesPage';
 import { MyPlannerPage } from './features/planner/MyPlannerPage';
 import { PlannerOnboardingWizard } from './features/planner/PlannerOnboardingWizard';
@@ -74,6 +76,7 @@ export const App: React.FC = () => {
                 <Route path="/admin/study-plans" element={<AdminStudyPlansPage />} />
                 <Route path="/admin/profile-roadmap" element={<AdminProfileRoadmapPage />} />
                 <Route path="/admin/attendance" element={<AdminAttendancePage />} />
+                <Route path="/admin/chat" element={<AdminChatPage />} />
                 <Route path="/admin/ai-usage" element={<AdminAIUsagePage />} />
               </Route>
             </Route>
@@ -89,6 +92,7 @@ export const App: React.FC = () => {
                 <Route path="/tasks" element={<DailyTasksPage />} />
                 <Route path="/weekly" element={<WeeklySchedulePage />} />
                 <Route path="/attendance" element={<StudentAttendancePage />} />
+                <Route path="/chat" element={<StudentChatPage />} />
                 <Route path="/syllabus" element={<CourseSyllabusPage />} />
                 <Route path="/analytics" element={<ProgressAnalyticsPage />} />
                 <Route path="/ai-assistant" element={<AILearningAssistantPage />} />
@@ -106,5 +110,6 @@ export const App: React.FC = () => {
 };
 
 export default App;
+
 
 

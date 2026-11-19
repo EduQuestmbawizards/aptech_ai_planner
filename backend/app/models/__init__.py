@@ -15,7 +15,8 @@ from app.models.planner import (
 from app.models.tokens import InvitationToken, PasswordResetToken
 from app.models.logs import AIUsageLog, AuditLog
 from app.models.attendance import Attendance, AttendanceStatus
-from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus
+from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus, ProfileSessionAttendance
+from app.models.chat import ChatConversation, ChatMessage
 
 __all__ = [
     "Base",

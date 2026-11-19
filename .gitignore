@@ -30,6 +30,10 @@ test_planner_suite.db
 backend/.env
 frontend/.env
 
+# Uploads & Media
+backend/uploads/
+uploads/
+
 # IDE / OS Files
 .vscode/
 .idea/

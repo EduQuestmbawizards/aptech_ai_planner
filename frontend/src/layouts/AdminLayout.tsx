@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import {
   LayoutDashboard,
   Users,
@@ -14,12 +15,28 @@ import {
   ShieldCheck,
   ChevronRight,
   Compass,
+  MessageSquare,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get('/chat/unread-count');
+        setUnreadMessages(res.data.total_unread);
+      } catch {
+        // ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     { label: 'Overview', to: '/admin', icon: LayoutDashboard },
@@ -29,6 +46,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Study Plans', to: '/admin/study-plans', icon: CalendarCheck },
     { label: 'Profile Building', to: '/admin/profile-roadmap', icon: Compass },
     { label: 'Attendance', to: '/admin/attendance', icon: CalendarCheck },
+    { label: 'Messages', to: '/admin/chat', icon: MessageSquare, badge: unreadMessages },
     { label: 'AI Operations & Usage', to: '/admin/ai-usage', icon: Sparkles },
   ];
 
@@ -107,8 +125,13 @@ export const AdminLayout: React.FC = () => {
                   }`
                 }
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && item.badge > 0 ? (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber-400 text-slate-950">
+                    {item.badge}
+                  </span>
+                ) : null}
               </NavLink>
             );
           })}

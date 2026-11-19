@@ -13,6 +13,22 @@ from app.models.user import StudentProfile
 logger = logging.getLogger("aptech_planner.profile_roadmap")
 
 
+def _to_date(val: Any) -> date:
+    if isinstance(val, date):
+        return val
+    if isinstance(val, datetime):
+        return val.date()
+    if isinstance(val, str) and val.strip():
+        try:
+            return date.fromisoformat(val.strip()[:10])
+        except Exception:
+            try:
+                return datetime.strptime(val.strip()[:10], "%Y-%m-%d").date()
+            except Exception:
+                return date.today()
+    return date.today()
+
+
 def _format_cell_value(val: Any) -> str:
     if val is None:
         return ""
@@ -305,6 +321,40 @@ class ProfileRoadmapService:
         if marked_by:
             item.marked_by = marked_by
 
+        # If a session date is provided with this MoM, sync it with ProfileSessionAttendance
+        # so it transparently surfaces in Attendance tables and history for the student
+        if item.session_date:
+            parsed_session_date = _to_date(item.session_date)
+            session_att = db.query(ProfileSessionAttendance).filter(
+                ProfileSessionAttendance.student_id == item.student_id,
+                ProfileSessionAttendance.roadmap_item_id == item.id,
+                ProfileSessionAttendance.session_date == parsed_session_date
+            ).first()
+            if not session_att:
+                session_att = ProfileSessionAttendance(
+                    student_id=item.student_id,
+                    roadmap_item_id=item.id,
+                    session_date=parsed_session_date,
+                    topic=item.meeting_topic or f"Milestone Completion: {item.period}",
+                    description=item.meeting_notes or "Milestone completed and MoM recorded.",
+                    duration_minutes=item.session_duration_minutes or 60,
+                    status="PRESENT",
+                    remarks=item.meeting_notes,
+                    marked_by=marked_by
+                )
+                db.add(session_att)
+            else:
+                if item.meeting_topic:
+                    session_att.topic = item.meeting_topic
+                if item.meeting_notes:
+                    session_att.description = item.meeting_notes
+                    session_att.remarks = item.meeting_notes
+                if item.session_duration_minutes:
+                    session_att.duration_minutes = item.session_duration_minutes
+                session_att.status = "PRESENT"
+                if marked_by:
+                    session_att.marked_by = marked_by
+
         db.commit()
         db.refresh(item)
         return item
@@ -369,7 +419,7 @@ class ProfileRoadmapService:
         session = ProfileSessionAttendance(
             student_id=student_id,
             roadmap_item_id=roadmap_item.id if roadmap_item else None,
-            session_date=session_date,
+            session_date=_to_date(session_date),
             topic=topic.strip(),
             description=description.strip(),
             duration_minutes=duration_minutes,
@@ -408,7 +458,9 @@ class ProfileRoadmapService:
 
         for field, val in update_data.items():
             if val is not None and hasattr(session, field):
-                if isinstance(val, str):
+                if field == "session_date":
+                    val = _to_date(val)
+                elif isinstance(val, str):
                     val = val.strip()
                 setattr(session, field, val)
 

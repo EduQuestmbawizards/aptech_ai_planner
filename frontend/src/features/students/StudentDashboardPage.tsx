@@ -176,6 +176,19 @@ export const StudentDashboardPage: React.FC = () => {
       roadmapItems.find((i) => i.status === 'IN_PROGRESS') ||
       roadmapItems.find((i) => i.status === 'PENDING') ||
       roadmapItems[0];
+
+    // Gather all sessions logged across all roadmap items
+    const allSessions = roadmapItems.flatMap((i) =>
+      (i.sessions || []).map((s) => ({
+        ...s,
+        period: i.period,
+      }))
+    );
+    allSessions.sort(
+      (a, b) => new Date(b.session_date).getTime() - new Date(a.session_date).getTime()
+    );
+    const latestLoggedSession = allSessions[0];
+
     const latestCompletedWithMoM = [...roadmapItems]
       .reverse()
       .find((i) => i.status === 'COMPLETED' && i.meeting_notes);
@@ -311,7 +324,7 @@ export const StudentDashboardPage: React.FC = () => {
               <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
                 <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center space-x-1.5">
                   <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Key Actions &amp; Study Focus (क्या पढ़ना है)</span>
+                  <span>Key Actions &amp; Study Focus</span>
                 </div>
                 <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
                   {currentMilestone.main_actions}
@@ -322,7 +335,7 @@ export const StudentDashboardPage: React.FC = () => {
               <div className="p-3.5 bg-gradient-to-br from-amber-50/80 to-orange-50/30 border border-amber-200/90 rounded-xl">
                 <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1.5 flex items-center space-x-1.5">
                   <Target className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Expected Deliverables (क्या आउटपुट होगा)</span>
+                  <span>Expected Deliverables &amp; Outputs</span>
                 </div>
                 {currentMilestone.milestones_outputs ? (
                   <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
@@ -335,28 +348,63 @@ export const StudentDashboardPage: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Sessions logged under this current milestone */}
+            {currentMilestone.sessions && currentMilestone.sessions.length > 0 && (
+              <div className="mt-3.5 p-3.5 bg-blue-50/60 rounded-xl border border-blue-200/80 space-y-2">
+                <div className="text-[11px] font-bold text-blue-900 uppercase tracking-wider flex items-center space-x-1.5">
+                  <CalendarCheck className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Sessions Logged in this Stage ({currentMilestone.sessions.length})</span>
+                </div>
+                <div className="space-y-2">
+                  {currentMilestone.sessions.map((sess) => (
+                    <div key={sess.id} className="bg-white p-3 rounded-lg border border-blue-100 shadow-2xs text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-slate-900">{sess.session_date}</span>
+                          <span className="px-2 py-0.2 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800">
+                            {sess.status}
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-medium">⏱️ {sess.duration_minutes} mins</span>
+                        </div>
+                      </div>
+                      <div className="font-bold text-slate-900 mt-1">{sess.topic}</div>
+                      <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed">{sess.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Latest Completed Session & MoM (if available) */}
-        {latestCompletedWithMoM && (
+        {(latestLoggedSession || latestCompletedWithMoM) && (
           <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border border-emerald-200/90 rounded-2xl p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-emerald-200/60">
               <div>
                 <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-100/90 px-2 py-0.5 rounded">
-                  Latest Mentor Log
+                  Latest Mentor Log &amp; Class Description
                 </span>
                 <h3 className="text-sm sm:text-base font-bold text-emerald-950 mt-1">
-                  {latestCompletedWithMoM.meeting_topic || `Session: ${latestCompletedWithMoM.period}`}
+                  {latestLoggedSession
+                    ? latestLoggedSession.topic
+                    : latestCompletedWithMoM?.meeting_topic || `Session: ${latestCompletedWithMoM?.period}`}
                 </h3>
               </div>
               <div className="text-xs text-emerald-800 font-semibold flex items-center space-x-3">
-                {latestCompletedWithMoM.session_date && <span>📅 {latestCompletedWithMoM.session_date}</span>}
-                {latestCompletedWithMoM.session_duration_minutes && <span>⏱️ {latestCompletedWithMoM.session_duration_minutes} mins</span>}
+                {(latestLoggedSession?.session_date || latestCompletedWithMoM?.session_date) && (
+                  <span>📅 {latestLoggedSession?.session_date || latestCompletedWithMoM?.session_date}</span>
+                )}
+                {(latestLoggedSession?.duration_minutes || latestCompletedWithMoM?.session_duration_minutes) && (
+                  <span>⏱️ {latestLoggedSession?.duration_minutes || latestCompletedWithMoM?.session_duration_minutes} mins</span>
+                )}
               </div>
             </div>
             <div className="mt-3 text-xs sm:text-sm text-slate-800 bg-white/90 p-3.5 rounded-xl border border-emerald-100 whitespace-pre-line leading-relaxed">
-              {latestCompletedWithMoM.meeting_notes}
+              {latestLoggedSession
+                ? latestLoggedSession.description
+                : latestCompletedWithMoM?.meeting_notes}
             </div>
           </div>
         )}
