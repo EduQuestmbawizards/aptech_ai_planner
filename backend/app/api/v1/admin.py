@@ -1,6 +1,6 @@
 from datetime import datetime, date, timezone, timedelta
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from app.core.database import get_db
@@ -117,6 +117,21 @@ def list_students(
         has_trial = any(e.access_type == AccessType.TRIAL.value for e in p.enrollments)
         has_full = any(e.access_type == AccessType.FULL.value for e in p.enrollments)
         access_type = AccessType.TRIAL.value if (has_trial and not has_full) else AccessType.FULL.value
+
+        invitation_token = None
+        activation_url = None
+        if not u.password_hash:
+            latest_inv = (
+                db.query(InvitationToken)
+                .filter(InvitationToken.user_id == u.id, InvitationToken.is_used == False)
+                .order_by(InvitationToken.created_at.desc())
+                .first()
+            )
+            if latest_inv:
+                invitation_token = latest_inv.token
+                base_url = settings.FRONTEND_URL.rstrip('/')
+                activation_url = f"{base_url}/activate?token={latest_inv.token}"
+
         results.append({
             "id": p.id,
             "user_id": u.id,
@@ -127,6 +142,8 @@ def list_students(
             "is_active": u.is_active,
             "is_suspended": u.is_suspended,
             "has_activated": u.password_hash is not None,
+            "invitation_token": invitation_token,
+            "activation_url": activation_url,
             "created_at": p.created_at,
             "enrollments_count": len(p.enrollments),
             "active_plans_count": len(active_plans),
@@ -141,6 +158,7 @@ def list_students(
 @router.post("/students", status_code=status.HTTP_201_CREATED)
 def create_student(
     payload: StudentCreateRequest,
+    background_tasks: BackgroundTasks,
     admin_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -224,14 +242,19 @@ def create_student(
     db.add(audit)
     db.commit()
 
-    # Send invitation email
-    EmailService.send_invitation_email(user.email, user.full_name, token_str)
+    # Build direct activation URL
+    base_url = settings.FRONTEND_URL.rstrip('/')
+    activation_url = f"{base_url}/activate?token={token_str}"
+
+    # Queue invitation email in background (non-blocking, instant response for admin)
+    background_tasks.add_task(EmailService.send_invitation_email, user.email, user.full_name, token_str)
 
     return {
         "success": True,
         "message": f"Student {user.full_name} created and invited successfully.",
         "student_id": student.id,
-        "invitation_token": token_str # returned for convenience in local dev testing
+        "invitation_token": token_str,
+        "activation_url": activation_url
     }
 
 @router.patch("/students/{student_id}/upgrade-access")
@@ -334,7 +357,12 @@ def update_student(id: str, payload: StudentUpdateRequest, db: Session = Depends
     return {"success": True, "message": "Student profile updated successfully."}
 
 @router.post("/students/{id}/invite")
-def resend_student_invitation(id: str, admin_user: User = Depends(require_admin), db: Session = Depends(get_db)):
+def resend_student_invitation(
+    id: str,
+    background_tasks: BackgroundTasks,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
     student = db.query(StudentProfile).filter(StudentProfile.id == id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found.")
@@ -359,11 +387,15 @@ def resend_student_invitation(id: str, admin_user: User = Depends(require_admin)
     db.add(audit)
     db.commit()
 
-    EmailService.send_invitation_email(u.email, u.full_name, token_str)
+    base_url = settings.FRONTEND_URL.rstrip('/')
+    activation_url = f"{base_url}/activate?token={token_str}"
+    background_tasks.add_task(EmailService.send_invitation_email, u.email, u.full_name, token_str)
+
     return {
         "success": True,
         "message": f"Invitation dispatched to {u.email}",
-        "invitation_token": token_str
+        "invitation_token": token_str,
+        "activation_url": activation_url
     }
 
 @router.patch("/students/{id}/status")

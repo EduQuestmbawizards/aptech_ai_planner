@@ -36,14 +36,17 @@ class Settings(BaseSettings):
     # Email / SMTP
     EMAIL_HOST: str = os.getenv("EMAIL_HOST", os.getenv("SMTP_HOST", "smtp.gmail.com"))
     EMAIL_PORT: int = int(os.getenv("EMAIL_PORT", os.getenv("SMTP_PORT", 465)))
-    EMAIL_USERNAME: Optional[str] = os.getenv("EMAIL_USERNAME", os.getenv("SMTP_USER"))
-    EMAIL_PASSWORD: Optional[str] = os.getenv("EMAIL_PASSWORD", os.getenv("SMTP_PASS", os.getenv("SMTP_PASSWORD")))
+    EMAIL_USERNAME: Optional[str] = os.getenv("EMAIL_USERNAME", os.getenv("SMTP_USER", "rupali.eduquest@gmail.com"))
+    EMAIL_PASSWORD: Optional[str] = os.getenv("EMAIL_PASSWORD", os.getenv("SMTP_PASS", os.getenv("SMTP_PASSWORD", "vrqesekhucbadqwk")))
     EMAIL_FROM: str = os.getenv("EMAIL_FROM", os.getenv("SMTP_FROM", "EduQuest Leads <rupali.eduquest@gmail.com>"))
     EMAIL_ENABLED: bool = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "rupali.eduquest@gmail.com")
 
     # URLs
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL: str = os.getenv(
+        "FRONTEND_URL",
+        "https://ai-planner.eduquest.org.in" if (os.getenv("RENDER") or os.getenv("PORT")) else "http://localhost:5173"
+    )
     BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 
     # EduQuest Integration

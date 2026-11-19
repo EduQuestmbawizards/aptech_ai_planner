@@ -19,6 +19,9 @@ import {
   ArrowUpCircle,
   Compass,
   Upload,
+  Copy,
+  Check,
+  Link as LinkIcon,
 } from 'lucide-react';
 
 export const AdminStudentsPage: React.FC = () => {
@@ -34,6 +37,9 @@ export const AdminStudentsPage: React.FC = () => {
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccessMsg, setAddSuccessMsg] = useState<string | null>(null);
   const [addErrorMsg, setAddErrorMsg] = useState<string | null>(null);
+  const [newActivationLink, setNewActivationLink] = useState<string | null>(null);
+  const [copiedToken, setCopiedToken] = useState(false);
+  const [tableCopiedId, setTableCopiedId] = useState<string | null>(null);
   const [courseGroup, setCourseGroup] = useState<'EduQuest' | 'MBA Wizards' | 'Aptech' | 'ALL'>('EduQuest');
   const [courseSearch, setCourseSearch] = useState('');
 
@@ -93,6 +99,7 @@ export const AdminStudentsPage: React.FC = () => {
     setAddLoading(true);
     setAddErrorMsg(null);
     setAddSuccessMsg(null);
+    setNewActivationLink(null);
 
     try {
       const payloadToSend = {
@@ -101,8 +108,14 @@ export const AdminStudentsPage: React.FC = () => {
       };
       const res = await api.post('/admin/students', payloadToSend);
       const studentId = res.data.student_id;
-      let roadmapMsg = '';
+      const activationUrl =
+        res.data.activation_url ||
+        (res.data.invitation_token ? `${window.location.origin}/activate?token=${res.data.invitation_token}` : null);
+      if (activationUrl) {
+        setNewActivationLink(activationUrl);
+      }
 
+      let roadmapMsg = '';
       if (excelFile && studentId) {
         try {
           const uploadData = new FormData();
@@ -119,7 +132,7 @@ export const AdminStudentsPage: React.FC = () => {
       }
 
       setAddSuccessMsg(
-        `Student created! Invitation token generated: ${res.data.invitation_token || 'Dispatched via email'}${roadmapMsg}`
+        `Student created successfully! Invitation dispatched.${roadmapMsg}`
       );
       fetchStudents();
       setFormData({
@@ -144,7 +157,16 @@ export const AdminStudentsPage: React.FC = () => {
   const handleResendInvite = async (studentId: string, email: string) => {
     try {
       const res = await api.post(`/admin/students/${studentId}/invite`);
-      alert(`Invitation re-sent successfully to ${email}!\nToken: ${res.data.invitation_token}`);
+      const link =
+        res.data.activation_url ||
+        `${window.location.origin}/activate?token=${res.data.invitation_token}`;
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch (e) {}
+      alert(
+        `Invitation re-sent successfully to ${email}!\n\nActivation Link copied to clipboard:\n${link}\n\nYou can also share this link directly with the student via WhatsApp or SMS.`
+      );
+      fetchStudents();
     } catch (err: any) {
       alert(err.response?.data?.detail || 'Failed to resend invite');
     }
@@ -350,10 +372,40 @@ export const AdminStudentsPage: React.FC = () => {
                       >
                         <Compass className="w-4 h-4 inline" />
                       </button>
+                      {!st.has_activated && (
+                        <button
+                          onClick={() => {
+                            const link =
+                              st.activation_url ||
+                              (st.invitation_token
+                                ? `${window.location.origin}/activate?token=${st.invitation_token}`
+                                : null);
+                            if (link) {
+                              navigator.clipboard.writeText(link);
+                              setTableCopiedId(st.id);
+                              setTimeout(() => setTableCopiedId(null), 3000);
+                            } else {
+                              handleResendInvite(st.id, st.email);
+                            }
+                          }}
+                          className={`p-1.5 rounded-md transition-colors ${
+                            tableCopiedId === st.id
+                              ? 'text-emerald-700 bg-emerald-100'
+                              : 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                          }`}
+                          title={tableCopiedId === st.id ? 'Copied to Clipboard!' : 'Copy Activation Link'}
+                        >
+                          {tableCopiedId === st.id ? (
+                            <Check className="w-4 h-4 inline" />
+                          ) : (
+                            <Copy className="w-4 h-4 inline" />
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleResendInvite(st.id, st.email)}
                         className="p-1.5 text-slate-500 hover:text-brand-600 rounded-md hover:bg-slate-100"
-                        title="Resend Activation Invite"
+                        title="Resend Activation Invite & Copy Link"
                       >
                         <Mail className="w-4 h-4 inline" />
                       </button>
@@ -404,6 +456,38 @@ export const AdminStudentsPage: React.FC = () => {
               <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-start space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                 <span>{addSuccessMsg}</span>
+              </div>
+            )}
+
+            {newActivationLink && (
+              <div className="mt-3 p-3.5 bg-brand-50 border border-brand-200 rounded-xl space-y-2">
+                <div className="flex items-center gap-1.5 text-brand-900 font-bold text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                  <span>Direct Student Activation Link</span>
+                </div>
+                <p className="text-[11px] text-brand-800 leading-relaxed">
+                  Email invitation dispatched. You can also copy and share this link directly with the student via WhatsApp / SMS:
+                </p>
+                <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-brand-200">
+                  <input
+                    type="text"
+                    readOnly
+                    value={newActivationLink}
+                    className="flex-1 text-[11px] text-slate-800 bg-transparent border-none outline-none font-mono select-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(newActivationLink);
+                      setCopiedToken(true);
+                      setTimeout(() => setCopiedToken(false), 3000);
+                    }}
+                    className="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors flex-shrink-0"
+                  >
+                    {copiedToken ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedToken ? 'Copied!' : 'Copy Link'}</span>
+                  </button>
+                </div>
               </div>
             )}
 

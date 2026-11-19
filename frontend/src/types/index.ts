@@ -29,6 +29,8 @@ export interface StudentDetail {
   access_type?: 'FULL' | 'TRIAL';
   has_trial_enrollment?: boolean;
   track_type?: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
+  invitation_token?: string | null;
+  activation_url?: string | null;
 }
 
 export type AttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';

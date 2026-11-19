@@ -102,13 +102,13 @@ Aptech Learning Administration
             msg.attach(part2)
 
             if settings.EMAIL_PORT == 465:
-                # SSL connection (e.g. Gmail port 465)
-                with smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
+                # SSL connection (e.g. Gmail port 465) with 12s timeout
+                with smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=12) as server:
                     server.login(settings.EMAIL_USERNAME, settings.EMAIL_PASSWORD)
                     server.sendmail(settings.EMAIL_FROM, recipient_email, msg.as_string())
             else:
-                # STARTTLS connection (e.g. port 587)
-                with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
+                # STARTTLS connection (e.g. port 587) with 12s timeout
+                with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=12) as server:
                     server.starttls()
                     server.login(settings.EMAIL_USERNAME, settings.EMAIL_PASSWORD)
                     server.sendmail(settings.EMAIL_FROM, recipient_email, msg.as_string())
