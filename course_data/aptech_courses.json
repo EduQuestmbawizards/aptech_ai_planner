@@ -11585,5 +11585,476 @@
         ]
       }
     ]
+  },
+  {
+    "course_code": "APT-ECOM-OPS",
+    "name": "E-Commerce Operations & Marketplace Management (Amazon, Flipkart, Meesho & Advanced Excel)",
+    "description": "[E-Commerce & Digital Business | Practical Classroom Career Track] Comprehensive job-oriented training in E-commerce Operations covering Amazon Seller Central, Flipkart Seller Hub, Meesho Supplier Panel, product cataloguing & SEO, inventory logistics, order dispatch & returns management, advanced Excel MIS reporting, and 100% placement assistance. | Career Roles: E-Commerce Executive, Marketplace Account Manager, Catalog Specialist, Inventory & Logistics Executive, E-Commerce MIS Analyst",
+    "official_duration_value": 3,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 120.0,
+    "syllabus_version": "2026.1",
+    "category": "Aptech",
+    "difficulty_level": "INTERMEDIATE",
+    "prerequisites": [
+      "Basic Computer Concepts & Windows",
+      "Basic Internet Browsing & Email",
+      "Undergraduate / Graduate / Job Seekers"
+    ],
+    "modules": [
+      {
+        "module_code": "APT-ECOM-OPS-M1",
+        "title": "Amazon Seller Central Mastery & FBA Operations",
+        "description": "Amazon seller ecosystem, account onboarding, Brand Registry, Fulfillment by Amazon (FBA) vs FBM, Buy Box algorithms, and seller fee structures (20 Hours)",
+        "order_index": 1,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T1-1",
+            "title": "Amazon Seller Account Setup, Brand Registry & Dashboard Navigation",
+            "description": "Step-by-step account opening, GST & business documents verification, navigating the Seller Central interface, setting up shipping templates, and Amazon Brand Registry advantages.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": [
+              "Seller registration & GST compliance",
+              "Seller Central dashboard overview",
+              "Shipping settings & Easy Ship configuration",
+              "Brand Registry enrollment and trademark prerequisites"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T1-2",
+            "title": "Fulfillment by Amazon (FBA) vs Merchant (FBM/Easy Ship)",
+            "description": "Comprehensive understanding of Amazon FBA workflow, shipment creation, inbound FBA box labels, pallet shipment guidelines, FBA storage fees, and long-term storage fee management.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "FBA vs FBM vs Easy Ship vs Self Ship comparison",
+              "Creating FBA inbound shipments & packing slips",
+              "FBA weight handling & referral fee calculation",
+              "Inventory Health, IPI score and restock limits"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T1-3",
+            "title": "Amazon Buy Box (Featured Offer) Mechanics & Pricing Strategies",
+            "description": "How the Amazon Buy Box algorithm works, automated pricing rules, competitor monitoring, handling price matching, and minimum/maximum price guardrails.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "Factors influencing Buy Box win rate",
+              "Automated Pricing Tool configuration",
+              "Business pricing & quantity discounts",
+              "Monitoring suppressed Buy Box issues"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T1-4",
+            "title": "Amazon Sponsored Ads (PPC Basics) & Account Health Management",
+            "description": "Sponsored Products and Sponsored Brands basics, keyword bidding strategies, negative keywords, Order Defect Rate (ODR), Late Dispatch Rate (LDR), and Policy Compliance.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": [
+              "PPC campaign setup & keyword match types",
+              "Monitoring ACOS and ROAS metrics",
+              "Account health rating & performance notifications",
+              "Managing customer feedback and A-to-Z guarantee claims"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M2",
+        "title": "Flipkart Seller Hub & Marketplace Growth",
+        "description": "Flipkart seller ecosystem, account onboarding, Flipkart Fulfilled (FBF) vs Seller Smart, Tiering system, commission calculations, and festive sale campaigns (20 Hours)",
+        "order_index": 2,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T2-1",
+            "title": "Flipkart Seller Onboarding, Business Verification & Dashboard Overview",
+            "description": "Creating and verifying Flipkart seller account, bank details verification, picking location setup, and complete walkthrough of Flipkart Seller Hub interface.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": [
+              "Seller Hub registration & KYC validation",
+              "Pickup address and warehouse location configuration",
+              "Seller dashboard navigation & navigation widgets",
+              "Understanding Flipkart policy and seller guidelines"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T2-2",
+            "title": "Flipkart Fulfilled (FBF) vs Seller Smart & Standard Fulfillment",
+            "description": "Understanding Flipkart Smart fulfillment model, Flipkart Fulfilled (FBF) consignment booking, warehouse appointments, and delivery performance standards.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "Flipkart Smart qualifying criteria & badge benefits",
+              "FBF consignment creation & packing slip requirements",
+              "Flipkart commission, collection fee and fixed fee structures",
+              "Shipping fee calculation based on volumetric weight"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T2-3",
+            "title": "Commission Calculations, Settlement Cycles & Flipkart Tiering",
+            "description": "Deep dive into Bronze, Silver, Gold, and Diamond seller tiers, associated benefits, payment settlement timelines, and deduction reconciliation.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "Flipkart Tier performance metrics (Cancellation rate, RTD, Breaches)",
+              "Tier benefits: fee discounts, visibility boost & faster payouts",
+              "Reading Flipkart settlement reports and GST invoices",
+              "TDS & TCS compliance in e-commerce transactions"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T2-4",
+            "title": "Flipkart Promotions, Big Billion Day Prep & Price Optimization",
+            "description": "Participating in marketplace deals, Flash Sales, Big Billion Days preparation, opt-in discount campaigns, and competitive price benchmarking.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": [
+              "Promotions dashboard & deal opt-ins",
+              "Inventory planning for mega festive sales",
+              "Price recommendation widget & competitor tracking",
+              "Flipkart Advertising (PLA & PCA) campaigns"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M3",
+        "title": "Meesho Supplier Panel & Emerging Platforms",
+        "description": "Meesho 0% commission supplier model, catalogue uploads, price recommendation tools, payment cycles, and operational dynamics of social commerce (16 Hours)",
+        "order_index": 3,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T3-1",
+            "title": "Meesho Supplier Registration & 0% Commission Business Model",
+            "description": "Onboarding on Meesho Supplier Panel, understanding zero commission structure, shipping rate slabs, customer return charges, and target customer demographics.",
+            "estimated_hours": 4.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": [
+              "Supplier onboarding with GST and bank accounts",
+              "Understanding 0% commission vs logistics deductions",
+              "Supplier panel dashboard walkthrough",
+              "Shipping weight slab guidelines on Meesho"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T3-2",
+            "title": "Catalogue Uploads & Single/Bulk Listing on Meesho",
+            "description": "Uploading single and bulk catalogues on Meesho, image background requirements, category selection, variation grouping, and avoiding catalogue rejections.",
+            "estimated_hours": 4.0,
+            "difficulty": "BEGINNER",
+            "order_index": 2,
+            "subtopics": [
+              "Single product listing flow on Meesho",
+              "Bulk catalogue excel template upload",
+              "Resolving catalogue QC errors & image rejections",
+              "Setting wholesale and retail competitive pricing"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T3-3",
+            "title": "Meesho Price Recommendation Tool, Ads & Discovery Algorithm",
+            "description": "Leveraging Meesho Smart Pricing, Price Recommendation tool, running Meesho CPC advertisements, and winning higher organic visibility in feed.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "Price Recommendation Engine and margin analysis",
+              "Setting up Meesho Ads with daily budgets",
+              "Understanding Meesho product feed ranking signals",
+              "Participating in Maha Indian Shopping League deals"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T3-4",
+            "title": "Order Dispatching, Return Handling & Payment Settlements in Meesho",
+            "description": "Processing Meesho orders, label downloading, handover to 3PL logistics (Shadowfax, Delhivery, Xpressbees), tracking 7-day payment cycle, and returns deduction audit.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": [
+              "Daily dispatch protocol and SLA adherence",
+              "Handling courier pickups and manifest verification",
+              "Customer Return vs RTO differentiation on Meesho",
+              "Reconciling Meesho payment payouts and deduction statements"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M4",
+        "title": "Product Listing, Cataloguing & E-Commerce SEO",
+        "description": "Single & bulk catalogue management, Excel flat files, variation listings (parent-child), SEO optimization, keywords research, image guidelines, and A+ content (20 Hours)",
+        "order_index": 4,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T4-1",
+            "title": "Single & Bulk Listing via Excel Flat Files and Inventory Templates",
+            "description": "Downloading marketplace category flat file templates, filling mandatory and optional attributes, feed upload processing, error log decoding, and batch correction.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": [
+              "Inventory Loader and Category-specific flat files",
+              "SKU nomenclature & barcode (EAN/UPC/ISBN/GTIN) management",
+              "Uploading feeds and reading processing summary reports",
+              "Resolving common feed errors (Error 8572, 8560, 5665)"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T4-2",
+            "title": "Parent-Child Variations & Product Taxonomy Mapping",
+            "description": "Structuring complex product variations (Size, Color, Multi-pack combinations), variation themes, managing standalone vs parent-child child SKUs, and browse node mapping.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "Understanding Parent SKU vs Child SKU architecture",
+              "Configuring Size-Color variation matrices in flat files",
+              "Item type keywords & recommended browse node mapping",
+              "Merging, splitting, and updating existing variation families"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T4-3",
+            "title": "High-Converting Product Titles, Bullet Points & E-Commerce SEO",
+            "description": "Keyword research using Helium 10 / Jungle Scout / SellerApp concepts, search volume discovery, title formulas, feature-benefit bullet points, and backend search terms.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "Marketplace SEO vs Traditional Search Engine SEO",
+              "Constructing high-CTR product titles within character limits",
+              "5-point bullet writing technique highlighting UVP",
+              "Backend search terms, subject matter, and target audience fields"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T4-4",
+            "title": "Product Image Standards, Infographics & A+ / Enhanced Brand Content",
+            "description": "Marketplace image requirements (pure white background, 1600x1600 resolution for zoom), lifestyle imagery, dimensions infographic creation, and Amazon A+ / EBC module designing.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": [
+              "Main image compliance and secondary lifestyle shot planning",
+              "Designing infographic callouts (benefits, sizing charts, usage)",
+              "Amazon A+ Content modules (Comparison charts, brand story)",
+              "Mobile-first catalogue design principles"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M5",
+        "title": "Order Processing, Returns, SPF & Inventory Logistics",
+        "description": "Daily order dispatch workflows, SLA management, packing & shipping labels, manifest generation, handling RTO & customer returns, and SPF claims (20 Hours)",
+        "order_index": 5,
+        "estimated_hours": 20.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T5-1",
+            "title": "Daily Order Dispatch Workflows, Invoicing, SLA & Manifest Generation",
+            "description": "Order management lifecycle from New Orders to Dispatched, invoice and shipping label generation, cut-off times, RTD (Ready to Dispatch) SLA adherence, and courier manifest handover.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": [
+              "Standard dispatch SOP and daily picking lists",
+              "Generating GST compliant invoices and thermal shipping labels",
+              "Manifest signing & physical custody transfer to courier",
+              "Tracking dispatched shipments & in-transit delays"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T5-2",
+            "title": "Packaging Standards, Barcoding & Courier Partner Coordination",
+            "description": "Marketplace approved packaging materials (tamper-evident bags, corrugated boxes, bubble wrap), volumetric weight minimization, barcoding, and managing 3PL courier performance.",
+            "estimated_hours": 5.0,
+            "difficulty": "BEGINNER",
+            "order_index": 2,
+            "subtopics": [
+              "Dead weight vs volumetric weight calculation formula",
+              "Packaging compliance to prevent transit damage",
+              "Working with Delhivery, Blue Dart, Ecom Express & ATS",
+              "Courier escalation protocols for missed pickups"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T5-3",
+            "title": "Handling RTO (Return to Origin) vs Customer Returns & Inspection",
+            "description": "Detailed difference between undelivered RTO and customer-initiated returns, return reason analysis, physical return receiving SOP, quality inspection, and restock grading.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "RTO vs Customer return identification and logistics costs",
+              "Return unboxing video recording & defect inspection protocol",
+              "Grading returns (Restockable / Refurbish / Scrap)",
+              "Root-cause analysis to reduce return percentage"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T5-4",
+            "title": "Seller Protection Fund (SPF) Claims, Damage Dispute Filing & Reconciliations",
+            "description": "Filing claims for wrong returns, damaged items, and empty box fraud on Amazon SAFE-T, Flipkart SPF, and Meesho Claims panel with complete documentary evidence.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 4,
+            "subtopics": [
+              "Amazon SAFE-T claim policy & filing procedure",
+              "Flipkart Seller Protection Fund (SPF) documentation & timelines",
+              "Meesho return dispute raising with unboxing proof",
+              "Reconciling reimbursement credits in settlement accounts"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M6",
+        "title": "Advanced Excel & E-Commerce MIS Analytics",
+        "description": "Advanced formulas (VLOOKUP, XLOOKUP, INDEX-MATCH), Pivot Tables, marketplace sales dashboards, payment reconciliation, returns analysis, and executive MIS reports (16 Hours)",
+        "order_index": 6,
+        "estimated_hours": 16.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T6-1",
+            "title": "Essential Excel Formulas for E-Commerce Operations",
+            "description": "Mastering high-utility formulas for managing massive inventory datasets: VLOOKUP, XLOOKUP, INDEX/MATCH, SUMIFS, COUNTIFS, IF-ERROR, and nested logical conditions.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": [
+              "VLOOKUP & XLOOKUP for mapping SKU details and pricing",
+              "Multi-criteria aggregation with SUMIFS and COUNTIFS",
+              "INDEX-MATCH for dynamic two-way lookups",
+              "Text and date cleanup functions (TRIM, CONCATENATE, DATEVALUE)"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T6-2",
+            "title": "Data Cleaning & Structuring Marketplace Raw Exports",
+            "description": "Handling raw CSV/Excel dumps from Amazon, Flipkart, and Meesho, converting text to columns, deduplicating records, conditional formatting, and standardizing master sheets.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "Cleaning raw order and settlement reports",
+              "Removing duplicate SKUs and resolving missing values",
+              "Highlighting aging inventory with Conditional Formatting",
+              "Data Validation lists to prevent data entry errors"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T6-3",
+            "title": "Pivot Tables, Pivot Charts & Dynamic Sales/Returns Dashboards",
+            "description": "Building interactive sales summaries, month-over-month trend analysis, SKU-level profitability, return rate breakdown by category, and slicer-driven dashboards.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 3,
+            "subtopics": [
+              "Summarizing millions of order lines with Pivot Tables",
+              "Calculated Fields for gross margin, return %, and net revenue",
+              "Designing executive dashboard charts with timeline slicers",
+              "Top 20% bestseller SKU Pareto analysis (80/20 rule)"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T6-4",
+            "title": "Marketplace Payment Reconciliation, Commission Audits & Daily MIS Reporting",
+            "description": "Auditing marketplace deductions (commission, shipping, pick & pack fees), identifying overcharges, automated daily MIS sales & inventory report generation.",
+            "estimated_hours": 4.0,
+            "difficulty": "ADVANCED",
+            "order_index": 4,
+            "subtopics": [
+              "Reconciling bank credit vs marketplace settlement statement",
+              "Catching weight discrepancy charges and overcharged commission",
+              "Building automated Daily Sales & Stock (DSR) report template",
+              "Weekly/Monthly executive summary decks for leadership"
+            ],
+            "resources": []
+          }
+        ]
+      },
+      {
+        "module_code": "APT-ECOM-OPS-M7",
+        "title": "Live Capstone Project, Portfolio & Placement Assistance",
+        "description": "Full end-to-end live store simulation, practical operations testing, resume preparation, mock interviews, and Aptech placement cell assistance (8 Hours)",
+        "order_index": 7,
+        "estimated_hours": 8.0,
+        "topics": [
+          {
+            "topic_code": "APT-ECOM-OPS-T7-1",
+            "title": "End-to-End Live Store Simulation Project (Listing to Dispatch & MIS)",
+            "description": "Hands-on capstone project: setting up an imaginary brand catalog across Amazon, Flipkart, and Meesho, creating variation flat files, processing batch orders, and building MIS report.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": [
+              "Project briefing & multi-marketplace catalogue creation",
+              "Simulating daily order dispatch and shipping manifest creation",
+              "Generating comprehensive MIS performance report",
+              "Faculty evaluation & practical feedback"
+            ],
+            "resources": []
+          },
+          {
+            "topic_code": "APT-ECOM-OPS-T7-2",
+            "title": "E-Commerce Executive Resume Building, Interview Q&A & Placement Assistance",
+            "description": "Crafting high-impact E-commerce Specialist resume, portfolio preparation, common technical interview questions, Excel tests, and Aptech placement cell linkage.",
+            "estimated_hours": 4.0,
+            "difficulty": "BEGINNER",
+            "order_index": 2,
+            "subtopics": [
+              "Resume building highlighting marketplace & Excel proficiencies",
+              "Top interview questions (Return handling, Safe-T, Buy Box, Excel tests)",
+              "Industry salary benchmarks and career growth pathways",
+              "Aptech placement cell enrollment & job interview scheduling"
+            ],
+            "resources": []
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -153,16 +153,13 @@ def _ensure_initial_data():
                     db.delete(existing_ankit.student_profile)
                 db.commit()
 
-            # 3. Auto-seed courses if empty
-            if db.query(Course).count() == 0:
-                logger.info("No courses found in database. Loading courses...")
-                root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"
-                for catalogue_name in ("sample_courses.json", "aptech_courses.json"):
-                    courses_file = root_course_dir / catalogue_name
-                    if courses_file.exists():
-                        with open(courses_file, "r", encoding="utf-8") as f:
-                            CourseService.import_courses_from_json(db, f.read())
-                logger.info("Course catalogues seeded.")
+            # 3. Ensure course catalogues are loaded (auto-import any new or missing courses)
+            root_course_dir = Path(__file__).resolve().parent.parent.parent / "course_data"
+            for catalogue_name in ("sample_courses.json", "aptech_courses.json"):
+                courses_file = root_course_dir / catalogue_name
+                if courses_file.exists():
+                    with open(courses_file, "r", encoding="utf-8") as f:
+                        CourseService.import_courses_from_json(db, f.read())
         finally:
             db.close()
     except Exception as e:
