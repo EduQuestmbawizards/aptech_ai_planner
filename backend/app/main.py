@@ -33,98 +33,94 @@ logging.basicConfig(
 )
 logger = logging.getLogger("aptech_planner")
 
-def _ensure_study_plan_columns():
+def _ensure_all_schema_columns():
     try:
         inspector = inspect(engine)
         table_names = inspector.get_table_names()
-        if "study_plans" not in table_names:
-            return
-        existing_cols = {col["name"] for col in inspector.get_columns("study_plans")}
         is_pg = engine.dialect.name == "postgresql"
 
-        columns_to_add = [
-            ("approval_status", "VARCHAR(32) NOT NULL DEFAULT 'APPROVED'"),
-            ("admin_review_note", "TEXT"),
-            ("reviewed_by", "VARCHAR(36)"),
-            ("reviewed_at", "TIMESTAMP"),
-            ("version_number", "INTEGER NOT NULL DEFAULT 1"),
-            ("has_pending_edit", "BOOLEAN NOT NULL DEFAULT FALSE"),
-            ("pending_edit_data", "JSON" if is_pg else "TEXT"),
-            ("generation_source", "VARCHAR(32) NOT NULL DEFAULT 'HYBRID_AI'"),
-        ]
+        schema_migrations = {
+            "study_plans": [
+                ("approval_status", "VARCHAR(32) NOT NULL DEFAULT 'APPROVED'"),
+                ("admin_review_note", "TEXT"),
+                ("reviewed_by", "VARCHAR(36)"),
+                ("reviewed_at", "TIMESTAMP"),
+                ("version_number", "INTEGER NOT NULL DEFAULT 1"),
+                ("has_pending_edit", "BOOLEAN NOT NULL DEFAULT FALSE"),
+                ("pending_edit_data", "JSON" if is_pg else "TEXT"),
+                ("generation_source", "VARCHAR(32) NOT NULL DEFAULT 'HYBRID_AI'"),
+            ],
+            "student_profiles": [
+                ("track_type", "VARCHAR(32) NOT NULL DEFAULT 'COURSE'"),
+                ("phone", "VARCHAR(32)"),
+                ("current_level", "VARCHAR(32) DEFAULT 'BEGINNER'"),
+                ("target_career", "VARCHAR(128)"),
+            ],
+            "users": [
+                ("is_suspended", "BOOLEAN NOT NULL DEFAULT FALSE"),
+                ("is_active", "BOOLEAN NOT NULL DEFAULT TRUE"),
+            ],
+            "enrollments": [
+                ("access_type", "VARCHAR(16) NOT NULL DEFAULT 'FULL'"),
+                ("enrolled_date", "DATE DEFAULT CURRENT_DATE"),
+                ("valid_until", "DATE"),
+                ("payment_reference", "VARCHAR(128)"),
+                ("notes", "TEXT"),
+                ("status", "VARCHAR(32) NOT NULL DEFAULT 'PENDING'"),
+            ],
+            "attendances": [
+                ("study_task_id", "VARCHAR(36)"),
+                ("remarks", "TEXT"),
+                ("marked_by", "VARCHAR(36)"),
+                ("status", "VARCHAR(16) NOT NULL DEFAULT 'PRESENT'"),
+            ],
+            "courses": [
+                ("prerequisites", "JSON" if is_pg else "TEXT"),
+                ("difficulty_level", "VARCHAR(32) DEFAULT 'INTERMEDIATE'"),
+                ("category", "VARCHAR(64)"),
+                ("syllabus_version", "VARCHAR(32) DEFAULT 'v1.0'"),
+            ],
+            "profile_roadmap_items": [
+                ("meeting_topic", "VARCHAR(255)"),
+                ("session_date", "VARCHAR(64)"),
+                ("session_duration_minutes", "INTEGER"),
+                ("meeting_notes", "TEXT"),
+                ("completed_at", "TIMESTAMP"),
+                ("marked_by", "VARCHAR(36)"),
+            ],
+            "profile_session_attendances": [
+                ("status", "VARCHAR(16) NOT NULL DEFAULT 'PRESENT'"),
+                ("duration_minutes", "INTEGER NOT NULL DEFAULT 45"),
+                ("remarks", "TEXT"),
+                ("marked_by", "VARCHAR(36)"),
+            ],
+        }
 
-        for col_name, col_def in columns_to_add:
-            if col_name not in existing_cols:
-                stmt = f"ALTER TABLE study_plans ADD COLUMN {col_name} {col_def}"
-                try:
-                    with engine.begin() as conn:
-                        conn.execute(text(stmt))
-                    logger.info(f"Added column '{col_name}' to study_plans.")
-                except Exception as col_err:
-                    logger.warning(f"Notice migrating study_plans.{col_name}: {col_err}")
+        for table, cols in schema_migrations.items():
+            if table not in table_names:
+                continue
+            try:
+                existing_cols = {col["name"] for col in inspector.get_columns(table)}
+            except Exception as insp_err:
+                logger.warning(f"Failed to inspect columns for table {table}: {insp_err}")
+                continue
+
+            for col_name, col_def in cols:
+                if col_name not in existing_cols:
+                    stmt = f"ALTER TABLE {table} ADD COLUMN {col_name} {col_def}"
+                    try:
+                        with engine.begin() as conn:
+                            conn.execute(text(stmt))
+                        logger.info(f"Added column '{col_name}' to {table}.")
+                    except Exception as col_err:
+                        logger.warning(f"Notice migrating {table}.{col_name}: {col_err}")
     except Exception as e:
-        logger.warning(f"Study plan column migration notice: {str(e)}")
-
-
-def _ensure_student_profile_columns():
-    try:
-        inspector = inspect(engine)
-        table_names = inspector.get_table_names()
-        if "student_profiles" not in table_names:
-            return
-        existing_cols = {col["name"] for col in inspector.get_columns("student_profiles")}
-
-        columns_to_add = [
-            ("track_type", "VARCHAR(32) NOT NULL DEFAULT 'COURSE'"),
-            ("phone", "VARCHAR(32)"),
-            ("current_level", "VARCHAR(32) DEFAULT 'BEGINNER'"),
-            ("target_career", "VARCHAR(128)"),
-        ]
-
-        for col_name, col_def in columns_to_add:
-            if col_name not in existing_cols:
-                stmt = f"ALTER TABLE student_profiles ADD COLUMN {col_name} {col_def}"
-                try:
-                    with engine.begin() as conn:
-                        conn.execute(text(stmt))
-                    logger.info(f"Added column '{col_name}' to student_profiles.")
-                except Exception as col_err:
-                    logger.warning(f"Notice migrating student_profiles.{col_name}: {col_err}")
-    except Exception as e:
-        logger.warning(f"Student profile column migration notice: {str(e)}")
-
-
-def _ensure_user_columns():
-    try:
-        inspector = inspect(engine)
-        table_names = inspector.get_table_names()
-        if "users" not in table_names:
-            return
-        existing_cols = {col["name"] for col in inspector.get_columns("users")}
-
-        columns_to_add = [
-            ("is_suspended", "BOOLEAN NOT NULL DEFAULT FALSE"),
-            ("is_active", "BOOLEAN NOT NULL DEFAULT TRUE"),
-        ]
-
-        for col_name, col_def in columns_to_add:
-            if col_name not in existing_cols:
-                stmt = f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"
-                try:
-                    with engine.begin() as conn:
-                        conn.execute(text(stmt))
-                    logger.info(f"Added column '{col_name}' to users.")
-                except Exception as col_err:
-                    logger.warning(f"Notice migrating users.{col_name}: {col_err}")
-    except Exception as e:
-        logger.warning(f"User column migration notice: {str(e)}")
+        logger.warning(f"Schema column migration notice: {str(e)}")
 
 # Ensure schema and column updates are applied on import
 try:
     Base.metadata.create_all(bind=engine)
-    _ensure_study_plan_columns()
-    _ensure_student_profile_columns()
-    _ensure_user_columns()
+    _ensure_all_schema_columns()
 except Exception as e:
     logger.warning(f"Schema auto-check notice: {str(e)}")
 
@@ -209,9 +205,7 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing database schema...")
     try:
         Base.metadata.create_all(bind=engine)
-        _ensure_study_plan_columns()
-        _ensure_student_profile_columns()
-        _ensure_user_columns()
+        _ensure_all_schema_columns()
         _ensure_initial_data()
         logger.info("Database tables and seed data initialized successfully.")
     except Exception as e:

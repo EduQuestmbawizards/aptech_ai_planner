@@ -382,18 +382,48 @@ def get_students_attendance_overview(
     results = []
     for st in students:
         u = st.user
+        if not u:
+            continue
+
         # Active enrollments
-        enrollments = [e for e in st.enrollments if e.status == EnrollmentStatus.ACTIVE.value]
-        primary_enr = enrollments[0] if enrollments else (st.enrollments[0] if st.enrollments else None)
+        enrollments = []
+        try:
+            enrollments = [e for e in (st.enrollments or []) if getattr(e, "status", None) == EnrollmentStatus.ACTIVE.value]
+        except Exception as enr_err:
+            logger.warning(f"Error reading enrollments for student {st.id}: {enr_err}")
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+        primary_enr = enrollments[0] if enrollments else None
+        if not primary_enr:
+            try:
+                all_enrs = st.enrollments or []
+                primary_enr = all_enrs[0] if all_enrs else None
+            except Exception:
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
 
         if not primary_enr:
             if getattr(st, "track_type", "COURSE") in ("PROFILE_BUILDING", "BOTH"):
                 # Profile Building Student Overview
-                profile_sessions = (
-                    db.query(ProfileSessionAttendance)
-                    .filter(ProfileSessionAttendance.student_id == st.id)
-                    .all()
-                )
+                profile_sessions = []
+                try:
+                    profile_sessions = (
+                        db.query(ProfileSessionAttendance)
+                        .filter(ProfileSessionAttendance.student_id == st.id)
+                        .all()
+                    )
+                except Exception as pb_err:
+                    logger.warning(f"Error reading profile sessions for {st.id}: {pb_err}")
+                    try:
+                        db.rollback()
+                    except Exception:
+                        pass
+
                 today_session = next((s for s in profile_sessions if s.session_date == att_date), None)
                 tot = len(profile_sessions)
                 pres = sum(1 for s in profile_sessions if s.status == "PRESENT")
@@ -408,15 +438,15 @@ def get_students_attendance_overview(
                     "student_id": st.id,
                     "enrollment_id": f"pb_{st.id}",
                     "user_id": u.id,
-                    "full_name": u.full_name,
-                    "email": u.email,
-                    "aptech_student_id": st.aptech_student_id,
-                    "phone": st.phone,
+                    "full_name": u.full_name or "Student",
+                    "email": u.email or "",
+                    "aptech_student_id": getattr(st, "aptech_student_id", "") or "",
+                    "phone": getattr(st, "phone", "") or "",
                     "course_id": "PROFILE_BUILDING",
                     "course_name": "Profile Building & Mentorship",
                     "course_code": "PROFILE",
                     "access_type": "FULL",
-                    "track_type": st.track_type,
+                    "track_type": getattr(st, "track_type", "PROFILE_BUILDING"),
                     "current_status": today_session.status if today_session else None,
                     "remarks": (f"{today_session.topic}: {today_session.description}") if today_session else None,
                     "summary": AttendanceSummary(
@@ -431,24 +461,32 @@ def get_students_attendance_overview(
             continue
 
         # Check attendance for target_date
-        att_record = db.query(Attendance).filter(
-            Attendance.enrollment_id == primary_enr.id,
-            Attendance.attendance_date == att_date
-        ).first()
+        att_record = None
+        all_records = []
+        try:
+            att_record = db.query(Attendance).filter(
+                Attendance.enrollment_id == primary_enr.id,
+                Attendance.attendance_date == att_date
+            ).first()
+            all_records = db.query(Attendance).filter(Attendance.enrollment_id == primary_enr.id).all()
+        except Exception as att_err:
+            logger.warning(f"Error querying attendance for enrollment {primary_enr.id}: {att_err}")
+            try:
+                db.rollback()
+            except Exception:
+                pass
 
-        # All attendance records for this student's primary enrollment
-        all_records = db.query(Attendance).filter(Attendance.enrollment_id == primary_enr.id).all()
         summary = _calculate_summary(all_records)
+        course = getattr(primary_enr, "course", None)
 
-        course = primary_enr.course
         results.append({
             "student_id": st.id,
             "enrollment_id": primary_enr.id,
             "user_id": u.id,
-            "full_name": u.full_name,
-            "email": u.email,
-            "aptech_student_id": st.aptech_student_id,
-            "phone": st.phone,
+            "full_name": u.full_name or "Student",
+            "email": u.email or "",
+            "aptech_student_id": getattr(st, "aptech_student_id", "") or "",
+            "phone": getattr(st, "phone", "") or "",
             "course_id": course.id if course else None,
             "course_name": course.name if course else "Unknown",
             "course_code": course.course_code if course else "",
