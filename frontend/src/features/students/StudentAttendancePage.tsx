@@ -13,13 +13,29 @@ import {
   Filter,
   Calendar,
   Sparkles,
+  Download,
+  Paperclip,
+  FileText,
+  LayoutList,
+  LayoutGrid,
 } from 'lucide-react';
+
+const getDocDownloadUrl = (url?: string | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const rawEnv = (import.meta as any).env?.VITE_API_URL;
+  const baseUrl = rawEnv ? rawEnv.replace(/\/+$/, '') : '';
+  const token = localStorage.getItem('aptech_token');
+  const full = baseUrl ? `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}` : url;
+  return token ? `${full}${full.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : full;
+};
 
 export const StudentAttendancePage: React.FC = () => {
   const [data, setData] = useState<StudentAttendanceStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -177,7 +193,7 @@ export const StudentAttendancePage: React.FC = () => {
         </div>
       )}
 
-      {/* Attendance History Table */}
+      {/* Attendance History Table & Cards View */}
       <div className="bg-white rounded-3xl border border-amber-100 shadow-sm overflow-hidden">
         {/* Table Filter Toolbar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
@@ -188,8 +204,38 @@ export const StudentAttendancePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-500 mr-1 flex items-center gap-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* View Mode Toggle */}
+            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-2xs mr-1">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                  viewMode === 'table'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+                title="Table View"
+              >
+                <LayoutList className="w-3.5 h-3.5 mr-1" />
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                  viewMode === 'cards'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+                title="Cards View"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 mr-1" />
+                <span>Cards</span>
+              </button>
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 mr-0.5 flex items-center gap-1">
               <Filter className="w-3.5 h-3.5" /> Filter:
             </span>
             {(['ALL', 'PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] as const).map((s) => (
@@ -209,75 +255,221 @@ export const StudentAttendancePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Table Body */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-600 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Track / Course</th>
-                <th className="py-3 px-4">Topic / Class</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">What Was Taught / MoM Description</th>
-                <th className="py-3 px-4">Faculty</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {loading ? (
+        {/* Loading / Empty States */}
+        {loading ? (
+          <div className="py-16 text-center text-slate-400 font-bold text-xs">
+            Loading your attendance history...
+          </div>
+        ) : filteredRecords.length === 0 ? (
+          <div className="py-16 text-center text-slate-400 font-bold text-xs">
+            No attendance records found for this filter.
+          </div>
+        ) : viewMode === 'cards' ? (
+          /* Cards View - Executive Detailed View */
+          <div className="p-4 sm:p-6 space-y-4 bg-slate-50/40">
+            {filteredRecords.map((r) => {
+              const isProfile = r.course_id === 'PROFILE_BUILDING';
+              return (
+                <div
+                  key={r.id}
+                  className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-amber-300 transition-all space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono font-bold text-slate-900 text-sm flex items-center">
+                        <Calendar className="w-4 h-4 mr-1.5 text-slate-400" />
+                        {r.attendance_date}
+                      </span>
+                      {isProfile ? (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
+                          Profile Mentorship Track
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                          {r.course_code || 'Course'} • {r.course_name}
+                        </span>
+                      )}
+                      <div>{getStatusBadge(r.status)}</div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 text-xs text-slate-500 font-medium">
+                      {r.duration_minutes && (
+                        <span className="flex items-center text-slate-600 font-semibold bg-slate-100 px-2 py-0.5 rounded-md">
+                          <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                          {r.duration_minutes} mins
+                        </span>
+                      )}
+                      <span>Faculty: <strong className="text-slate-800">{r.marked_by_name || 'Faculty Mentor'}</strong></span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                      {r.topic || r.task_title || (isProfile ? 'Mentorship Session' : 'Daily Lecture / Batch Session')}
+                    </h3>
+                  </div>
+
+                  {/* MoM / Discussion Notes */}
+                  <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70 text-xs text-slate-800 space-y-2">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      What Was Taught / MoM &amp; Discussion Summary:
+                    </div>
+                    <div className="whitespace-pre-line leading-relaxed text-slate-700">
+                      {r.description || r.remarks || 'No notes recorded.'}
+                    </div>
+
+                    {r.remarks && r.description && r.remarks !== r.description && (
+                      <div className="mt-2 pt-2 border-t border-slate-200/60 text-[11px] text-amber-900 italic bg-amber-50/70 p-2.5 rounded-lg">
+                        <span className="font-bold not-italic text-amber-950">Mentor Guidance: </span>
+                        {r.remarks}
+                      </div>
+                    )}
+
+                    {/* Attached Document Download Box */}
+                    {r.document_url && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-blue-50/70 p-3 rounded-lg border border-blue-100">
+                        <div className="flex items-center space-x-2 text-xs font-semibold text-blue-900 truncate max-w-md">
+                          <Paperclip className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <span className="truncate">{r.document_name || 'Session Reference Document'}</span>
+                          {r.document_size_bytes && (
+                            <span className="text-[11px] text-blue-600 font-normal">
+                              ({(r.document_size_bytes / 1024).toFixed(0)} KB {r.document_type ? `• ${r.document_type}` : ''})
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={getDocDownloadUrl(r.document_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={r.document_name || 'session-document'}
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download Document</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Table View - Clean, Top-Aligned & Well-Spaced */
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-600 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
-                    Loading your attendance history...
-                  </td>
+                  <th className="py-3.5 px-4 w-32">Date</th>
+                  <th className="py-3.5 px-4 w-40">Track / Course</th>
+                  <th className="py-3.5 px-4 w-56">Topic / Class</th>
+                  <th className="py-3.5 px-4 w-28">Status</th>
+                  <th className="py-3.5 px-4 min-w-[380px]">What Was Taught / MoM Description</th>
+                  <th className="py-3.5 px-4 w-36">Faculty</th>
                 </tr>
-              ) : filteredRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
-                    No attendance records found for this filter.
-                  </td>
-                </tr>
-              ) : (
-                filteredRecords.map((r) => {
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {filteredRecords.map((r) => {
                   const isProfile = r.course_id === 'PROFILE_BUILDING';
                   return (
-                    <tr key={r.id} className={`transition-colors ${isProfile ? 'hover:bg-amber-50/30' : 'hover:bg-slate-50'}`}>
-                      <td className="py-3 px-4 font-mono font-bold text-slate-800 whitespace-nowrap">
-                        {r.attendance_date}
+                    <tr
+                      key={r.id}
+                      className={`transition-colors align-top ${isProfile ? 'hover:bg-amber-50/20' : 'hover:bg-slate-50'}`}
+                    >
+                      {/* Date */}
+                      <td className="py-4 px-4 align-top font-mono font-bold text-slate-900 whitespace-nowrap">
+                        <div className="flex items-center space-x-1 text-slate-900">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{r.attendance_date}</span>
+                        </div>
                       </td>
-                      <td className="py-3 px-4">
+
+                      {/* Track / Course */}
+                      <td className="py-4 px-4 align-top">
                         {isProfile ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
                             Profile Mentorship
                           </span>
                         ) : (
-                          <>
-                            <span className="font-bold text-slate-900">{r.course_code || 'Course'}</span>
-                            <span className="text-[11px] text-slate-400 block truncate max-w-xs">{r.course_name}</span>
-                          </>
+                          <div>
+                            <span className="font-bold text-slate-900 block">{r.course_code || 'Course'}</span>
+                            <span className="text-[11px] text-slate-500 block truncate max-w-xs">{r.course_name}</span>
+                          </div>
                         )}
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-slate-800 line-clamp-2">
-                          {r.task_title || (isProfile ? 'Mentorship Session' : 'Daily Lecture / Batch Session')}
-                        </span>
+
+                      {/* Topic / Class */}
+                      <td className="py-4 px-4 align-top">
+                        <div className="space-y-1">
+                          <span className="font-bold text-slate-900 leading-snug block">
+                            {r.topic || r.task_title || (isProfile ? 'Mentorship Session' : 'Daily Lecture / Batch Session')}
+                          </span>
+                          {r.duration_minutes && (
+                            <span className="inline-flex items-center text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                              {r.duration_minutes} mins
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="py-3 px-4 whitespace-nowrap">{getStatusBadge(r.status)}</td>
-                      <td className="py-3 px-4 text-slate-700 max-w-md">
-                        {r.remarks ? (
-                          <p className="whitespace-pre-line leading-relaxed text-xs">{r.remarks}</p>
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
+
+                      {/* Status */}
+                      <td className="py-4 px-4 align-top whitespace-nowrap">
+                        {getStatusBadge(r.status)}
                       </td>
-                      <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
+
+                      {/* What Was Taught / MoM Description */}
+                      <td className="py-4 px-4 align-top">
+                        <div className="bg-slate-50/80 rounded-xl p-3.5 border border-slate-200/70 text-xs text-slate-800 space-y-2 max-w-2xl">
+                          <div className="whitespace-pre-line leading-relaxed text-slate-700">
+                            {r.description || r.remarks || <span className="text-slate-400 italic">No notes recorded</span>}
+                          </div>
+
+                          {r.remarks && r.description && r.remarks !== r.description && (
+                            <div className="pt-2 border-t border-slate-200/60 text-[11px] text-amber-900 italic bg-amber-50/60 p-2 rounded-lg">
+                              <span className="font-bold not-italic text-amber-950">Mentor Guidance: </span>
+                              {r.remarks}
+                            </div>
+                          )}
+
+                          {/* Attached Document Download Box */}
+                          {r.document_url && (
+                            <div className="pt-2 mt-1 border-t border-slate-200/60 flex items-center justify-between gap-2 bg-blue-50/80 p-2.5 rounded-lg border border-blue-100">
+                              <div className="flex items-center space-x-1.5 text-xs font-semibold text-blue-900 truncate">
+                                <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                <span className="truncate">{r.document_name || 'Session Document'}</span>
+                                {r.document_size_bytes && (
+                                  <span className="text-[10px] text-blue-700 font-normal">
+                                    ({(r.document_size_bytes / 1024).toFixed(0)} KB)
+                                  </span>
+                                )}
+                              </div>
+                              <a
+                                href={getDocDownloadUrl(r.document_url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download={r.document_name || 'session-document'}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors flex-shrink-0"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>Download</span>
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Faculty */}
+                      <td className="py-4 px-4 align-top whitespace-nowrap text-slate-700 text-xs font-semibold">
                         {r.marked_by_name || 'Faculty Mentor'}
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

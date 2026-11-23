@@ -60,6 +60,13 @@ export interface AttendanceRecord {
   status: AttendanceStatusType;
   remarks?: string;
   marked_by_name?: string;
+  topic?: string;
+  description?: string;
+  duration_minutes?: number;
+  document_url?: string | null;
+  document_name?: string | null;
+  document_type?: string | null;
+  document_size_bytes?: number | null;
   created_at: string;
 }
 

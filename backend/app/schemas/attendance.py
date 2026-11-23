@@ -17,6 +17,13 @@ class AttendanceRecordSchema(BaseModel):
     status: str # PRESENT, ABSENT, LATE, EXCUSED
     remarks: Optional[str] = None
     marked_by_name: Optional[str] = None
+    topic: Optional[str] = None
+    description: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    document_url: Optional[str] = None
+    document_name: Optional[str] = None
+    document_type: Optional[str] = None
+    document_size_bytes: Optional[int] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

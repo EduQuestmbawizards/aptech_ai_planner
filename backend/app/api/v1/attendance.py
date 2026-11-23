@@ -99,16 +99,6 @@ def get_my_attendance(
             existing_dates.add(s.session_date)
             period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
             marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
-            desc_text = (s.description or "").strip()
-            rem_text = (s.remarks or "").strip()
-            parts = []
-            if desc_text:
-                parts.append(desc_text)
-            if s.duration_minutes:
-                parts.append(f"{s.duration_minutes} mins")
-            if rem_text and rem_text != desc_text:
-                parts.append(f"Note: {rem_text}")
-            formatted_remarks = " • ".join(parts) if parts else "Mentorship session attended"
 
             all_record_schemas.append(
                 AttendanceRecordSchema(
@@ -121,11 +111,18 @@ def get_my_attendance(
                     student_name=student.user.full_name if student.user else "Student",
                     aptech_student_id=student.aptech_student_id,
                     study_task_id=s.roadmap_item_id,
-                    task_title=f"{s.topic} ({period_str})",
+                    task_title=s.topic or f"Mentorship Session ({period_str})",
+                    topic=s.topic,
+                    description=s.description,
+                    duration_minutes=s.duration_minutes,
                     attendance_date=s.session_date,
                     status=s.status,
-                    remarks=formatted_remarks,
+                    remarks=s.remarks or s.description,
                     marked_by_name=marker_name,
+                    document_url=getattr(s, "document_url", None),
+                    document_name=getattr(s, "document_name", None),
+                    document_type=getattr(s, "document_type", None),
+                    document_size_bytes=getattr(s, "document_size_bytes", None),
                     created_at=s.created_at
                 )
             )
