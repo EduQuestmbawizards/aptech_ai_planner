@@ -1,10 +1,13 @@
 import os
+import logging
 from datetime import datetime, date, timezone, timedelta
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from app.core.database import get_db
+
+logger = logging.getLogger(__name__)
 from app.core.security import generate_secure_token, get_password_hash
 from app.core.config import settings
 from app.models.user import User, StudentProfile, UserRole
@@ -163,25 +166,35 @@ def list_students(
 
             active_plans = []
             try:
-                plans = p.study_plans or []
+                plans = db.query(StudyPlan).filter(StudyPlan.student_id == p.id).all()
                 active_plans = [plan for plan in plans if getattr(plan, "is_active", False)]
             except Exception as plan_err:
                 logger.warning(f"Failed to fetch study plans for student {p.id}: {plan_err}")
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
 
             has_trial = False
             has_full = False
+            enrollments_count = 0
             try:
-                enrollments = p.enrollments or []
+                enrollments = db.query(Enrollment).filter(Enrollment.student_id == p.id).all()
+                enrollments_count = len(enrollments)
                 has_trial = any(getattr(e, "access_type", None) == AccessType.TRIAL.value for e in enrollments)
                 has_full = any(getattr(e, "access_type", None) == AccessType.FULL.value for e in enrollments)
             except Exception as enr_err:
                 logger.warning(f"Failed to fetch enrollments for student {p.id}: {enr_err}")
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
 
             access_type = AccessType.TRIAL.value if (has_trial and not has_full) else AccessType.FULL.value
 
             invitation_token = None
             activation_url = None
-            if u and not u.password_hash:
+            if u and not getattr(u, "password_hash", None):
                 try:
                     latest_inv = (
                         db.query(InvitationToken)
@@ -195,23 +208,27 @@ def list_students(
                         activation_url = f"{base_url}/activate?token={latest_inv.token}"
                 except Exception as inv_err:
                     logger.warning(f"Failed to fetch invitation token for user {u.id}: {inv_err}")
+                    try:
+                        db.rollback()
+                    except Exception:
+                        pass
 
-            created_at_dt = p.created_at or (u.created_at if u else None) or datetime.now(timezone.utc)
+            created_at_dt = getattr(p, "created_at", None) or (getattr(u, "created_at", None) if u else None) or datetime.now(timezone.utc)
 
             results.append({
                 "id": p.id,
                 "user_id": u.id,
-                "full_name": u.full_name or "Student",
-                "email": u.email or "",
-                "phone": p.phone or "",
-                "aptech_student_id": p.aptech_student_id or "",
-                "is_active": bool(u.is_active),
-                "is_suspended": bool(u.is_suspended),
-                "has_activated": u.password_hash is not None,
+                "full_name": getattr(u, "full_name", "") or "Student",
+                "email": getattr(u, "email", "") or "",
+                "phone": getattr(p, "phone", "") or "",
+                "aptech_student_id": getattr(p, "aptech_student_id", "") or "",
+                "is_active": bool(getattr(u, "is_active", True)),
+                "is_suspended": bool(getattr(u, "is_suspended", False)),
+                "has_activated": getattr(u, "password_hash", None) is not None,
                 "invitation_token": invitation_token,
                 "activation_url": activation_url,
                 "created_at": created_at_dt,
-                "enrollments_count": len(p.enrollments) if p.enrollments else 0,
+                "enrollments_count": enrollments_count,
                 "active_plans_count": len(active_plans),
                 "active_plan_id": active_plans[0].id if active_plans else None,
                 "access_type": access_type,

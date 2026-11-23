@@ -256,9 +256,17 @@ async def options_handler(request: Request, full_path: str):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception at {request.url.path}: {str(exc)}", exc_info=True)
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        headers["Access-Control-Allow-Headers"] = request.headers.get("access-control-request-headers", "*")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": f"An internal server error occurred: {str(exc)}"}
+        content={"detail": f"An internal server error occurred: {str(exc)}"},
+        headers=headers
     )
 
 # Health Check
