@@ -125,79 +125,107 @@ def list_students(
     limit: int = 50,
     db: Session = Depends(get_db)
 ):
-    query = (
-        db.query(StudentProfile)
-        .join(User, StudentProfile.user_id == User.id)
-        .filter(User.role == UserRole.STUDENT.value)
-    )
-
-    if search:
-        search_fmt = f"%{search.strip()}%"
-        query = query.filter(
-            or_(
-                User.full_name.ilike(search_fmt),
-                User.email.ilike(search_fmt),
-                StudentProfile.aptech_student_id.ilike(search_fmt)
-            )
+    try:
+        query = (
+            db.query(StudentProfile)
+            .join(User, StudentProfile.user_id == User.id)
+            .filter(User.role == UserRole.STUDENT.value)
         )
 
-    if course_id:
-        query = query.join(Enrollment, Enrollment.student_id == StudentProfile.id).filter(Enrollment.course_id == course_id)
-
-    if status_filter == "ACTIVE":
-        query = query.filter(User.is_active == True, User.is_suspended == False)
-    elif status_filter == "SUSPENDED":
-        query = query.filter(User.is_suspended == True)
-    elif status_filter == "PENDING":
-        query = query.filter(User.password_hash == None)
-
-    total = query.count()
-    profiles = query.order_by(StudentProfile.created_at.desc()).offset(skip).limit(limit).all()
-
-    results = []
-    for p in profiles:
-        u = p.user
-        active_plans = [plan for plan in p.study_plans if plan.is_active]
-        has_trial = any(e.access_type == AccessType.TRIAL.value for e in p.enrollments)
-        has_full = any(e.access_type == AccessType.FULL.value for e in p.enrollments)
-        access_type = AccessType.TRIAL.value if (has_trial and not has_full) else AccessType.FULL.value
-
-        invitation_token = None
-        activation_url = None
-        if not u.password_hash:
-            latest_inv = (
-                db.query(InvitationToken)
-                .filter(InvitationToken.user_id == u.id, InvitationToken.is_used == False)
-                .order_by(InvitationToken.created_at.desc())
-                .first()
+        if search:
+            search_fmt = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    User.full_name.ilike(search_fmt),
+                    User.email.ilike(search_fmt),
+                    StudentProfile.aptech_student_id.ilike(search_fmt)
+                )
             )
-            if latest_inv:
-                invitation_token = latest_inv.token
-                base_url = resolve_frontend_url(request)
-                activation_url = f"{base_url}/activate?token={latest_inv.token}"
 
-        results.append({
-            "id": p.id,
-            "user_id": u.id,
-            "full_name": u.full_name,
-            "email": u.email,
-            "phone": p.phone,
-            "aptech_student_id": p.aptech_student_id,
-            "is_active": u.is_active,
-            "is_suspended": u.is_suspended,
-            "has_activated": u.password_hash is not None,
-            "invitation_token": invitation_token,
-            "activation_url": activation_url,
-            "created_at": p.created_at,
-            "enrollments_count": len(p.enrollments),
-            "active_plans_count": len(active_plans),
-            "active_plan_id": active_plans[0].id if active_plans else None,
-            "access_type": access_type,
-            "has_trial_enrollment": has_trial,
-            "track_type": getattr(p, "track_type", "COURSE"),
-        })
+        if course_id:
+            query = query.join(Enrollment, Enrollment.student_id == StudentProfile.id).filter(Enrollment.course_id == course_id)
 
-    return {"total": total, "items": results}
+        if status_filter == "ACTIVE":
+            query = query.filter(User.is_active == True, User.is_suspended == False)
+        elif status_filter == "SUSPENDED":
+            query = query.filter(User.is_suspended == True)
+        elif status_filter == "PENDING":
+            query = query.filter(User.password_hash.is_(None))
+
+        total = query.count()
+        profiles = query.order_by(StudentProfile.created_at.desc()).offset(skip).limit(limit).all()
+
+        results = []
+        for p in profiles:
+            u = p.user
+            if not u:
+                continue
+
+            active_plans = []
+            try:
+                plans = p.study_plans or []
+                active_plans = [plan for plan in plans if getattr(plan, "is_active", False)]
+            except Exception as plan_err:
+                logger.warning(f"Failed to fetch study plans for student {p.id}: {plan_err}")
+
+            has_trial = False
+            has_full = False
+            try:
+                enrollments = p.enrollments or []
+                has_trial = any(getattr(e, "access_type", None) == AccessType.TRIAL.value for e in enrollments)
+                has_full = any(getattr(e, "access_type", None) == AccessType.FULL.value for e in enrollments)
+            except Exception as enr_err:
+                logger.warning(f"Failed to fetch enrollments for student {p.id}: {enr_err}")
+
+            access_type = AccessType.TRIAL.value if (has_trial and not has_full) else AccessType.FULL.value
+
+            invitation_token = None
+            activation_url = None
+            if u and not u.password_hash:
+                try:
+                    latest_inv = (
+                        db.query(InvitationToken)
+                        .filter(InvitationToken.user_id == u.id, InvitationToken.is_used == False)
+                        .order_by(InvitationToken.created_at.desc())
+                        .first()
+                    )
+                    if latest_inv:
+                        invitation_token = latest_inv.token
+                        base_url = resolve_frontend_url(request)
+                        activation_url = f"{base_url}/activate?token={latest_inv.token}"
+                except Exception as inv_err:
+                    logger.warning(f"Failed to fetch invitation token for user {u.id}: {inv_err}")
+
+            created_at_dt = p.created_at or (u.created_at if u else None) or datetime.now(timezone.utc)
+
+            results.append({
+                "id": p.id,
+                "user_id": u.id,
+                "full_name": u.full_name or "Student",
+                "email": u.email or "",
+                "phone": p.phone or "",
+                "aptech_student_id": p.aptech_student_id or "",
+                "is_active": bool(u.is_active),
+                "is_suspended": bool(u.is_suspended),
+                "has_activated": u.password_hash is not None,
+                "invitation_token": invitation_token,
+                "activation_url": activation_url,
+                "created_at": created_at_dt,
+                "enrollments_count": len(p.enrollments) if p.enrollments else 0,
+                "active_plans_count": len(active_plans),
+                "active_plan_id": active_plans[0].id if active_plans else None,
+                "access_type": access_type,
+                "has_trial_enrollment": has_trial,
+                "track_type": getattr(p, "track_type", "COURSE") or "COURSE",
+            })
+
+        return {"total": total, "items": results}
+    except Exception as e:
+        logger.error(f"Error in list_students: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error loading students: {str(e)}"
+        )
 
 @router.post("/students", status_code=status.HTTP_201_CREATED)
 def create_student(

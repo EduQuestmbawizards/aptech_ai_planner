@@ -36,57 +36,95 @@ logger = logging.getLogger("aptech_planner")
 def _ensure_study_plan_columns():
     try:
         inspector = inspect(engine)
-        if "study_plans" not in inspector.get_table_names():
+        table_names = inspector.get_table_names()
+        if "study_plans" not in table_names:
             return
         existing_cols = {col["name"] for col in inspector.get_columns("study_plans")}
-        statements = []
-        if "approval_status" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN approval_status VARCHAR(32) NOT NULL DEFAULT 'APPROVED'")
-        if "admin_review_note" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN admin_review_note TEXT")
-        if "reviewed_by" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN reviewed_by VARCHAR(36)")
-        if "reviewed_at" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN reviewed_at TIMESTAMP")
-        if "version_number" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN version_number INTEGER NOT NULL DEFAULT 1")
-        if "has_pending_edit" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN has_pending_edit BOOLEAN NOT NULL DEFAULT FALSE")
-        if "pending_edit_data" not in existing_cols:
-            statements.append("ALTER TABLE study_plans ADD COLUMN pending_edit_data JSON")
+        is_pg = engine.dialect.name == "postgresql"
 
-        if statements:
-            with engine.begin() as conn:
-                for stmt in statements:
-                    conn.execute(text(stmt))
-            logger.info(f"Migrated study_plans columns: {len(statements)} added.")
+        columns_to_add = [
+            ("approval_status", "VARCHAR(32) NOT NULL DEFAULT 'APPROVED'"),
+            ("admin_review_note", "TEXT"),
+            ("reviewed_by", "VARCHAR(36)"),
+            ("reviewed_at", "TIMESTAMP"),
+            ("version_number", "INTEGER NOT NULL DEFAULT 1"),
+            ("has_pending_edit", "BOOLEAN NOT NULL DEFAULT FALSE"),
+            ("pending_edit_data", "JSON" if is_pg else "TEXT"),
+            ("generation_source", "VARCHAR(32) NOT NULL DEFAULT 'HYBRID_AI'"),
+        ]
+
+        for col_name, col_def in columns_to_add:
+            if col_name not in existing_cols:
+                stmt = f"ALTER TABLE study_plans ADD COLUMN {col_name} {col_def}"
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text(stmt))
+                    logger.info(f"Added column '{col_name}' to study_plans.")
+                except Exception as col_err:
+                    logger.warning(f"Notice migrating study_plans.{col_name}: {col_err}")
     except Exception as e:
-        logger.warning(f"Column migration notice: {str(e)}")
+        logger.warning(f"Study plan column migration notice: {str(e)}")
 
 
 def _ensure_student_profile_columns():
     try:
         inspector = inspect(engine)
-        if "student_profiles" not in inspector.get_table_names():
+        table_names = inspector.get_table_names()
+        if "student_profiles" not in table_names:
             return
         existing_cols = {col["name"] for col in inspector.get_columns("student_profiles")}
-        statements = []
-        if "track_type" not in existing_cols:
-            statements.append("ALTER TABLE student_profiles ADD COLUMN track_type VARCHAR(32) NOT NULL DEFAULT 'COURSE'")
 
-        if statements:
-            with engine.begin() as conn:
-                for stmt in statements:
-                    conn.execute(text(stmt))
-            logger.info(f"Migrated student_profiles columns: {len(statements)} added.")
+        columns_to_add = [
+            ("track_type", "VARCHAR(32) NOT NULL DEFAULT 'COURSE'"),
+            ("phone", "VARCHAR(32)"),
+            ("current_level", "VARCHAR(32) DEFAULT 'BEGINNER'"),
+            ("target_career", "VARCHAR(128)"),
+        ]
+
+        for col_name, col_def in columns_to_add:
+            if col_name not in existing_cols:
+                stmt = f"ALTER TABLE student_profiles ADD COLUMN {col_name} {col_def}"
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text(stmt))
+                    logger.info(f"Added column '{col_name}' to student_profiles.")
+                except Exception as col_err:
+                    logger.warning(f"Notice migrating student_profiles.{col_name}: {col_err}")
     except Exception as e:
         logger.warning(f"Student profile column migration notice: {str(e)}")
+
+
+def _ensure_user_columns():
+    try:
+        inspector = inspect(engine)
+        table_names = inspector.get_table_names()
+        if "users" not in table_names:
+            return
+        existing_cols = {col["name"] for col in inspector.get_columns("users")}
+
+        columns_to_add = [
+            ("is_suspended", "BOOLEAN NOT NULL DEFAULT FALSE"),
+            ("is_active", "BOOLEAN NOT NULL DEFAULT TRUE"),
+        ]
+
+        for col_name, col_def in columns_to_add:
+            if col_name not in existing_cols:
+                stmt = f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text(stmt))
+                    logger.info(f"Added column '{col_name}' to users.")
+                except Exception as col_err:
+                    logger.warning(f"Notice migrating users.{col_name}: {col_err}")
+    except Exception as e:
+        logger.warning(f"User column migration notice: {str(e)}")
 
 # Ensure schema and column updates are applied on import
 try:
     Base.metadata.create_all(bind=engine)
     _ensure_study_plan_columns()
     _ensure_student_profile_columns()
+    _ensure_user_columns()
 except Exception as e:
     logger.warning(f"Schema auto-check notice: {str(e)}")
 
@@ -173,6 +211,7 @@ async def lifespan(app: FastAPI):
         Base.metadata.create_all(bind=engine)
         _ensure_study_plan_columns()
         _ensure_student_profile_columns()
+        _ensure_user_columns()
         _ensure_initial_data()
         logger.info("Database tables and seed data initialized successfully.")
     except Exception as e:
@@ -219,7 +258,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception at {request.url.path}: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "An internal server error occurred. Please contact the administrator."}
+        content={"detail": f"An internal server error occurred: {str(exc)}"}
     )
 
 # Health Check
