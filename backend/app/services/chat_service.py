@@ -81,6 +81,17 @@ def validate_and_save_attachment(file: UploadFile) -> Tuple[str, str, str, int]:
     return attachment_url, filename, attachment_type, file_size
 
 
+def _dt_sort_key(dt: Optional[datetime]) -> float:
+    if not dt:
+        return 0.0
+    try:
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc).timestamp()
+        return dt.timestamp()
+    except Exception:
+        return 0.0
+
+
 class ChatService:
 
     @staticmethod
@@ -149,7 +160,7 @@ class ChatService:
             })
 
         # Sort: conversations with messages first, then alphabetical by admin name
-        results.sort(key=lambda x: (x["last_message_at"] is not None, x["last_message_at"] or datetime.min), reverse=True)
+        results.sort(key=lambda x: (x["last_message_at"] is not None, _dt_sort_key(x["last_message_at"])), reverse=True)
         return results
 
     @staticmethod
@@ -197,7 +208,7 @@ class ChatService:
             })
 
         # Sort: unread first, then recent messages, then others
-        results.sort(key=lambda x: (x["unread_count"] > 0, x["last_message_at"] or datetime.min), reverse=True)
+        results.sort(key=lambda x: (x["unread_count"] > 0, _dt_sort_key(x["last_message_at"])), reverse=True)
         return results
 
     @staticmethod
