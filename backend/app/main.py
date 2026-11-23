@@ -93,6 +93,10 @@ def _ensure_all_schema_columns():
                 ("duration_minutes", "INTEGER NOT NULL DEFAULT 45"),
                 ("remarks", "TEXT"),
                 ("marked_by", "VARCHAR(36)"),
+                ("document_url", "VARCHAR(512)"),
+                ("document_name", "VARCHAR(255)"),
+                ("document_type", "VARCHAR(64)"),
+                ("document_size_bytes", "INTEGER"),
             ],
         }
 

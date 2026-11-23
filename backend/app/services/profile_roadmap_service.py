@@ -400,7 +400,11 @@ class ProfileRoadmapService:
         duration_minutes: int = 45,
         status: str = "PRESENT",
         remarks: Optional[str] = None,
-        marked_by: Optional[str] = None
+        marked_by: Optional[str] = None,
+        document_url: Optional[str] = None,
+        document_name: Optional[str] = None,
+        document_type: Optional[str] = None,
+        document_size_bytes: Optional[int] = None
     ) -> ProfileSessionAttendance:
         student = db.query(StudentProfile).filter(StudentProfile.id == student_id).first()
         if not student:
@@ -425,7 +429,11 @@ class ProfileRoadmapService:
             duration_minutes=duration_minutes,
             status=status.upper().strip(),
             remarks=remarks.strip() if remarks else None,
-            marked_by=marked_by
+            marked_by=marked_by,
+            document_url=document_url.strip() if document_url else None,
+            document_name=document_name.strip() if document_name else None,
+            document_type=document_type.strip() if document_type else None,
+            document_size_bytes=document_size_bytes
         )
         db.add(session)
 

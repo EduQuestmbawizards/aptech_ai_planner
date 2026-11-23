@@ -21,7 +21,19 @@ import {
   Lock,
   BookOpen,
   Target,
+  Download,
+  Paperclip,
 } from 'lucide-react';
+
+const getDocDownloadUrl = (url?: string | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const rawEnv = (import.meta as any).env?.VITE_API_URL;
+  const baseUrl = rawEnv ? rawEnv.replace(/\/+$/, '') : '';
+  const token = localStorage.getItem('aptech_token');
+  const full = baseUrl ? `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}` : url;
+  return token ? `${full}${full.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : full;
+};
 
 export const StudentDashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -370,6 +382,24 @@ export const StudentDashboardPage: React.FC = () => {
                       </div>
                       <div className="font-bold text-slate-900 mt-1">{sess.topic}</div>
                       <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed">{sess.description}</p>
+                      {sess.document_url && (
+                        <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
+                          <div className="flex items-center space-x-1.5 text-xs text-blue-900 font-semibold truncate max-w-[240px]">
+                            <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                            <span className="truncate">{sess.document_name || 'Session Document'}</span>
+                          </div>
+                          <a
+                            href={getDocDownloadUrl(sess.document_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={sess.document_name || 'session-document'}
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-bold shadow-2xs transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>Download</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -406,6 +436,29 @@ export const StudentDashboardPage: React.FC = () => {
                 ? latestLoggedSession.description
                 : latestCompletedWithMoM?.meeting_notes}
             </div>
+            {latestLoggedSession?.document_url && (
+              <div className="mt-3 pt-2.5 border-t border-emerald-200/60 flex items-center justify-between">
+                <div className="flex items-center space-x-1.5 text-xs text-emerald-950 font-semibold truncate max-w-[280px]">
+                  <Paperclip className="w-4 h-4 text-emerald-700 flex-shrink-0" />
+                  <span className="truncate">{latestLoggedSession.document_name || 'Session Reference Document'}</span>
+                  {latestLoggedSession.document_size_bytes && (
+                    <span className="text-[10px] text-emerald-700 font-normal">
+                      ({(latestLoggedSession.document_size_bytes / 1024).toFixed(0)} KB)
+                    </span>
+                  )}
+                </div>
+                <a
+                  href={getDocDownloadUrl(latestLoggedSession.document_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={latestLoggedSession.document_name || 'session-document'}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Document</span>
+                </a>
+              </div>
+            )}
           </div>
         )}
 

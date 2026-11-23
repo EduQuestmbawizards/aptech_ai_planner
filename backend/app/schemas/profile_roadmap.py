@@ -50,6 +50,10 @@ class ProfileSessionAttendanceCreate(BaseModel):
     duration_minutes: int = Field(45, ge=1, le=600, description="Session duration in minutes")
     status: str = Field("PRESENT", description="PRESENT, ABSENT, LATE, EXCUSED")
     remarks: Optional[str] = None
+    document_url: Optional[str] = None
+    document_name: Optional[str] = None
+    document_type: Optional[str] = None
+    document_size_bytes: Optional[int] = None
 
 
 class ProfileSessionAttendanceUpdate(BaseModel):
@@ -60,6 +64,10 @@ class ProfileSessionAttendanceUpdate(BaseModel):
     duration_minutes: Optional[int] = Field(None, ge=1, le=600)
     status: Optional[str] = None
     remarks: Optional[str] = None
+    document_url: Optional[str] = None
+    document_name: Optional[str] = None
+    document_type: Optional[str] = None
+    document_size_bytes: Optional[int] = None
 
 
 class ProfileSessionAttendanceResponse(BaseModel):
@@ -75,6 +83,10 @@ class ProfileSessionAttendanceResponse(BaseModel):
     remarks: Optional[str] = None
     marked_by: Optional[str] = None
     marked_by_name: Optional[str] = None
+    document_url: Optional[str] = None
+    document_name: Optional[str] = None
+    document_type: Optional[str] = None
+    document_size_bytes: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

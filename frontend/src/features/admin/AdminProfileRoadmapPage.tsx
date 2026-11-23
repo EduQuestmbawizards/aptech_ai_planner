@@ -35,6 +35,8 @@ import {
   Plus,
   Trash2,
   GraduationCap,
+  Download,
+  Paperclip,
 } from 'lucide-react';
 
 export const AdminProfileRoadmapPage: React.FC = () => {
@@ -83,6 +85,24 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const [sessionRemarks, setSessionRemarks] = useState<string>('');
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
+
+  // Attached Session Reference Document
+  const [sessionDocFile, setSessionDocFile] = useState<File | null>(null);
+  const [sessionDocUrl, setSessionDocUrl] = useState<string | null>(null);
+  const [sessionDocName, setSessionDocName] = useState<string | null>(null);
+  const [sessionDocType, setSessionDocType] = useState<string | null>(null);
+  const [sessionDocSize, setSessionDocSize] = useState<number | null>(null);
+  const [sessionDocUploading, setSessionDocUploading] = useState<boolean>(false);
+
+  const getDocDownloadUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const rawEnv = (import.meta as any).env?.VITE_API_URL;
+    const baseUrl = rawEnv ? rawEnv.replace(/\/+$/, '') : '';
+    const token = localStorage.getItem('aptech_token');
+    const full = baseUrl ? `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}` : url;
+    return token ? `${full}${full.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : full;
+  };
 
   // View All Sessions History Modal State
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
@@ -208,6 +228,12 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionDuration(45);
     setSessionStatus('PRESENT');
     setSessionRemarks('');
+    setSessionDocFile(null);
+    setSessionDocUrl(null);
+    setSessionDocName(null);
+    setSessionDocType(null);
+    setSessionDocSize(null);
+    setSessionDocUploading(false);
     setSessionError(null);
     setShowSessionModal(true);
   };
@@ -221,6 +247,12 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionDuration(session.duration_minutes);
     setSessionStatus(session.status);
     setSessionRemarks(session.remarks || '');
+    setSessionDocFile(null);
+    setSessionDocUrl(session.document_url || null);
+    setSessionDocName(session.document_name || null);
+    setSessionDocType(session.document_type || null);
+    setSessionDocSize(session.document_size_bytes || null);
+    setSessionDocUploading(false);
     setSessionError(null);
     setShowSessionModal(true);
   };
@@ -232,6 +264,25 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionError(null);
 
     try {
+      let finalDocUrl = sessionDocUrl;
+      let finalDocName = sessionDocName;
+      let finalDocType = sessionDocType;
+      let finalDocSize = sessionDocSize;
+
+      if (sessionDocFile) {
+        setSessionDocUploading(true);
+        const formData = new FormData();
+        formData.append('file', sessionDocFile);
+        const uploadRes = await api.post('/profile-roadmap/sessions/upload-document', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        finalDocUrl = uploadRes.data.document_url;
+        finalDocName = uploadRes.data.document_name;
+        finalDocType = uploadRes.data.document_type;
+        finalDocSize = uploadRes.data.document_size_bytes;
+        setSessionDocUploading(false);
+      }
+
       if (editingSessionId) {
         await api.patch(`/profile-roadmap/sessions/${editingSessionId}`, {
           roadmap_item_id: sessionTargetItem?.id || undefined,
@@ -241,6 +292,10 @@ export const AdminProfileRoadmapPage: React.FC = () => {
           duration_minutes: Number(sessionDuration),
           status: sessionStatus,
           remarks: sessionRemarks || undefined,
+          document_url: finalDocUrl,
+          document_name: finalDocName,
+          document_type: finalDocType,
+          document_size_bytes: finalDocSize,
         });
       } else {
         await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`, {
@@ -251,6 +306,10 @@ export const AdminProfileRoadmapPage: React.FC = () => {
           duration_minutes: Number(sessionDuration),
           status: sessionStatus,
           remarks: sessionRemarks || undefined,
+          document_url: finalDocUrl,
+          document_name: finalDocName,
+          document_type: finalDocType,
+          document_size_bytes: finalDocSize,
         });
       }
 
@@ -260,6 +319,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
       setSessionError(err.response?.data?.detail || 'Failed to save session attendance.');
     } finally {
       setSessionLoading(false);
+      setSessionDocUploading(false);
     }
   };
 
@@ -696,6 +756,29 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                                         {sess.remarks && (
                                           <div className="text-[10px] text-slate-400 italic">
                                             Mentor Note: {sess.remarks}
+                                          </div>
+                                        )}
+                                        {sess.document_url && (
+                                          <div className="pt-1.5 mt-1 border-t border-slate-100 flex items-center justify-between">
+                                            <div className="flex items-center space-x-1 text-[11px] text-blue-900 font-medium truncate max-w-[220px]">
+                                              <Paperclip className="w-3 h-3 text-blue-600 flex-shrink-0" />
+                                              <span className="truncate">{sess.document_name || 'Attached Document'}</span>
+                                              {sess.document_size_bytes && (
+                                                <span className="text-[10px] text-slate-400">
+                                                  ({(sess.document_size_bytes / 1024).toFixed(0)} KB)
+                                                </span>
+                                              )}
+                                            </div>
+                                            <a
+                                              href={getDocDownloadUrl(sess.document_url)}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              download={sess.document_name || 'document'}
+                                              className="inline-flex items-center space-x-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold border border-blue-200 transition-colors"
+                                            >
+                                              <Download className="w-2.5 h-2.5" />
+                                              <span>Download</span>
+                                            </a>
                                           </div>
                                         )}
                                       </div>
@@ -1223,6 +1306,88 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 />
               </div>
 
+              {/* Session Reference Document Upload */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-slate-800 flex items-center space-x-1">
+                    <Paperclip className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Session Reference Document (Optional)</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">PDF, Word, Excel, PPT, Images (Max 25MB)</span>
+                </div>
+                <p className="text-[11px] text-slate-500 mb-2">
+                  Upload the syllabus, draft, worksheet, or MoM document discussed in this session. The student can view &amp; download it from their dashboard.
+                </p>
+
+                {(sessionDocName || sessionDocUrl) ? (
+                  <div className="flex items-center justify-between p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center space-x-2 truncate">
+                      <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <div className="truncate">
+                        <p className="text-xs font-bold text-blue-900 truncate">{sessionDocName || 'Attached Document'}</p>
+                        {sessionDocSize && (
+                          <p className="text-[10px] text-blue-700">{(sessionDocSize / 1024).toFixed(0)} KB {sessionDocType ? `• ${sessionDocType}` : ''}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {sessionDocUrl && (
+                        <a
+                          href={getDocDownloadUrl(sessionDocUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="p-1 text-blue-700 hover:text-blue-900 rounded hover:bg-blue-100 transition-colors"
+                          title="Download / View Current Document"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSessionDocFile(null);
+                          setSessionDocUrl(null);
+                          setSessionDocName(null);
+                          setSessionDocType(null);
+                          setSessionDocSize(null);
+                        }}
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
+                        title="Remove Document"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="file"
+                      id="session-doc-upload"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.webp"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const f = e.target.files[0];
+                          setSessionDocFile(f);
+                          setSessionDocName(f.name);
+                          setSessionDocSize(f.size);
+                          const ext = f.name.split('.').pop()?.toUpperCase() || 'FILE';
+                          setSessionDocType(ext);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="session-doc-upload"
+                      className="flex items-center justify-center space-x-2 py-3 px-4 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-lg cursor-pointer bg-white hover:bg-blue-50/30 transition-all text-xs font-semibold text-slate-600 hover:text-blue-600"
+                    >
+                      <Upload className="w-4 h-4 text-slate-400" />
+                      <span>Click to choose file or drag and drop</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
               {/* Submit Buttons */}
               <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
                 <button
@@ -1377,6 +1542,30 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                       <div className="text-[11px] text-slate-500 italic">
                         <span className="font-semibold text-slate-600 not-italic">Faculty Guidance: </span>
                         {s.remarks}
+                      </div>
+                    )}
+
+                    {s.document_url && (
+                      <div className="pt-2 mt-1 border-t border-slate-200/60 flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5 text-xs text-blue-900 font-semibold truncate max-w-[280px]">
+                          <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                          <span className="truncate">{s.document_name || 'Session Document'}</span>
+                          {s.document_size_bytes && (
+                            <span className="text-[10px] text-slate-400 font-normal">
+                              ({(s.document_size_bytes / 1024).toFixed(0)} KB)
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={getDocDownloadUrl(s.document_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={s.document_name || 'document'}
+                          className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Download</span>
+                        </a>
                       </div>
                     )}
                   </div>

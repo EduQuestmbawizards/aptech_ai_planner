@@ -53,6 +53,12 @@ class ProfileSessionAttendance(Base):
     remarks = Column(Text, nullable=True)
     marked_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
+    # Attached session reference document (PDF, Word, Excel, PPT, Image, etc.)
+    document_url = Column(String(512), nullable=True)
+    document_name = Column(String(255), nullable=True)
+    document_type = Column(String(64), nullable=True)
+    document_size_bytes = Column(Integer, nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

@@ -18,7 +18,19 @@ import {
   MessageSquareQuote,
   Check,
   CalendarCheck,
+  Download,
+  Paperclip,
 } from 'lucide-react';
+
+const getDocDownloadUrl = (url?: string | null) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const rawEnv = (import.meta as any).env?.VITE_API_URL;
+  const baseUrl = rawEnv ? rawEnv.replace(/\/+$/, '') : '';
+  const token = localStorage.getItem('aptech_token');
+  const full = baseUrl ? `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}` : url;
+  return token ? `${full}${full.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : full;
+};
 
 export const StudentProfileRoadmapPage: React.FC = () => {
   const [data, setData] = useState<ProfileRoadmapStudentSummary | null>(null);
@@ -316,6 +328,29 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                             <div className="text-[11px] text-slate-500 italic mt-0.5">
                               <span className="font-semibold text-slate-600 not-italic">Mentor Feedback: </span>
                               {sess.remarks}
+                            </div>
+                          )}
+                          {sess.document_url && (
+                            <div className="pt-2 mt-1.5 border-t border-slate-100 flex items-center justify-between">
+                              <div className="flex items-center space-x-1.5 text-xs text-blue-900 font-semibold truncate max-w-[280px]">
+                                <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                <span className="truncate">{sess.document_name || 'Session Reference Document'}</span>
+                                {sess.document_size_bytes && (
+                                  <span className="text-[10px] text-slate-400 font-normal">
+                                    ({(sess.document_size_bytes / 1024).toFixed(0)} KB)
+                                  </span>
+                                )}
+                              </div>
+                              <a
+                                href={getDocDownloadUrl(sess.document_url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download={sess.document_name || 'session-document'}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>Download</span>
+                              </a>
                             </div>
                           )}
                         </div>

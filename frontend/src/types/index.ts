@@ -447,6 +447,10 @@ export interface ProfileSessionAttendance {
   remarks?: string | null;
   marked_by?: string | null;
   marked_by_name?: string | null;
+  document_url?: string | null;
+  document_name?: string | null;
+  document_type?: string | null;
+  document_size_bytes?: number | null;
   created_at?: string;
   updated_at?: string;
 }

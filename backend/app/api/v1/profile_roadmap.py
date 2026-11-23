@@ -1,9 +1,14 @@
+import os
+import uuid
+import re
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import decode_access_token
 from app.api.deps import get_current_user, require_admin
 from app.models.user import User, StudentProfile, UserRole
 from app.models.profile_roadmap import ProfileRoadmapItem, RoadmapItemStatus, ProfileSessionAttendance
@@ -29,6 +34,21 @@ logger = logging.getLogger("aptech_planner.api.profile_roadmap")
 router = APIRouter(prefix="/profile-roadmap", tags=["Profile Building & Mentorship Roadmap"])
 
 
+SESSION_DOCS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+    "uploads",
+    "session_documents"
+)
+os.makedirs(SESSION_DOCS_DIR, exist_ok=True)
+
+ALLOWED_DOC_EXTS = {
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    ".txt", ".csv", ".rtf", ".odt", ".ods", ".odp",
+    ".png", ".jpg", ".jpeg", ".webp"
+}
+MAX_DOC_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB
+
+
 def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceResponse:
     marker_name = s.marker.full_name if s.marker else None
     period_str = s.roadmap_item.period if s.roadmap_item else None
@@ -45,6 +65,10 @@ def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceR
         remarks=s.remarks,
         marked_by=s.marked_by,
         marked_by_name=marker_name,
+        document_url=getattr(s, "document_url", None),
+        document_name=getattr(s, "document_name", None),
+        document_type=getattr(s, "document_type", None),
+        document_size_bytes=getattr(s, "document_size_bytes", None),
         created_at=s.created_at,
         updated_at=s.updated_at
     )
@@ -319,6 +343,103 @@ def get_my_profile_roadmap(
 # Session Attendance & Class History Endpoints
 # -------------------------------------------------------------
 
+@router.post("/sessions/upload-document")
+async def upload_session_document(
+    file: UploadFile = File(...),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin uploads a session reference document (PDF, Word, Excel, PPT, Image, etc.)
+    Max size: 25MB.
+    Returns: document_url, document_name, document_size_bytes, document_type
+    """
+    filename = file.filename or "session_document"
+    _, ext = os.path.splitext(filename)
+    ext = ext.lower()
+
+    if ext not in ALLOWED_DOC_EXTS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file format '{ext}'. Allowed: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx), Text (.txt), and Images."
+        )
+
+    try:
+        content = await file.read()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to read file: {str(e)}")
+
+    file_size = len(content)
+    if file_size > MAX_DOC_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File exceeds maximum allowed size of 25MB (Size: {file_size / (1024 * 1024):.2f}MB)."
+        )
+
+    safe_name = re.sub(r'[^a-zA-Z0-9_\.-]', '_', filename)
+    saved_filename = f"{uuid.uuid4().hex}_{safe_name}"
+    file_path = os.path.join(SESSION_DOCS_DIR, saved_filename)
+
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    doc_type = ext.replace(".", "").upper()
+    document_url = f"/api/profile-roadmap/sessions/documents/{saved_filename}"
+
+    return {
+        "document_url": document_url,
+        "document_name": filename,
+        "document_type": doc_type,
+        "document_size_bytes": file_size
+    }
+
+
+@router.get("/sessions/documents/{filename}")
+def get_session_document(
+    filename: str,
+    request: Request,
+    token: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows authenticated users (Admin, Super Admin, or Student) to download/view uploaded session documents.
+    Accepts auth via:
+    1. Authorization Bearer header
+    2. Cookie 'access_token'
+    3. Query parameter ?token=...
+    """
+    auth_token = None
+    if request:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ")[1]
+        elif "access_token" in request.cookies:
+            auth_token = request.cookies.get("access_token")
+
+    if not auth_token and token:
+        auth_token = token
+
+    if not auth_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required to access documents.")
+
+    payload = decode_access_token(auth_token)
+    if not payload or not payload.get("sub"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired authentication token.")
+
+    safe_basename = os.path.basename(filename)
+    file_path = os.path.join(SESSION_DOCS_DIR, safe_basename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session document file not found.")
+
+    parts = safe_basename.split("_", 1)
+    download_filename = parts[1] if len(parts) > 1 else safe_basename
+
+    return FileResponse(
+        file_path,
+        filename=download_filename,
+        media_type="application/octet-stream"
+    )
+
+
 @router.post("/students/{student_id}/sessions", response_model=ProfileSessionAttendanceResponse)
 def log_session_attendance(
     student_id: str,
@@ -341,7 +462,11 @@ def log_session_attendance(
         duration_minutes=body.duration_minutes,
         status=body.status,
         remarks=body.remarks,
-        marked_by=admin.id
+        marked_by=admin.id,
+        document_url=body.document_url,
+        document_name=body.document_name,
+        document_type=body.document_type,
+        document_size_bytes=body.document_size_bytes
     )
     return _serialize_session(session)
 
