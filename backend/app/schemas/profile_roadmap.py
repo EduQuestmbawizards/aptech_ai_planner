@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime, date
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class ProfileRoadmapItemBase(BaseModel):
@@ -96,11 +96,28 @@ class ProfileSessionAttendanceResponse(BaseModel):
     document_name: Optional[str] = None
     document_type: Optional[str] = None
     document_size_bytes: Optional[int] = None
-    attachments: List[SessionAttachmentItem] = []
+    attachments: Optional[List[SessionAttachmentItem]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("attachments", mode="before")
+    @classmethod
+    def parse_attachments(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            try:
+                import json
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                return []
+        if isinstance(v, list):
+            return v
+        return []
 
 
 class ProfileRoadmapItemResponse(BaseModel):
@@ -119,7 +136,7 @@ class ProfileRoadmapItemResponse(BaseModel):
     marked_by: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    sessions: List[ProfileSessionAttendanceResponse] = []
+    sessions: Optional[List[ProfileSessionAttendanceResponse]] = []
 
     model_config = ConfigDict(from_attributes=True)
 

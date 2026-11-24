@@ -110,9 +110,24 @@ def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceR
 
 def _serialize_item(item: ProfileRoadmapItem) -> ProfileRoadmapItemResponse:
     sessions = [_serialize_session(s) for s in (item.sessions or [])]
-    data = ProfileRoadmapItemResponse.model_validate(item)
-    data.sessions = sessions
-    return data
+    return ProfileRoadmapItemResponse(
+        id=item.id,
+        student_id=item.student_id,
+        period=item.period,
+        order_index=item.order_index,
+        main_actions=item.main_actions,
+        milestones_outputs=item.milestones_outputs,
+        status=item.status,
+        meeting_topic=item.meeting_topic,
+        session_date=item.session_date,
+        session_duration_minutes=item.session_duration_minutes,
+        meeting_notes=item.meeting_notes,
+        completed_at=item.completed_at,
+        marked_by=item.marked_by,
+        created_at=item.created_at,
+        updated_at=item.updated_at,
+        sessions=sessions
+    )
 
 
 @router.post("/upload-excel", response_model=ProfileRoadmapStudentSummary)
@@ -246,7 +261,7 @@ def update_roadmap_item(
         item_id=item_id,
         update_data=update_data
     )
-    return ProfileRoadmapItemResponse.model_validate(updated_item)
+    return _serialize_item(updated_item)
 
 
 @router.patch("/items/{item_id}/complete", response_model=ProfileRoadmapItemResponse)
@@ -269,7 +284,7 @@ def complete_roadmap_item(
         meeting_notes=body.meeting_notes,
         marked_by=admin.id
     )
-    return ProfileRoadmapItemResponse.model_validate(updated_item)
+    return _serialize_item(updated_item)
 
 
 @router.patch("/items/{item_id}/status", response_model=ProfileRoadmapItemResponse)
@@ -287,7 +302,7 @@ def update_roadmap_item_status(
         item_id=item_id,
         new_status=body.status
     )
-    return ProfileRoadmapItemResponse.model_validate(updated_item)
+    return _serialize_item(updated_item)
 
 
 @router.post("/students/{student_id}/items", response_model=ProfileRoadmapItemResponse)
@@ -323,7 +338,7 @@ def add_manual_roadmap_item(
     db.add(item)
     db.commit()
     db.refresh(item)
-    return ProfileRoadmapItemResponse.model_validate(item)
+    return _serialize_item(item)
 
 
 @router.delete("/items/{item_id}")

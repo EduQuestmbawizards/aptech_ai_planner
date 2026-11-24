@@ -548,11 +548,11 @@ class ProfileRoadmapService:
             .all()
         )
         total_sessions = len(sessions)
-        session_duration = sum(s.duration_minutes for s in sessions if s.status == "PRESENT")
+        session_duration = sum((s.duration_minutes or 0) for s in sessions if s.status == "PRESENT")
 
         # Fallback to items meeting duration if no sessions logged yet
         if total_sessions == 0:
-            session_duration = sum(i.session_duration_minutes or 0 for i in items if i.status == RoadmapItemStatus.COMPLETED.value)
+            session_duration = sum((i.session_duration_minutes or 0) for i in items if i.status == RoadmapItemStatus.COMPLETED.value)
             total_sessions = completed
 
         percentage = round((completed / total * 100), 1) if total > 0 else 0.0
