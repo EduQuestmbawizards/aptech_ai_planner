@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 from datetime import datetime, date, timezone
 from typing import List, Dict, Any, Optional
@@ -404,7 +405,8 @@ class ProfileRoadmapService:
         document_url: Optional[str] = None,
         document_name: Optional[str] = None,
         document_type: Optional[str] = None,
-        document_size_bytes: Optional[int] = None
+        document_size_bytes: Optional[int] = None,
+        attachments: Optional[Any] = None
     ) -> ProfileSessionAttendance:
         student = db.query(StudentProfile).filter(StudentProfile.id == student_id).first()
         if not student:
@@ -420,6 +422,25 @@ class ProfileRoadmapService:
                 ProfileRoadmapItem.student_id == student_id
             ).first()
 
+        # Handle multiple attachments JSON serialization
+        attachments_json = None
+        if attachments:
+            clean_att = []
+            for a in attachments:
+                if hasattr(a, "model_dump"):
+                    clean_att.append(a.model_dump())
+                elif hasattr(a, "dict"):
+                    clean_att.append(a.dict())
+                elif isinstance(a, dict):
+                    clean_att.append(a)
+            if clean_att:
+                attachments_json = json.dumps(clean_att)
+                if not document_url and clean_att[0].get("url"):
+                    document_url = clean_att[0].get("url")
+                    document_name = clean_att[0].get("name")
+                    document_type = clean_att[0].get("type")
+                    document_size_bytes = clean_att[0].get("size_bytes")
+
         session = ProfileSessionAttendance(
             student_id=student_id,
             roadmap_item_id=roadmap_item.id if roadmap_item else None,
@@ -433,7 +454,8 @@ class ProfileRoadmapService:
             document_url=document_url.strip() if document_url else None,
             document_name=document_name.strip() if document_name else None,
             document_type=document_type.strip() if document_type else None,
-            document_size_bytes=document_size_bytes
+            document_size_bytes=document_size_bytes,
+            attachments=attachments_json
         )
         db.add(session)
 
@@ -463,6 +485,26 @@ class ProfileRoadmapService:
         session = db.query(ProfileSessionAttendance).filter(ProfileSessionAttendance.id == session_id).first()
         if not session:
             raise HTTPException(status_code=404, detail="Session attendance record not found.")
+
+        if "attachments" in update_data:
+            att_raw = update_data.pop("attachments")
+            if att_raw is not None:
+                clean_att = []
+                for a in att_raw:
+                    if hasattr(a, "model_dump"):
+                        clean_att.append(a.model_dump())
+                    elif hasattr(a, "dict"):
+                        clean_att.append(a.dict())
+                    elif isinstance(a, dict):
+                        clean_att.append(a)
+                session.attachments = json.dumps(clean_att) if clean_att else None
+                if clean_att and clean_att[0].get("url"):
+                    session.document_url = clean_att[0].get("url")
+                    session.document_name = clean_att[0].get("name")
+                    session.document_type = clean_att[0].get("type")
+                    session.document_size_bytes = clean_att[0].get("size_bytes")
+            else:
+                session.attachments = None
 
         for field, val in update_data.items():
             if val is not None and hasattr(session, field):

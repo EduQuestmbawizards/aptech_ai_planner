@@ -42,6 +42,13 @@ class ProfileRoadmapStatusUpdateRequest(BaseModel):
     status: str = Field(..., description="PENDING, IN_PROGRESS, or COMPLETED")
 
 
+class SessionAttachmentItem(BaseModel):
+    url: str
+    name: str
+    type: Optional[str] = None
+    size_bytes: Optional[int] = None
+
+
 class ProfileSessionAttendanceCreate(BaseModel):
     roadmap_item_id: Optional[str] = None
     session_date: date
@@ -54,6 +61,7 @@ class ProfileSessionAttendanceCreate(BaseModel):
     document_name: Optional[str] = None
     document_type: Optional[str] = None
     document_size_bytes: Optional[int] = None
+    attachments: Optional[List[SessionAttachmentItem]] = None
 
 
 class ProfileSessionAttendanceUpdate(BaseModel):
@@ -68,6 +76,7 @@ class ProfileSessionAttendanceUpdate(BaseModel):
     document_name: Optional[str] = None
     document_type: Optional[str] = None
     document_size_bytes: Optional[int] = None
+    attachments: Optional[List[SessionAttachmentItem]] = None
 
 
 class ProfileSessionAttendanceResponse(BaseModel):
@@ -87,6 +96,7 @@ class ProfileSessionAttendanceResponse(BaseModel):
     document_name: Optional[str] = None
     document_type: Optional[str] = None
     document_size_bytes: Optional[int] = None
+    attachments: List[SessionAttachmentItem] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -132,4 +142,5 @@ class ProfileRoadmapStudentSummary(BaseModel):
     track_type: str
     stats: ProfileRoadmapStats
     items: List[ProfileRoadmapItemResponse]
+    sessions: List[ProfileSessionAttendanceResponse] = []
 

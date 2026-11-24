@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import date, datetime, timezone
 from typing import Optional, List
@@ -100,6 +101,23 @@ def get_my_attendance(
             period_str = s.roadmap_item.period if s.roadmap_item else "Mentorship Track"
             marker_name = s.marker.full_name if s.marker else "Faculty Mentor"
 
+            # Parse attachments list
+            att_list = []
+            raw_att = getattr(s, "attachments", None)
+            if raw_att:
+                try:
+                    att_list = json.loads(raw_att)
+                except Exception:
+                    pass
+            doc_url = getattr(s, "document_url", None)
+            if doc_url and not att_list:
+                att_list = [{
+                    "url": doc_url,
+                    "name": getattr(s, "document_name", None) or "Attached Document",
+                    "type": getattr(s, "document_type", None),
+                    "size_bytes": getattr(s, "document_size_bytes", None)
+                }]
+
             all_record_schemas.append(
                 AttendanceRecordSchema(
                     id=s.id,
@@ -119,10 +137,11 @@ def get_my_attendance(
                     status=s.status,
                     remarks=s.remarks or s.description,
                     marked_by_name=marker_name,
-                    document_url=getattr(s, "document_url", None),
+                    document_url=doc_url,
                     document_name=getattr(s, "document_name", None),
                     document_type=getattr(s, "document_type", None),
                     document_size_bytes=getattr(s, "document_size_bytes", None),
+                    attachments=att_list,
                     created_at=s.created_at
                 )
             )

@@ -45,6 +45,13 @@ export interface StudentDetail {
 
 export type AttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
 
+export interface SessionAttachmentItem {
+  url: string;
+  name: string;
+  type?: string | null;
+  size_bytes?: number | null;
+}
+
 export interface AttendanceRecord {
   id: string;
   student_id: string;
@@ -67,6 +74,7 @@ export interface AttendanceRecord {
   document_name?: string | null;
   document_type?: string | null;
   document_size_bytes?: number | null;
+  attachments?: SessionAttachmentItem[];
   created_at: string;
 }
 
@@ -458,6 +466,7 @@ export interface ProfileSessionAttendance {
   document_name?: string | null;
   document_type?: string | null;
   document_size_bytes?: number | null;
+  attachments?: SessionAttachmentItem[];
   created_at?: string;
   updated_at?: string;
 }
@@ -499,6 +508,7 @@ export interface ProfileRoadmapStudentSummary {
   track_type: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
   stats: ProfileRoadmapStats;
   items: ProfileRoadmapItem[];
+  sessions?: ProfileSessionAttendance[];
 }
 
 export interface ChatMessage {

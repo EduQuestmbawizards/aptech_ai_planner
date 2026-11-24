@@ -5,6 +5,7 @@ import {
   ProfileRoadmapStudentSummary,
   ProfileRoadmapItem,
   ProfileSessionAttendance,
+  SessionAttachmentItem,
   RoadmapItemStatusType,
   AttendanceStatusType,
 } from '../../types';
@@ -86,13 +87,22 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
 
-  // Attached Session Reference Document
+  // Attached Session Reference Documents (Supports multiple files)
+  const [sessionAttachments, setSessionAttachments] = useState<SessionAttachmentItem[]>([]);
   const [sessionDocFile, setSessionDocFile] = useState<File | null>(null);
   const [sessionDocUrl, setSessionDocUrl] = useState<string | null>(null);
   const [sessionDocName, setSessionDocName] = useState<string | null>(null);
   const [sessionDocType, setSessionDocType] = useState<string | null>(null);
   const [sessionDocSize, setSessionDocSize] = useState<number | null>(null);
   const [sessionDocUploading, setSessionDocUploading] = useState<boolean>(false);
+
+  // Manual Milestone Modal State
+  const [showAddMilestoneModal, setShowAddMilestoneModal] = useState<boolean>(false);
+  const [manualPeriod, setManualPeriod] = useState<string>('');
+  const [manualActions, setManualActions] = useState<string>('');
+  const [manualOutputs, setManualOutputs] = useState<string>('');
+  const [manualLoading, setManualLoading] = useState<boolean>(false);
+  const [manualError, setManualError] = useState<string | null>(null);
 
   const getDocDownloadUrl = (url?: string | null) => {
     if (!url) return '';
@@ -137,6 +147,9 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     try {
       const res = await api.get(`/profile-roadmap/students/${studentId}`);
       setSelectedStudent(res.data);
+      if (res.data.sessions) {
+        setStudentSessionsHistory(res.data.sessions);
+      }
       // Update student in list
       setStudents((prev) =>
         prev.map((s) => (s.student_id === studentId ? res.data : s))
@@ -228,6 +241,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionDuration(45);
     setSessionStatus('PRESENT');
     setSessionRemarks('');
+    setSessionAttachments([]);
     setSessionDocFile(null);
     setSessionDocUrl(null);
     setSessionDocName(null);
@@ -247,6 +261,20 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionDuration(session.duration_minutes);
     setSessionStatus(session.status);
     setSessionRemarks(session.remarks || '');
+
+    // Multi-attachment initialization
+    let initialAtts: SessionAttachmentItem[] = [];
+    if (session.attachments && session.attachments.length > 0) {
+      initialAtts = session.attachments;
+    } else if (session.document_url) {
+      initialAtts = [{
+        url: session.document_url,
+        name: session.document_name || 'Attached Document',
+        type: session.document_type,
+        size_bytes: session.document_size_bytes,
+      }];
+    }
+    setSessionAttachments(initialAtts);
     setSessionDocFile(null);
     setSessionDocUrl(session.document_url || null);
     setSessionDocName(session.document_name || null);
@@ -257,6 +285,72 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setShowSessionModal(true);
   };
 
+  const handleUploadFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const files = Array.from(e.target.files);
+    setSessionDocUploading(true);
+    setSessionError(null);
+    try {
+      const newItems: SessionAttachmentItem[] = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const uploadRes = await api.post('/profile-roadmap/sessions/upload-document', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        newItems.push({
+          url: uploadRes.data.document_url,
+          name: uploadRes.data.document_name,
+          type: uploadRes.data.document_type,
+          size_bytes: uploadRes.data.document_size_bytes,
+        });
+      }
+      setSessionAttachments((prev) => [...prev, ...newItems]);
+    } catch (err: any) {
+      setSessionError(err?.response?.data?.detail || 'Failed to upload one or more files.');
+    } finally {
+      setSessionDocUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setSessionAttachments((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleOpenAddManualMilestone = () => {
+    setManualPeriod(`Month ${(selectedStudent?.items.length || 0) + 1}`);
+    setManualActions('');
+    setManualOutputs('');
+    setManualError(null);
+    setShowAddMilestoneModal(true);
+  };
+
+  const handleSaveManualMilestone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+    if (!manualPeriod.trim() || !manualActions.trim()) {
+      setManualError('Period / Milestone name and Key Actions are required.');
+      return;
+    }
+    setManualLoading(true);
+    setManualError(null);
+    try {
+      await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/items`, {
+        period: manualPeriod.trim(),
+        main_actions: manualActions.trim(),
+        milestones_outputs: manualOutputs.trim() || undefined,
+        order_index: (selectedStudent.items.length || 0) + 1,
+      });
+      await loadStudentDetails(selectedStudent.student_id);
+      setShowAddMilestoneModal(false);
+    } catch (err: any) {
+      setManualError(err?.response?.data?.detail || 'Failed to create milestone.');
+    } finally {
+      setManualLoading(false);
+    }
+  };
+
   const handleSaveSession = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
@@ -264,53 +358,28 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     setSessionError(null);
 
     try {
-      let finalDocUrl = sessionDocUrl;
-      let finalDocName = sessionDocName;
-      let finalDocType = sessionDocType;
-      let finalDocSize = sessionDocSize;
+      const finalAttachments = sessionAttachments;
+      const firstAtt = finalAttachments[0];
 
-      if (sessionDocFile) {
-        setSessionDocUploading(true);
-        const formData = new FormData();
-        formData.append('file', sessionDocFile);
-        const uploadRes = await api.post('/profile-roadmap/sessions/upload-document', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        finalDocUrl = uploadRes.data.document_url;
-        finalDocName = uploadRes.data.document_name;
-        finalDocType = uploadRes.data.document_type;
-        finalDocSize = uploadRes.data.document_size_bytes;
-        setSessionDocUploading(false);
-      }
+      const payload = {
+        roadmap_item_id: sessionTargetItem?.id || undefined,
+        session_date: sessionDate,
+        topic: sessionTopic,
+        description: sessionDescription,
+        duration_minutes: Number(sessionDuration),
+        status: sessionStatus,
+        remarks: sessionRemarks || undefined,
+        document_url: firstAtt?.url || null,
+        document_name: firstAtt?.name || null,
+        document_type: firstAtt?.type || null,
+        document_size_bytes: firstAtt?.size_bytes || null,
+        attachments: finalAttachments,
+      };
 
       if (editingSessionId) {
-        await api.patch(`/profile-roadmap/sessions/${editingSessionId}`, {
-          roadmap_item_id: sessionTargetItem?.id || undefined,
-          session_date: sessionDate,
-          topic: sessionTopic,
-          description: sessionDescription,
-          duration_minutes: Number(sessionDuration),
-          status: sessionStatus,
-          remarks: sessionRemarks || undefined,
-          document_url: finalDocUrl,
-          document_name: finalDocName,
-          document_type: finalDocType,
-          document_size_bytes: finalDocSize,
-        });
+        await api.patch(`/profile-roadmap/sessions/${editingSessionId}`, payload);
       } else {
-        await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`, {
-          roadmap_item_id: sessionTargetItem?.id || undefined,
-          session_date: sessionDate,
-          topic: sessionTopic,
-          description: sessionDescription,
-          duration_minutes: Number(sessionDuration),
-          status: sessionStatus,
-          remarks: sessionRemarks || undefined,
-          document_url: finalDocUrl,
-          document_name: finalDocName,
-          document_type: finalDocType,
-          document_size_bytes: finalDocSize,
-        });
+        await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`, payload);
       }
 
       await loadStudentDetails(selectedStudent.student_id);
@@ -526,28 +595,39 @@ export const AdminProfileRoadmapPage: React.FC = () => {
 
                   <div className="flex items-center space-x-2 flex-wrap gap-y-2">
                     <button
-                      onClick={handleOpenHistoryModal}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 flex items-center shadow-xs transition-colors"
-                      title="View complete date-wise session attendance history from starting"
+                      onClick={() => handleOpenAddSession()}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center shadow-xs transition-colors"
+                      title="Log a new mentorship session, discussion notes, and reference files"
                     >
-                      <CalendarCheck className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
-                      Attendance &amp; Session History
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Log Session &amp; MoM
                     </button>
 
                     <button
-                      onClick={() => handleOpenAddSession()}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center shadow-xs transition-colors"
+                      onClick={handleOpenAddManualMilestone}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center shadow-xs transition-colors"
+                      title="Add a single milestone/competition manually"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" />
-                      Log Session &amp; Attendance
+                      Add Milestone
                     </button>
 
                     <button
                       onClick={() => setShowUploadModal(true)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center shadow-xs"
+                      title="Upload or update full 12-month excel roadmap"
                     >
                       <Upload className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-                      {selectedStudent.items.length > 0 ? 'Re-upload Plan' : 'Upload Plan'}
+                      {selectedStudent.items.length > 0 ? 'Upload Excel' : 'Upload Excel Plan'}
+                    </button>
+
+                    <button
+                      onClick={handleOpenHistoryModal}
+                      className="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 flex items-center transition-colors"
+                      title="View complete date-wise session attendance history modal"
+                    >
+                      <CalendarCheck className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                      History Modal
                     </button>
                   </div>
                 </div>
@@ -581,23 +661,198 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Month-Wise Roadmap List */}
-              {selectedStudent.items.length === 0 ? (
-                <div className="bg-white p-12 text-center rounded-2xl border border-dashed border-slate-300">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3">
-                    <FileSpreadsheet className="w-6 h-6" />
+              {/* Section 1: Mentorship Sessions & MoM History */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <CalendarCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Mentorship Sessions &amp; MoM History ({studentSessionsHistory.length})
+                      </h3>
+                      <p className="text-[11px] text-slate-500">
+                        Date-wise counseling sessions, discussion topics, and attached reference files.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900">No Execution Plan Uploaded Yet</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-                    Upload an Excel (.xlsx) file with columns: <b>Period / Month</b>, <b>Main actions</b>, and <b>Milestones and outputs</b> to populate this student's 12-month profile building journey.
-                  </p>
                   <button
-                    onClick={() => setShowUploadModal(true)}
-                    className="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg text-white bg-amber-600 hover:bg-amber-700 shadow-sm"
+                    onClick={() => handleOpenAddSession()}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs self-start sm:self-auto"
                   >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Excel Plan
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Log New Session</span>
                   </button>
+                </div>
+
+                {studentSessionsHistory.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-slate-500 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <p className="font-semibold text-slate-700">No sessions logged yet for this student.</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      You can log an introductory call, competition proposal discussion, or mentorship session right away.
+                    </p>
+                    <button
+                      onClick={() => handleOpenAddSession()}
+                      className="mt-3 inline-flex items-center px-3.5 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Log First Session Now
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {studentSessionsHistory.map((sess) => {
+                      const allAtts = (sess.attachments && sess.attachments.length > 0)
+                        ? sess.attachments
+                        : sess.document_url
+                        ? [{
+                            url: sess.document_url,
+                            name: sess.document_name || 'Attached Document',
+                            type: sess.document_type,
+                            size_bytes: sess.document_size_bytes,
+                          }]
+                        : [];
+
+                      return (
+                        <div
+                          key={sess.id}
+                          className="bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-xl p-4 transition-all"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/60">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-bold text-slate-900 flex items-center">
+                                <Calendar className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                                {sess.session_date}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                                  sess.status === 'PRESENT'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : sess.status === 'LATE'
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : sess.status === 'ABSENT'
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : 'bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                {sess.status}
+                              </span>
+                              <span className="text-[11px] text-slate-500 font-medium">
+                                ⏱️ {sess.duration_minutes} mins
+                              </span>
+                              {sess.period && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200">
+                                  {sess.period}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1.5">
+                              {sess.marked_by_name && (
+                                <span className="text-[11px] text-slate-500 font-medium mr-1.5">
+                                  Faculty: <span className="font-semibold text-slate-700">{sess.marked_by_name}</span>
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handleOpenEditSession(sess)}
+                                className="p-1 text-slate-500 hover:text-blue-600 rounded hover:bg-white transition-colors"
+                                title="Edit Session"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSession(sess.id)}
+                                className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-white transition-colors"
+                                title="Delete Session"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-2.5">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900">{sess.topic}</h4>
+                            <p className="text-xs text-slate-700 mt-1 whitespace-pre-line leading-relaxed">
+                              {sess.description}
+                            </p>
+                            {sess.remarks && (
+                              <div className="text-[11px] text-slate-600 bg-amber-50/80 p-2 rounded-lg border border-amber-200/60 mt-2 italic">
+                                <span className="font-bold not-italic text-amber-900">Faculty Guidance: </span>
+                                {sess.remarks}
+                              </div>
+                            )}
+
+                            {/* Attached Documents */}
+                            {allAtts.length > 0 && (
+                              <div className="mt-3 pt-2.5 border-t border-slate-200/60 space-y-1.5">
+                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1">
+                                  <Paperclip className="w-3 h-3 text-blue-600" />
+                                  <span>Attached Documents ({allAtts.length}):</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {allAtts.map((att, attIdx) => (
+                                    <div
+                                      key={attIdx}
+                                      className="flex items-center space-x-2 bg-blue-50/80 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-900"
+                                    >
+                                      <FileText className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                      <span className="truncate max-w-[200px]">{att.name}</span>
+                                      {att.size_bytes ? (
+                                        <span className="text-[10px] text-blue-700 font-normal">
+                                          ({(att.size_bytes / 1024).toFixed(0)} KB)
+                                        </span>
+                                      ) : null}
+                                      <a
+                                        href={getDocDownloadUrl(att.url)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download={att.name}
+                                        className="p-1 text-blue-700 hover:text-blue-950 rounded hover:bg-blue-100 transition-colors"
+                                        title="Download Document"
+                                      >
+                                        <Download className="w-3 h-3" />
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 2: Month-Wise Roadmap Milestones List */}
+              {selectedStudent.items.length === 0 ? (
+                <div className="bg-white p-8 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 shadow-sm space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto">
+                    <Compass className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900">Roadmap Milestones Still In Discussion</h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+                      You can add milestones individually as competitions are shortlisted, or upload a full 12-month Excel plan whenever finalized.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center flex-wrap gap-2.5 pt-2">
+                    <button
+                      onClick={handleOpenAddManualMilestone}
+                      className="inline-flex items-center px-4 py-2 text-xs font-bold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all"
+                    >
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      Add Milestone Manually
+                    </button>
+                    <button
+                      onClick={() => setShowUploadModal(true)}
+                      className="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 shadow-xs transition-all"
+                    >
+                      <Upload className="w-4 h-4 mr-1.5 text-slate-500" />
+                      Upload Full Excel Plan
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3.5">
@@ -1306,86 +1561,77 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 />
               </div>
 
-              {/* Session Reference Document Upload */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-slate-800 flex items-center space-x-1">
+              {/* Session Reference Documents Upload (Supports Multiple Files) */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-800 flex items-center space-x-1.5">
                     <Paperclip className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Session Reference Document (Optional)</span>
+                    <span>Session Reference Documents ({sessionAttachments.length})</span>
                   </label>
-                  <span className="text-[10px] text-slate-400">PDF, Word, Excel, PPT, Images (Max 25MB)</span>
+                  <span className="text-[10px] text-slate-400">PDF, Word, Excel, PPT, Images (Max 25MB each)</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mb-2">
-                  Upload the syllabus, draft, worksheet, or MoM document discussed in this session. The student can view &amp; download it from their dashboard.
+                <p className="text-[11px] text-slate-500">
+                  Upload syllabus files, research papers, discussion drafts, or MoM documents. You can attach multiple files to a single session.
                 </p>
 
-                {(sessionDocName || sessionDocUrl) ? (
-                  <div className="flex items-center justify-between p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center space-x-2 truncate">
-                      <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <div className="truncate">
-                        <p className="text-xs font-bold text-blue-900 truncate">{sessionDocName || 'Attached Document'}</p>
-                        {sessionDocSize && (
-                          <p className="text-[10px] text-blue-700">{(sessionDocSize / 1024).toFixed(0)} KB {sessionDocType ? `• ${sessionDocType}` : ''}</p>
-                        )}
+                {/* Uploaded attachments list */}
+                {sessionAttachments.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    {sessionAttachments.map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center space-x-2 truncate">
+                          <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                          <div className="truncate">
+                            <p className="text-xs font-bold text-blue-900 truncate">{att.name}</p>
+                            {att.size_bytes ? (
+                              <p className="text-[10px] text-blue-700">{(att.size_bytes / 1024).toFixed(0)} KB {att.type ? `• ${att.type}` : ''}</p>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <a
+                            href={getDocDownloadUrl(att.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={att.name}
+                            className="p-1 text-blue-700 hover:text-blue-950 rounded hover:bg-blue-100 transition-colors"
+                            title="Download / View"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAttachment(idx)}
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
+                            title="Remove Document"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {sessionDocUrl && (
-                        <a
-                          href={getDocDownloadUrl(sessionDocUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          className="p-1 text-blue-700 hover:text-blue-900 rounded hover:bg-blue-100 transition-colors"
-                          title="Download / View Current Document"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSessionDocFile(null);
-                          setSessionDocUrl(null);
-                          setSessionDocName(null);
-                          setSessionDocType(null);
-                          setSessionDocSize(null);
-                        }}
-                        className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
-                        title="Remove Document"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      type="file"
-                      id="session-doc-upload"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.webp"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const f = e.target.files[0];
-                          setSessionDocFile(f);
-                          setSessionDocName(f.name);
-                          setSessionDocSize(f.size);
-                          const ext = f.name.split('.').pop()?.toUpperCase() || 'FILE';
-                          setSessionDocType(ext);
-                        }
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="session-doc-upload"
-                      className="flex items-center justify-center space-x-2 py-3 px-4 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-lg cursor-pointer bg-white hover:bg-blue-50/30 transition-all text-xs font-semibold text-slate-600 hover:text-blue-600"
-                    >
-                      <Upload className="w-4 h-4 text-slate-400" />
-                      <span>Click to choose file or drag and drop</span>
-                    </label>
+                    ))}
                   </div>
                 )}
+
+                <div className="pt-1">
+                  <label className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-blue-500 rounded-lg text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer shadow-2xs transition-all">
+                    <Paperclip className="w-3.5 h-3.5 text-blue-600" />
+                    <span>{sessionDocUploading ? 'Uploading Attachment(s)...' : '+ Attach Document(s)'}</span>
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.webp"
+                      onChange={handleUploadFiles}
+                      disabled={sessionDocUploading}
+                    />
+                  </label>
+                  {sessionDocUploading && (
+                    <span className="text-[11px] text-blue-600 font-medium ml-2 animate-pulse">
+                      Uploading to secure storage...
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Submit Buttons */}
@@ -1670,6 +1916,99 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 >
                   <Upload className="w-4 h-4 mr-1.5" />
                   {uploadLoading ? 'Uploading & Parsing...' : 'Upload & Generate Roadmap'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Milestone Creation Modal */}
+      {showAddMilestoneModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Target className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Add Milestone / Competition Manually</h3>
+                  <p className="text-xs text-slate-500">Student: {selectedStudent?.student_name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddMilestoneModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {manualError && (
+              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{manualError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveManualMilestone} className="space-y-4 mt-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Milestone Name / Period *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={manualPeriod}
+                  onChange={(e) => setManualPeriod(e.target.value)}
+                  placeholder="e.g. November 2026 or Milestone 1: HOSA Surgical Technologist"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Key Actions &amp; Study Focus *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={manualActions}
+                  onChange={(e) => setManualActions(e.target.value)}
+                  placeholder="e.g. Introduction to AST guidelines, Surgical Technologist Theory Notes (Q1-Q35), reference textbook study."
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Deliverables &amp; Expected Outputs (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={manualOutputs}
+                  onChange={(e) => setManualOutputs(e.target.value)}
+                  placeholder="e.g. Chapter 1-3 summary notes completed, initial test score 80%+"
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddMilestoneModal(false)}
+                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={manualLoading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  {manualLoading ? 'Saving Milestone...' : 'Save Milestone'}
                 </button>
               </div>
             </form>

@@ -97,6 +97,7 @@ def _ensure_all_schema_columns():
                 ("document_name", "VARCHAR(255)"),
                 ("document_type", "VARCHAR(64)"),
                 ("document_size_bytes", "INTEGER"),
+                ("attachments", "TEXT"),
             ],
         }
 

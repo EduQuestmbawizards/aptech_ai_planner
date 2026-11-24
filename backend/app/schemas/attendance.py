@@ -24,6 +24,7 @@ class AttendanceRecordSchema(BaseModel):
     document_name: Optional[str] = None
     document_type: Optional[str] = None
     document_size_bytes: Optional[int] = None
+    attachments: Optional[List[dict]] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

@@ -325,28 +325,37 @@ export const StudentAttendancePage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Attached Document Download Box */}
-                    {r.document_url && (
-                      <div className="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-blue-50/70 p-3 rounded-lg border border-blue-100">
-                        <div className="flex items-center space-x-2 text-xs font-semibold text-blue-900 truncate max-w-md">
-                          <Paperclip className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <span className="truncate">{r.document_name || 'Session Reference Document'}</span>
-                          {r.document_size_bytes && (
-                            <span className="text-[11px] text-blue-600 font-normal">
-                              ({(r.document_size_bytes / 1024).toFixed(0)} KB {r.document_type ? `• ${r.document_type}` : ''})
-                            </span>
-                          )}
-                        </div>
-                        <a
-                          href={getDocDownloadUrl(r.document_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download={r.document_name || 'session-document'}
-                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download Document</span>
-                        </a>
+                    {/* Attached Documents Download Box */}
+                    {((r.attachments && r.attachments.length > 0) || r.document_url) && (
+                      <div className="mt-3 pt-3 border-t border-slate-200 space-y-2">
+                        {(r.attachments && r.attachments.length > 0 ? r.attachments : [{
+                          url: r.document_url!,
+                          name: r.document_name || 'Session Reference Document',
+                          type: r.document_type,
+                          size_bytes: r.document_size_bytes
+                        }]).map((att, attIdx) => (
+                          <div key={attIdx} className="flex flex-wrap items-center justify-between gap-2 bg-blue-50/70 p-3 rounded-lg border border-blue-100">
+                            <div className="flex items-center space-x-2 text-xs font-semibold text-blue-900 truncate max-w-md">
+                              <Paperclip className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <span className="truncate">{att.name || 'Session Reference Document'}</span>
+                              {att.size_bytes ? (
+                                <span className="text-[11px] text-blue-600 font-normal">
+                                  ({(att.size_bytes / 1024).toFixed(0)} KB {att.type ? `• ${att.type}` : ''})
+                                </span>
+                              ) : null}
+                            </div>
+                            <a
+                              href={getDocDownloadUrl(att.url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download={att.name || 'session-document'}
+                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download Document</span>
+                            </a>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -432,28 +441,37 @@ export const StudentAttendancePage: React.FC = () => {
                             </div>
                           )}
 
-                          {/* Attached Document Download Box */}
-                          {r.document_url && (
-                            <div className="pt-2 mt-1 border-t border-slate-200/60 flex items-center justify-between gap-2 bg-blue-50/80 p-2.5 rounded-lg border border-blue-100">
-                              <div className="flex items-center space-x-1.5 text-xs font-semibold text-blue-900 truncate">
-                                <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                                <span className="truncate">{r.document_name || 'Session Document'}</span>
-                                {r.document_size_bytes && (
-                                  <span className="text-[10px] text-blue-700 font-normal">
-                                    ({(r.document_size_bytes / 1024).toFixed(0)} KB)
-                                  </span>
-                                )}
-                              </div>
-                              <a
-                                href={getDocDownloadUrl(r.document_url)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download={r.document_name || 'session-document'}
-                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors flex-shrink-0"
-                              >
-                                <Download className="w-3 h-3" />
-                                <span>Download</span>
-                              </a>
+                          {/* Attached Documents Download Box */}
+                          {((r.attachments && r.attachments.length > 0) || r.document_url) && (
+                            <div className="pt-2 mt-1 border-t border-slate-200/60 space-y-1.5">
+                              {(r.attachments && r.attachments.length > 0 ? r.attachments : [{
+                                url: r.document_url!,
+                                name: r.document_name || 'Session Document',
+                                type: r.document_type,
+                                size_bytes: r.document_size_bytes
+                              }]).map((att, attIdx) => (
+                                <div key={attIdx} className="flex items-center justify-between gap-2 bg-blue-50/80 p-2 rounded-lg border border-blue-100">
+                                  <div className="flex items-center space-x-1.5 text-xs font-semibold text-blue-900 truncate">
+                                    <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                    <span className="truncate">{att.name || 'Session Document'}</span>
+                                    {att.size_bytes && (
+                                      <span className="text-[10px] text-blue-700 font-normal">
+                                        ({(att.size_bytes / 1024).toFixed(0)} KB)
+                                      </span>
+                                    )}
+                                  </div>
+                                  <a
+                                    href={getDocDownloadUrl(att.url)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    download={att.name || 'session-document'}
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors flex-shrink-0"
+                                  >
+                                    <Download className="w-3 h-3" />
+                                    <span>Download</span>
+                                  </a>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>

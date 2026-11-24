@@ -1,6 +1,7 @@
 import os
 import uuid
 import re
+import json
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request, Query
@@ -20,6 +21,7 @@ from app.schemas.profile_roadmap import (
     ProfileRoadmapStudentSummary,
     ProfileRoadmapItemCreate,
     ProfileRoadmapStats,
+    SessionAttachmentItem,
     ProfileSessionAttendanceCreate,
     ProfileSessionAttendanceUpdate,
     ProfileSessionAttendanceResponse,
@@ -52,6 +54,37 @@ MAX_DOC_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB
 def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceResponse:
     marker_name = s.marker.full_name if s.marker else None
     period_str = s.roadmap_item.period if s.roadmap_item else None
+
+    # Parse multi-attachments if stored in JSON format
+    attachments_list = []
+    raw_attachments = getattr(s, "attachments", None)
+    if raw_attachments:
+        try:
+            parsed = json.loads(raw_attachments)
+            if isinstance(parsed, list):
+                for item in parsed:
+                    if isinstance(item, dict) and item.get("url"):
+                        attachments_list.append(SessionAttachmentItem(
+                            url=item["url"],
+                            name=item.get("name") or "Attachment",
+                            type=item.get("type"),
+                            size_bytes=item.get("size_bytes")
+                        ))
+        except Exception:
+            pass
+
+    # Seamless backward compatibility: synthesize from document_url if no attachments array exists
+    doc_url = getattr(s, "document_url", None)
+    if doc_url and not attachments_list:
+        attachments_list = [
+            SessionAttachmentItem(
+                url=doc_url,
+                name=getattr(s, "document_name", None) or "Attached Document",
+                type=getattr(s, "document_type", None),
+                size_bytes=getattr(s, "document_size_bytes", None)
+            )
+        ]
+
     return ProfileSessionAttendanceResponse(
         id=s.id,
         student_id=s.student_id,
@@ -65,10 +98,11 @@ def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceR
         remarks=s.remarks,
         marked_by=s.marked_by,
         marked_by_name=marker_name,
-        document_url=getattr(s, "document_url", None),
+        document_url=doc_url,
         document_name=getattr(s, "document_name", None),
         document_type=getattr(s, "document_type", None),
         document_size_bytes=getattr(s, "document_size_bytes", None),
+        attachments=attachments_list,
         created_at=s.created_at,
         updated_at=s.updated_at
     )
@@ -181,6 +215,7 @@ def get_student_roadmap(
 
     items = ProfileRoadmapService.get_roadmap_for_student(db, student.id)
     stats = ProfileRoadmapService.get_stats_for_student(db, student.id)
+    sessions = ProfileRoadmapService.get_student_sessions(db, student.id)
 
     return ProfileRoadmapStudentSummary(
         student_id=student.id,
@@ -189,7 +224,8 @@ def get_student_roadmap(
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
         stats=ProfileRoadmapStats(**stats),
-        items=[_serialize_item(i) for i in items]
+        items=[_serialize_item(i) for i in items],
+        sessions=[_serialize_session(s) for s in sessions]
     )
 
 
@@ -327,6 +363,7 @@ def get_my_profile_roadmap(
 
     items = ProfileRoadmapService.get_roadmap_for_student(db, student.id)
     stats = ProfileRoadmapService.get_stats_for_student(db, student.id)
+    sessions = ProfileRoadmapService.get_student_sessions(db, student.id)
 
     return ProfileRoadmapStudentSummary(
         student_id=student.id,
@@ -335,7 +372,8 @@ def get_my_profile_roadmap(
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
         stats=ProfileRoadmapStats(**stats),
-        items=[_serialize_item(i) for i in items]
+        items=[_serialize_item(i) for i in items],
+        sessions=[_serialize_session(s) for s in sessions]
     )
 
 
@@ -466,7 +504,8 @@ def log_session_attendance(
         document_url=body.document_url,
         document_name=body.document_name,
         document_type=body.document_type,
-        document_size_bytes=body.document_size_bytes
+        document_size_bytes=body.document_size_bytes,
+        attachments=body.attachments
     )
     return _serialize_session(session)
 
