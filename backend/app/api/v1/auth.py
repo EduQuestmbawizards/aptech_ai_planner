@@ -18,6 +18,8 @@ from app.schemas.auth import (
     ActivateAccountRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    UpdateProfileRequest,
+    ChangePasswordRequest,
     UserResponse
 )
 from app.services.email_service import EmailService
@@ -373,4 +375,93 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
         phone=phone,
         track_type=track_type
     )
+
+@router.patch("/profile", response_model=UserResponse)
+def update_profile(
+    payload: UpdateProfileRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Allow any logged-in user (admin or student) to update their full name.
+    Email address cannot be modified to preserve credential and registration integrity.
+    """
+    clean_name = payload.full_name.strip()
+    if not clean_name or len(clean_name) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name must be at least 2 characters long."
+        )
+
+    old_name = current_user.full_name
+    current_user.full_name = clean_name
+    current_user.updated_at = datetime.now(timezone.utc)
+
+    audit = AuditLog(
+        actor_id=current_user.id,
+        action="PROFILE_UPDATED",
+        resource_type="USER",
+        resource_id=current_user.id,
+        details={"old_name": old_name, "new_name": clean_name}
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(current_user)
+
+    apt_id = None
+    phone = None
+    track_type = None
+    if current_user.student_profile:
+        apt_id = current_user.student_profile.aptech_student_id
+        phone = current_user.student_profile.phone
+        track_type = current_user.student_profile.track_type
+
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        is_suspended=current_user.is_suspended,
+        aptech_student_id=apt_id,
+        phone=phone,
+        track_type=track_type
+    )
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Allow logged-in users to securely change their password by validating their current password.
+    """
+    if not current_user.password_hash or not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect."
+        )
+
+    if len(payload.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters long."
+        )
+
+    current_user.password_hash = get_password_hash(payload.new_password)
+    current_user.updated_at = datetime.now(timezone.utc)
+
+    audit = AuditLog(
+        actor_id=current_user.id,
+        action="PASSWORD_CHANGED",
+        resource_type="USER",
+        resource_id=current_user.id,
+        details={"email": current_user.email}
+    )
+    db.add(audit)
+    db.commit()
+
+    return {"success": True, "message": "Password changed successfully."}
+
 

@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Compass,
   MessageSquare,
+  User as UserIcon,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -53,6 +54,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Attendance', to: '/admin/attendance', icon: CalendarCheck },
     { label: 'Messages', to: '/admin/chat', icon: MessageSquare, badge: unreadMessages },
     { label: 'AI Operations & Usage', to: '/admin/ai-usage', icon: Sparkles },
+    { label: 'Profile & Settings', to: '/admin/profile', icon: UserIcon },
   ];
 
   return (

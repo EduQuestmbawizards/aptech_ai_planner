@@ -112,3 +112,52 @@ def test_admin_management_crud_and_protections():
     del_fac_res = client.delete(f"/api/admin/admins/{created_id}", headers=sa_headers)
     assert del_fac_res.status_code == 200
     assert del_fac_res.json()["success"] is True
+
+def test_user_update_profile_and_change_password():
+    # 1. Login as Super Admin Ankit
+    sa_res = client.post("/api/auth/login", json={
+        "email": "ankitk629990@gmail.com",
+        "password": "12345678"
+    })
+    assert sa_res.status_code == 200
+    token = sa_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. Update profile name
+    update_res = client.patch("/api/auth/profile", headers=headers, json={
+        "full_name": "Ankit Kumar Gupta Super"
+    })
+    assert update_res.status_code == 200
+    assert update_res.json()["full_name"] == "Ankit Kumar Gupta Super"
+    # Ensure email remains untouched
+    assert update_res.json()["email"] == "ankitk629990@gmail.com"
+
+    # 3. Change password with wrong current password -> 400
+    bad_pw_res = client.post("/api/auth/change-password", headers=headers, json={
+        "current_password": "WrongPassword999",
+        "new_password": "NewSecretPassword@123"
+    })
+    assert bad_pw_res.status_code == 400
+
+    # 4. Change password with correct current password -> 200
+    good_pw_res = client.post("/api/auth/change-password", headers=headers, json={
+        "current_password": "12345678",
+        "new_password": "NewSecretPassword@123"
+    })
+    assert good_pw_res.status_code == 200
+    assert good_pw_res.json()["success"] is True
+
+    # 5. Change back to original password "12345678"
+    revert_pw_res = client.post("/api/auth/change-password", headers=headers, json={
+        "current_password": "NewSecretPassword@123",
+        "new_password": "12345678"
+    })
+    assert revert_pw_res.status_code == 200
+
+    # 6. Revert name back
+    revert_name_res = client.patch("/api/auth/profile", headers=headers, json={
+        "full_name": "Ankit Kumar Gupta"
+    })
+    assert revert_name_res.status_code == 200
+    assert revert_name_res.json()["full_name"] == "Ankit Kumar Gupta"
+

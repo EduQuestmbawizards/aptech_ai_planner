@@ -80,6 +80,7 @@ export const App: React.FC = () => {
                 <Route path="/admin/attendance" element={<AdminAttendancePage />} />
                 <Route path="/admin/chat" element={<AdminChatPage />} />
                 <Route path="/admin/ai-usage" element={<AdminAIUsagePage />} />
+                <Route path="/admin/profile" element={<ProfileSettingsPage />} />
               </Route>
             </Route>
 
