@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { AdminUser } from '../../types';
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react';
 
 export const AdminManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,8 +66,12 @@ export const AdminManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAdmins();
-  }, []);
+    if (isCurrentUserSuperAdmin) {
+      fetchAdmins();
+    } else {
+      setLoading(false);
+    }
+  }, [isCurrentUserSuperAdmin]);
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,6 +171,26 @@ export const AdminManagementPage: React.FC = () => {
   const activeAdminCount = admins.filter(
     (a) => a.is_active && !a.is_suspended
   ).length;
+
+  if (!isCurrentUserSuperAdmin) {
+    return (
+      <div className="max-w-xl mx-auto py-16 px-4 text-center">
+        <div className="w-16 h-16 bg-rose-50 border border-rose-200 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">Access Restricted</h2>
+        <p className="text-slate-600 max-w-md mx-auto mb-6 text-sm">
+          Only the Super Administrator has authority to view, create, or manage administrator and faculty accounts.
+        </p>
+        <button
+          onClick={() => navigate('/admin')}
+          className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-all shadow-md"
+        >
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1031,10 +1031,10 @@ def admin_mark_task_complete(
 
 @router.get("/admins", response_model=List[AdminUserResponse])
 def list_admins(
-    current_admin: User = Depends(require_admin),
+    current_admin: User = Depends(require_super_admin),
     db: Session = Depends(get_db)
 ):
-    """Lists all admin and super-admin accounts."""
+    """Lists all admin and super-admin accounts. Super Admin only."""
     admins = (
         db.query(User)
         .filter(User.role.in_([UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value]))
@@ -1047,10 +1047,10 @@ def list_admins(
 @router.post("/admins", response_model=AdminUserResponse, status_code=status.HTTP_201_CREATED)
 def create_admin_user(
     payload: AdminCreateRequest,
-    current_admin: User = Depends(require_admin),
+    current_admin: User = Depends(require_super_admin),
     db: Session = Depends(get_db)
 ):
-    """Create a new administrator account."""
+    """Create a new administrator account. Super Admin only."""
     clean_email = payload.email.lower().strip()
     if len(payload.password) < 6:
         raise HTTPException(
@@ -1092,11 +1092,11 @@ def create_admin_user(
 @router.delete("/admins/{admin_id}")
 def delete_admin_user(
     admin_id: str,
-    current_admin: User = Depends(require_admin),
+    current_admin: User = Depends(require_super_admin),
     db: Session = Depends(get_db)
 ):
     """
-    Deletes an administrator account.
+    Deletes an administrator account. Super Admin only.
     - Super Admin Ankit can never be deleted.
     - No administrator can delete themselves.
     - Only Super Admin has authority to delete other administrators.
@@ -1182,7 +1182,7 @@ def delete_admin_user(
 def update_admin_status(
     admin_id: str,
     payload: AdminStatusUpdateRequest,
-    current_admin: User = Depends(require_admin),
+    current_admin: User = Depends(require_super_admin),
     db: Session = Depends(get_db)
 ):
     """

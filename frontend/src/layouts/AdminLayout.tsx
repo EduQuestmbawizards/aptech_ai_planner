@@ -38,9 +38,13 @@ export const AdminLayout: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const isSuperAdmin =
+    user?.role === 'SUPER_ADMIN' ||
+    user?.email?.toLowerCase() === 'ankitk629990@gmail.com';
+
   const navItems = [
     { label: 'Overview', to: '/admin', icon: LayoutDashboard },
-    { label: 'Admins & Staff', to: '/admin/admins', icon: ShieldCheck },
+    ...(isSuperAdmin ? [{ label: 'Admins & Staff', to: '/admin/admins', icon: ShieldCheck }] : []),
     { label: 'Students', to: '/admin/students', icon: Users },
     { label: 'Courses', to: '/admin/courses', icon: BookOpen },
     { label: 'Enrollments', to: '/admin/enrollments', icon: ClipboardList },

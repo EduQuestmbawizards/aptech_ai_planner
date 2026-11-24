@@ -88,6 +88,22 @@ def test_admin_management_crud_and_protections():
     faculty_token = faculty_res.json()["access_token"]
     faculty_headers = {"Authorization": f"Bearer {faculty_token}"}
 
+    # Non-super admin tries admin management actions (all must return 403)
+    fac_list_res = client.get("/api/admin/admins", headers=faculty_headers)
+    assert fac_list_res.status_code == 403
+
+    fac_create_res = client.post("/api/admin/admins", headers=faculty_headers, json={
+        "full_name": "Rogue Admin",
+        "email": "rogue@aptech.edu",
+        "password": "Password123"
+    })
+    assert fac_create_res.status_code == 403
+
+    fac_status_res = client.patch(f"/api/admin/admins/{created_id}/status", headers=faculty_headers, json={
+        "is_suspended": True
+    })
+    assert fac_status_res.status_code == 403
+
     # Faculty tries to delete Ankit
     fac_del_res = client.delete(f"/api/admin/admins/{sa_id}", headers=faculty_headers)
     assert fac_del_res.status_code == 403
