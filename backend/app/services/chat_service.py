@@ -9,6 +9,7 @@ from sqlalchemy import or_, and_, desc, func
 
 from app.models.user import User, UserRole, StudentProfile
 from app.models.chat import ChatConversation, ChatMessage
+from app.services.supabase_storage import upload_file_to_supabase, download_file_from_supabase
 
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "uploads", "chat_attachments")
@@ -69,13 +70,19 @@ def validate_and_save_attachment(file: UploadFile) -> Tuple[str, str, str, int]:
             detail=f"File exceeds maximum allowed size of 15MB (Size: {file_size / (1024 * 1024):.2f}MB)."
         )
 
-    # 4. Save to disk with safe UUID filename
+    # 4. Save to disk with safe UUID filename & persist to Supabase Storage
     safe_name = re.sub(r'[^a-zA-Z0-9_\.-]', '_', filename)
     saved_filename = f"{uuid.uuid4().hex}_{safe_name}"
     file_path = os.path.join(UPLOAD_DIR, saved_filename)
 
-    with open(file_path, "wb") as f:
-        f.write(content)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(content)
+    except Exception as e:
+        pass
+
+    content_type_header = file.content_type or ("image/jpeg" if attachment_type == "IMAGE" else "application/octet-stream")
+    upload_file_to_supabase(f"chat/{saved_filename}", content, content_type_header)
 
     attachment_url = f"/api/chat/attachments/{saved_filename}"
     return attachment_url, filename, attachment_type, file_size

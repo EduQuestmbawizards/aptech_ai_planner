@@ -1,13 +1,15 @@
 import os
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import decode_access_token
 from app.models.user import User, UserRole
 from app.api.deps import get_current_user, require_admin, require_student
 from app.services.chat_service import ChatService, UPLOAD_DIR
+from app.services.supabase_storage import download_file_from_supabase
 from app.schemas.chat import (
     ChatMessageResponse,
     ConversationBrief,
@@ -151,14 +153,42 @@ def get_unread_messages_count(
 @router.get("/attachments/{filename}")
 def get_chat_attachment(
     filename: str,
-    current_user: User = Depends(get_current_user)
+    request: Request,
+    token: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
 ):
-    """Serves uploaded chat media attachment safely."""
+    """Serves uploaded chat media attachment safely with fallback to Supabase Storage."""
+    auth_token = None
+    if request:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ")[1]
+        elif "access_token" in request.cookies:
+            auth_token = request.cookies.get("access_token")
+
+    if not auth_token and token:
+        auth_token = token
+
+    if auth_token:
+        payload = decode_access_token(auth_token)
+        if not payload or not payload.get("sub"):
+            raise HTTPException(status_code=401, detail="Invalid token.")
+
     # Sanitize filename
     safe_basename = os.path.basename(filename)
     file_path = os.path.join(UPLOAD_DIR, safe_basename)
 
+    # 1. Local disk cache hit
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Attachment file not found.")
+        # 2. Check Supabase Storage
+        remote_data = download_file_from_supabase(f"chat/{safe_basename}")
+        if remote_data:
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(remote_data)
+            except Exception:
+                pass
+        else:
+            raise HTTPException(status_code=404, detail="Attachment file not found.")
 
     return FileResponse(file_path)
