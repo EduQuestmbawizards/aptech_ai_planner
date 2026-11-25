@@ -447,7 +447,7 @@ export interface AIUsageMetrics {
   by_feature: Record<string, number>;
 }
 
-export type RoadmapItemStatusType = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+export type RoadmapItemStatusType = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'PROPOSED' | 'APPROVED' | 'REJECTED';
 
 export interface ProfileSessionAttendance {
   id: string;
@@ -485,6 +485,10 @@ export interface ProfileRoadmapItem {
   meeting_notes?: string | null;
   completed_at?: string | null;
   marked_by?: string | null;
+  proposal_html_url?: string | null;
+  proposal_html_name?: string | null;
+  proposal_type?: string | null;
+  feedback_notes?: string | null;
   created_at?: string;
   updated_at?: string;
   sessions?: ProfileSessionAttendance[];

@@ -11,34 +11,38 @@ import {
 } from '../../types';
 import {
   Compass,
-  Upload,
   Calendar,
   Clock,
   CheckCircle2,
   AlertCircle,
-  FileSpreadsheet,
-  Users,
   Search,
   Check,
   ChevronRight,
   MessageSquareText,
   Sparkles,
-  TrendingUp,
   FileText,
   X,
   PlayCircle,
   Clock3,
   Edit3,
-  BookOpen,
   Target,
   Award,
-  CalendarCheck,
   Plus,
   Trash2,
   GraduationCap,
   Download,
   Paperclip,
+  ExternalLink,
+  Layers,
+  FileCode2,
+  FileCheck,
+  Filter,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  FolderOpen,
 } from 'lucide-react';
+import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
 
 export const AdminProfileRoadmapPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,60 +53,47 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<ProfileRoadmapStudentSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'PROPOSALS' | 'SESSIONS'>('PROPOSALS');
 
-  // Upload modal state
-  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadLoading, setUploadLoading] = useState<boolean>(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  // Proposal Modal State (Create & Edit)
+  const [showProposalModal, setShowProposalModal] = useState<boolean>(false);
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
+  const [proposalTitle, setProposalTitle] = useState<string>('');
+  const [proposalType, setProposalType] = useState<string>('GLOBAL_COMPETITION');
+  const [proposalStatus, setProposalStatus] = useState<RoadmapItemStatusType>('PROPOSED');
+  const [proposalPeriod, setProposalPeriod] = useState<string>('');
+  const [proposalActions, setProposalActions] = useState<string>('');
+  const [proposalOutputs, setProposalOutputs] = useState<string>('');
+  const [proposalHtmlUrl, setProposalHtmlUrl] = useState<string | null>(null);
+  const [proposalHtmlName, setProposalHtmlName] = useState<string | null>(null);
+  const [proposalHtmlUploading, setProposalHtmlUploading] = useState<boolean>(false);
+  const [proposalLoading, setProposalLoading] = useState<boolean>(false);
+  const [proposalError, setProposalError] = useState<string | null>(null);
 
-  // Complete & MoM modal state
-  const [activeItemForMoM, setActiveItemForMoM] = useState<ProfileRoadmapItem | null>(null);
-  const [momTopic, setMomTopic] = useState<string>('');
-  const [momDate, setMomDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [momDuration, setMomDuration] = useState<number>(45);
-  const [momNotes, setMomNotes] = useState<string>('');
-  const [momLoading, setMomLoading] = useState<boolean>(false);
-  const [momError, setMomError] = useState<string | null>(null);
+  // Interactive HTML Viewer Modal State
+  const [viewerOpen, setViewerOpen] = useState<boolean>(false);
+  const [viewerTitle, setViewerTitle] = useState<string>('');
+  const [viewerUrl, setViewerUrl] = useState<string>('');
+  const [viewerType, setViewerType] = useState<string | null>(null);
+  const [viewerStatus, setViewerStatus] = useState<string | null>(null);
 
-  // Edit Milestone & Deliverables modal state
-  const [activeItemForEdit, setActiveItemForEdit] = useState<ProfileRoadmapItem | null>(null);
-  const [editPeriod, setEditPeriod] = useState<string>('');
-  const [editMainActions, setEditMainActions] = useState<string>('');
-  const [editMilestonesOutputs, setEditMilestonesOutputs] = useState<string>('');
-  const [editLoading, setEditLoading] = useState<boolean>(false);
-  const [editError, setEditError] = useState<string | null>(null);
-
-  // Session Attendance Modal State
+  // Session Logging Modal State
   const [showSessionModal, setShowSessionModal] = useState<boolean>(false);
-  const [sessionTargetItem, setSessionTargetItem] = useState<ProfileRoadmapItem | null>(null);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [selectedProposalIdForSession, setSelectedProposalIdForSession] = useState<string>('');
   const [sessionDate, setSessionDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [sessionTopic, setSessionTopic] = useState<string>('');
   const [sessionDescription, setSessionDescription] = useState<string>('');
-  const [sessionDuration, setSessionDuration] = useState<number>(45);
+  const [sessionDuration, setSessionDuration] = useState<number>(60);
   const [sessionStatus, setSessionStatus] = useState<AttendanceStatusType>('PRESENT');
   const [sessionRemarks, setSessionRemarks] = useState<string>('');
+  const [sessionAttachments, setSessionAttachments] = useState<SessionAttachmentItem[]>([]);
+  const [sessionDocUploading, setSessionDocUploading] = useState<boolean>(false);
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
 
-  // Attached Session Reference Documents (Supports multiple files)
-  const [sessionAttachments, setSessionAttachments] = useState<SessionAttachmentItem[]>([]);
-  const [sessionDocFile, setSessionDocFile] = useState<File | null>(null);
-  const [sessionDocUrl, setSessionDocUrl] = useState<string | null>(null);
-  const [sessionDocName, setSessionDocName] = useState<string | null>(null);
-  const [sessionDocType, setSessionDocType] = useState<string | null>(null);
-  const [sessionDocSize, setSessionDocSize] = useState<number | null>(null);
-  const [sessionDocUploading, setSessionDocUploading] = useState<boolean>(false);
-
-  // Manual Milestone Modal State
-  const [showAddMilestoneModal, setShowAddMilestoneModal] = useState<boolean>(false);
-  const [manualPeriod, setManualPeriod] = useState<string>('');
-  const [manualActions, setManualActions] = useState<string>('');
-  const [manualOutputs, setManualOutputs] = useState<string>('');
-  const [manualLoading, setManualLoading] = useState<boolean>(false);
-  const [manualError, setManualError] = useState<string | null>(null);
+  // Filter for sessions tab
+  const [sessionProposalFilter, setSessionProposalFilter] = useState<string>('ALL');
 
   const getDocDownloadUrl = (url?: string | null) => {
     if (!url) return '';
@@ -113,11 +104,6 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     const full = baseUrl ? `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}` : url;
     return token ? `${full}${full.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : full;
   };
-
-  // View All Sessions History Modal State
-  const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
-  const [studentSessionsHistory, setStudentSessionsHistory] = useState<ProfileSessionAttendance[]>([]);
-  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
 
   const fetchStudents = async () => {
     try {
@@ -147,10 +133,6 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     try {
       const res = await api.get(`/profile-roadmap/students/${studentId}`);
       setSelectedStudent(res.data);
-      if (res.data.sessions) {
-        setStudentSessionsHistory(res.data.sessions);
-      }
-      // Update student in list
       setStudents((prev) =>
         prev.map((s) => (s.student_id === studentId ? res.data : s))
       );
@@ -169,213 +151,271 @@ export const AdminProfileRoadmapPage: React.FC = () => {
     loadStudentDetails(studentId);
   };
 
-  const handleOpenMoMModal = (item: ProfileRoadmapItem) => {
-    setActiveItemForMoM(item);
-    setMomTopic(item.meeting_topic || `Mentorship Session: ${item.period}`);
-    setMomDate(item.session_date || new Date().toISOString().split('T')[0]);
-    setMomDuration(item.session_duration_minutes || 45);
-    setMomNotes(item.meeting_notes || '');
-    setMomError(null);
+  // ----------------------------------------------------------------
+  // Proposal Handlers (Create, Edit, Status, Delete)
+  // ----------------------------------------------------------------
+  const handleOpenCreateProposal = () => {
+    setEditingProposalId(null);
+    setProposalTitle('');
+    setProposalType('GLOBAL_COMPETITION');
+    setProposalStatus('PROPOSED');
+    setProposalPeriod('');
+    setProposalActions('');
+    setProposalOutputs('');
+    setProposalHtmlUrl(null);
+    setProposalHtmlName(null);
+    setProposalError(null);
+    setShowProposalModal(true);
   };
 
-  const handleSaveMoM = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeItemForMoM || !selectedStudent) return;
-    setMomLoading(true);
-    setMomError(null);
+  const handleOpenEditProposal = (item: ProfileRoadmapItem) => {
+    setEditingProposalId(item.id);
+    setProposalTitle(item.period);
+    setProposalType(item.proposal_type || 'GLOBAL_COMPETITION');
+    setProposalStatus(item.status);
+    setProposalPeriod(item.session_date || item.period);
+    setProposalActions(item.main_actions || '');
+    setProposalOutputs(item.milestones_outputs || '');
+    setProposalHtmlUrl(item.proposal_html_url || null);
+    setProposalHtmlName(item.proposal_html_name || null);
+    setProposalError(null);
+    setShowProposalModal(true);
+  };
+
+  const handleProposalHtmlFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.html') && !file.name.toLowerCase().endsWith('.htm')) {
+      setProposalError('Only HTML files (.html, .htm) are allowed for interactive proposals.');
+      return;
+    }
+
+    setProposalHtmlUploading(true);
+    setProposalError(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
-      const res = await api.patch(`/profile-roadmap/items/${activeItemForMoM.id}/complete`, {
-        meeting_topic: momTopic,
-        session_date: momDate,
-        session_duration_minutes: Number(momDuration),
-        meeting_notes: momNotes,
+      const res = await api.post('/profile-roadmap/proposals/upload-html', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      // Refresh student data
-      await loadStudentDetails(selectedStudent.student_id);
-      setActiveItemForMoM(null);
+      setProposalHtmlUrl(res.data.proposal_html_url);
+      setProposalHtmlName(res.data.proposal_html_name);
     } catch (err: any) {
-      setMomError(err.response?.data?.detail || 'Failed to save session completion & MoM.');
+      setProposalError(err.response?.data?.detail || 'Failed to upload proposal HTML file.');
     } finally {
-      setMomLoading(false);
-    }
-  };
-
-  const handleOpenEditModal = (item: ProfileRoadmapItem) => {
-    setActiveItemForEdit(item);
-    setEditPeriod(item.period || '');
-    setEditMainActions(item.main_actions || '');
-    setEditMilestonesOutputs(item.milestones_outputs || '');
-    setEditError(null);
-  };
-
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeItemForEdit || !selectedStudent) return;
-    setEditLoading(true);
-    setEditError(null);
-
-    try {
-      await api.patch(`/profile-roadmap/items/${activeItemForEdit.id}`, {
-        period: editPeriod,
-        main_actions: editMainActions,
-        milestones_outputs: editMilestonesOutputs,
-      });
-
-      await loadStudentDetails(selectedStudent.student_id);
-      setActiveItemForEdit(null);
-    } catch (err: any) {
-      setEditError(err.response?.data?.detail || 'Failed to update milestone details.');
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const handleOpenAddSession = (item?: ProfileRoadmapItem) => {
-    setSessionTargetItem(item || null);
-    setEditingSessionId(null);
-    setSessionDate(new Date().toISOString().split('T')[0]);
-    setSessionTopic(item ? `${item.period} Mentorship Session` : '');
-    setSessionDescription('');
-    setSessionDuration(45);
-    setSessionStatus('PRESENT');
-    setSessionRemarks('');
-    setSessionAttachments([]);
-    setSessionDocFile(null);
-    setSessionDocUrl(null);
-    setSessionDocName(null);
-    setSessionDocType(null);
-    setSessionDocSize(null);
-    setSessionDocUploading(false);
-    setSessionError(null);
-    setShowSessionModal(true);
-  };
-
-  const handleOpenEditSession = (session: ProfileSessionAttendance, item?: ProfileRoadmapItem) => {
-    setSessionTargetItem(item || null);
-    setEditingSessionId(session.id);
-    setSessionDate(session.session_date);
-    setSessionTopic(session.topic);
-    setSessionDescription(session.description);
-    setSessionDuration(session.duration_minutes);
-    setSessionStatus(session.status);
-    setSessionRemarks(session.remarks || '');
-
-    // Multi-attachment initialization
-    let initialAtts: SessionAttachmentItem[] = [];
-    if (session.attachments && session.attachments.length > 0) {
-      initialAtts = session.attachments;
-    } else if (session.document_url) {
-      initialAtts = [{
-        url: session.document_url,
-        name: session.document_name || 'Attached Document',
-        type: session.document_type,
-        size_bytes: session.document_size_bytes,
-      }];
-    }
-    setSessionAttachments(initialAtts);
-    setSessionDocFile(null);
-    setSessionDocUrl(session.document_url || null);
-    setSessionDocName(session.document_name || null);
-    setSessionDocType(session.document_type || null);
-    setSessionDocSize(session.document_size_bytes || null);
-    setSessionDocUploading(false);
-    setSessionError(null);
-    setShowSessionModal(true);
-  };
-
-  const handleUploadFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const files = Array.from(e.target.files);
-    setSessionDocUploading(true);
-    setSessionError(null);
-    try {
-      const newItems: SessionAttachmentItem[] = [];
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        const uploadRes = await api.post('/profile-roadmap/sessions/upload-document', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        newItems.push({
-          url: uploadRes.data.document_url,
-          name: uploadRes.data.document_name,
-          type: uploadRes.data.document_type,
-          size_bytes: uploadRes.data.document_size_bytes,
-        });
-      }
-      setSessionAttachments((prev) => [...prev, ...newItems]);
-    } catch (err: any) {
-      setSessionError(err?.response?.data?.detail || 'Failed to upload one or more files.');
-    } finally {
-      setSessionDocUploading(false);
+      setProposalHtmlUploading(false);
       e.target.value = '';
     }
   };
 
-  const handleRemoveAttachment = (index: number) => {
-    setSessionAttachments((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  const handleOpenAddManualMilestone = () => {
-    setManualPeriod(`Month ${(selectedStudent?.items.length || 0) + 1}`);
-    setManualActions('');
-    setManualOutputs('');
-    setManualError(null);
-    setShowAddMilestoneModal(true);
-  };
-
-  const handleSaveManualMilestone = async (e: React.FormEvent) => {
+  const handleSaveProposal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
-    if (!manualPeriod.trim() || !manualActions.trim()) {
-      setManualError('Period / Milestone name and Key Actions are required.');
+    if (!proposalTitle.trim()) {
+      setProposalError('Please provide a proposal title / milestone name.');
       return;
     }
-    setManualLoading(true);
-    setManualError(null);
+
+    setProposalLoading(true);
+    setProposalError(null);
+
     try {
-      await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/items`, {
-        period: manualPeriod.trim(),
-        main_actions: manualActions.trim(),
-        milestones_outputs: manualOutputs.trim() || undefined,
-        order_index: (selectedStudent.items.length || 0) + 1,
-      });
+      if (editingProposalId) {
+        // Update existing proposal
+        await api.patch(`/profile-roadmap/items/${editingProposalId}`, {
+          period: proposalTitle.trim(),
+          main_actions: proposalActions.trim() || proposalTitle.trim(),
+          milestones_outputs: proposalOutputs.trim() || null,
+          status: proposalStatus,
+          proposal_type: proposalType,
+          proposal_html_url: proposalHtmlUrl,
+          proposal_html_name: proposalHtmlName,
+          session_date: proposalPeriod.trim() || null,
+        });
+      } else {
+        // Create new proposal
+        const currentCount = selectedStudent.items?.length || 0;
+        await api.post(`/profile-roadmap/students/${selectedStudent.student_id}/items`, {
+          period: proposalTitle.trim(),
+          order_index: currentCount + 1,
+          main_actions: proposalActions.trim() || proposalTitle.trim(),
+          milestones_outputs: proposalOutputs.trim() || null,
+          status: proposalStatus,
+          proposal_type: proposalType,
+          proposal_html_url: proposalHtmlUrl,
+          proposal_html_name: proposalHtmlName,
+          session_date: proposalPeriod.trim() || null,
+        });
+      }
+
       await loadStudentDetails(selectedStudent.student_id);
-      setShowAddMilestoneModal(false);
+      setShowProposalModal(false);
     } catch (err: any) {
-      setManualError(err?.response?.data?.detail || 'Failed to create milestone.');
+      setProposalError(err.response?.data?.detail || 'Failed to save proposal.');
     } finally {
-      setManualLoading(false);
+      setProposalLoading(false);
     }
+  };
+
+  const handleQuickUpdateStatus = async (item: ProfileRoadmapItem, newStatus: RoadmapItemStatusType) => {
+    if (!selectedStudent) return;
+    try {
+      await api.patch(`/profile-roadmap/items/${item.id}`, { status: newStatus });
+      await loadStudentDetails(selectedStudent.student_id);
+    } catch (err) {
+      console.error('Failed to update proposal status', err);
+    }
+  };
+
+  const handleDeleteProposal = async (itemId: string) => {
+    if (!confirm('Are you sure you want to delete this proposal? Associated sessions will become General Sessions.')) {
+      return;
+    }
+    if (!selectedStudent) return;
+
+    try {
+      await api.delete(`/profile-roadmap/items/${itemId}`);
+      await loadStudentDetails(selectedStudent.student_id);
+    } catch (err) {
+      console.error('Failed to delete proposal', err);
+    }
+  };
+
+  const handleOpenViewer = (item: ProfileRoadmapItem) => {
+    if (!item.proposal_html_url) return;
+    setViewerTitle(item.period);
+    setViewerUrl(item.proposal_html_url);
+    setViewerType(item.proposal_type || 'PROPOSAL');
+    setViewerStatus(item.status);
+    setViewerOpen(true);
+  };
+
+  // ----------------------------------------------------------------
+  // Session Handlers (Log, Edit, Multi-doc upload, Delete)
+  // ----------------------------------------------------------------
+  const handleOpenAddSession = (presetProposalId?: string) => {
+    setEditingSessionId(null);
+    setSelectedProposalIdForSession(presetProposalId || '');
+    setSessionDate(new Date().toISOString().split('T')[0]);
+    setSessionTopic('');
+    setSessionDescription('');
+    setSessionDuration(60);
+    setSessionStatus('PRESENT');
+    setSessionRemarks('');
+    setSessionAttachments([]);
+    setSessionError(null);
+    setShowSessionModal(true);
+  };
+
+  const handleOpenEditSession = (session: ProfileSessionAttendance) => {
+    setEditingSessionId(session.id);
+    setSelectedProposalIdForSession(session.roadmap_item_id || '');
+    setSessionDate(session.session_date);
+    setSessionTopic(session.topic);
+    setSessionDescription(session.description);
+    setSessionDuration(session.duration_minutes || 60);
+    setSessionStatus(session.status);
+    setSessionRemarks(session.remarks || '');
+
+    // Existing attachments
+    let existingList: SessionAttachmentItem[] = [];
+    if (session.attachments && session.attachments.length > 0) {
+      existingList = session.attachments;
+    } else if (session.document_url) {
+      existingList = [{
+        url: session.document_url,
+        name: session.document_name || 'Session Document',
+        type: session.document_type,
+        size_bytes: session.document_size_bytes,
+      }];
+    }
+    setSessionAttachments(existingList);
+    setSessionError(null);
+    setShowSessionModal(true);
+  };
+
+  const handleSessionDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Check if user accidentally selected an HTML file
+    for (let i = 0; i < files.length; i++) {
+      const name = files[i].name.toLowerCase();
+      if (name.endsWith('.html') || name.endsWith('.htm')) {
+        setSessionError('HTML files are reserved for Proposals. Please upload study materials (PDF, Word, Excel, PPT, or Images) for session logs.');
+        e.target.value = '';
+        return;
+      }
+    }
+
+    setSessionDocUploading(true);
+    setSessionError(null);
+
+    const uploadedItems: SessionAttachmentItem[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await api.post('/profile-roadmap/sessions/upload-document', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        uploadedItems.push({
+          url: res.data.document_url,
+          name: res.data.document_name,
+          type: res.data.document_type,
+          size_bytes: res.data.document_size_bytes,
+        });
+      } catch (err: any) {
+        setSessionError(err.response?.data?.detail || `Failed to upload ${file.name}`);
+      }
+    }
+
+    setSessionAttachments((prev) => [...prev, ...uploadedItems]);
+    setSessionDocUploading(false);
+    e.target.value = '';
+  };
+
+  const handleRemoveSessionAttachment = (indexToRemove: number) => {
+    setSessionAttachments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSaveSession = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
+    if (!sessionTopic.trim()) {
+      setSessionError('Please specify the session topic / class agenda.');
+      return;
+    }
+    if (!sessionDescription.trim()) {
+      setSessionError('Please provide Minutes of Meeting (MoM) or what was taught.');
+      return;
+    }
+
     setSessionLoading(true);
     setSessionError(null);
 
+    const payload = {
+      roadmap_item_id: selectedProposalIdForSession || null,
+      session_date: sessionDate,
+      topic: sessionTopic.trim(),
+      description: sessionDescription.trim(),
+      duration_minutes: Number(sessionDuration),
+      status: sessionStatus,
+      remarks: sessionRemarks.trim() || null,
+      attachments: sessionAttachments,
+      document_url: sessionAttachments.length > 0 ? sessionAttachments[0].url : null,
+      document_name: sessionAttachments.length > 0 ? sessionAttachments[0].name : null,
+      document_type: sessionAttachments.length > 0 ? sessionAttachments[0].type : null,
+      document_size_bytes: sessionAttachments.length > 0 ? sessionAttachments[0].size_bytes : null,
+    };
+
     try {
-      const finalAttachments = sessionAttachments;
-      const firstAtt = finalAttachments[0];
-
-      const payload = {
-        roadmap_item_id: sessionTargetItem?.id || undefined,
-        session_date: sessionDate,
-        topic: sessionTopic,
-        description: sessionDescription,
-        duration_minutes: Number(sessionDuration),
-        status: sessionStatus,
-        remarks: sessionRemarks || undefined,
-        document_url: firstAtt?.url || null,
-        document_name: firstAtt?.name || null,
-        document_type: firstAtt?.type || null,
-        document_size_bytes: firstAtt?.size_bytes || null,
-        attachments: finalAttachments,
-      };
-
       if (editingSessionId) {
         await api.patch(`/profile-roadmap/sessions/${editingSessionId}`, payload);
       } else {
@@ -385,185 +425,190 @@ export const AdminProfileRoadmapPage: React.FC = () => {
       await loadStudentDetails(selectedStudent.student_id);
       setShowSessionModal(false);
     } catch (err: any) {
-      setSessionError(err.response?.data?.detail || 'Failed to save session attendance.');
+      setSessionError(err.response?.data?.detail || 'Failed to save session attendance & MoM.');
     } finally {
       setSessionLoading(false);
-      setSessionDocUploading(false);
     }
   };
 
   const handleDeleteSession = async (sessionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this session attendance log?')) return;
+    if (!confirm('Are you sure you want to delete this session attendance log?')) return;
     if (!selectedStudent) return;
+
     try {
       await api.delete(`/profile-roadmap/sessions/${sessionId}`);
       await loadStudentDetails(selectedStudent.student_id);
-      // Also update history list if open
-      setStudentSessionsHistory((prev) => prev.filter((s) => s.id !== sessionId));
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete session attendance.');
-    }
-  };
-
-  const handleOpenHistoryModal = async () => {
-    if (!selectedStudent) return;
-    setShowHistoryModal(true);
-    setHistoryLoading(true);
-    try {
-      const res = await api.get(`/profile-roadmap/students/${selectedStudent.student_id}/sessions`);
-      setStudentSessionsHistory(res.data);
     } catch (err) {
-      console.error('Failed to load session history', err);
-    } finally {
-      setHistoryLoading(false);
+      console.error('Failed to delete session', err);
     }
   };
 
-  const handleStatusChange = async (itemId: string, newStatus: RoadmapItemStatusType) => {
-    if (!selectedStudent) return;
-    try {
-      await api.patch(`/profile-roadmap/items/${itemId}/status`, { status: newStatus });
-      await loadStudentDetails(selectedStudent.student_id);
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to update status.');
+  // Filter students for sidebar
+  const filteredStudents = students.filter((s) => {
+    const q = searchFilter.toLowerCase();
+    return (
+      s.student_name.toLowerCase().includes(q) ||
+      s.student_email.toLowerCase().includes(q) ||
+      (s.aptech_student_id && s.aptech_student_id.toLowerCase().includes(q))
+    );
+  });
+
+  // Calculate student stats
+  const proposalsList = selectedStudent?.items || [];
+  const allSessions = selectedStudent?.sessions || [];
+  const activeProposal = proposalsList.find((p) => p.status === 'APPROVED' || p.status === 'IN_PROGRESS');
+  const totalHoursLogged = (allSessions.reduce((acc, curr) => acc + (curr.duration_minutes || 0), 0) / 60).toFixed(1);
+
+  // Filter sessions by proposal
+  const filteredSessions = allSessions.filter((s) => {
+    if (sessionProposalFilter === 'ALL') return true;
+    if (sessionProposalFilter === 'GENERAL') return !s.roadmap_item_id;
+    return s.roadmap_item_id === sessionProposalFilter;
+  });
+
+  const getStatusBadge = (status: RoadmapItemStatusType) => {
+    switch (status) {
+      case 'APPROVED':
+        return (
+          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>Active / Approved</span>
+          </span>
+        );
+      case 'COMPLETED':
+        return (
+          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Completed</span>
+          </span>
+        );
+      case 'REJECTED':
+        return (
+          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+            <XCircle className="w-3.5 h-3.5" />
+            <span>Needs Revision</span>
+          </span>
+        );
+      case 'PROPOSED':
+      case 'PENDING':
+      default:
+        return (
+          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+            <Clock3 className="w-3.5 h-3.5" />
+            <span>Proposal Under Review</span>
+          </span>
+        );
     }
   };
 
-  const handleUploadExcel = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!uploadFile || !selectedStudentId) {
-      setUploadError('Please select a student and an .xlsx file.');
-      return;
-    }
-    setUploadLoading(true);
-    setUploadError(null);
-    setUploadSuccess(null);
-
-    const formData = new FormData();
-    formData.append('student_id', selectedStudentId);
-    formData.append('replace_existing', 'true');
-    formData.append('file', uploadFile);
-
-    try {
-      const res = await api.post('/profile-roadmap/upload-excel', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setUploadSuccess(`Roadmap uploaded successfully! ${res.data.items.length} months/milestones generated.`);
-      setSelectedStudent(res.data);
-      // update in student list
-      setStudents((prev) =>
-        prev.map((s) => (s.student_id === selectedStudentId ? res.data : s))
-      );
-      setUploadFile(null);
-      setTimeout(() => {
-        setShowUploadModal(false);
-        setUploadSuccess(null);
-      }, 1500);
-    } catch (err: any) {
-      setUploadError(err.response?.data?.detail || 'Failed to upload and parse Excel file.');
-    } finally {
-      setUploadLoading(false);
-    }
+  const getProposalTypeBadge = (type?: string | null) => {
+    const label = (type || 'COMPETITION').replace(/_/g, ' ');
+    return (
+      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+        {label}
+      </span>
+    );
   };
-
-  const filteredStudents = students.filter(
-    (s) =>
-      s.student_name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      s.aptech_student_id.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      s.student_email.toLowerCase().includes(searchFilter.toLowerCase())
-  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
-              <Compass className="w-4 h-4" />
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* Top Header Card */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2">
+              <Compass className="w-3.5 h-3.5" />
+              <span>Mentorship &amp; Profile Building Tracker</span>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-              Profile Building &amp; Mentorship Tracker
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              Dynamic Proposals &amp; Session Management
             </h1>
+            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+              Conduct discovery calls, share interactive visual proposals (.html) with parents, and log session Minutes of Meeting (MoM) as goals get approved.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage student-specific 12-month execution plans, upload Excel roadmaps, and log session Minutes of Meeting (MoM).
-          </p>
-        </div>
 
-        <button
-          onClick={() => {
-            setShowUploadModal(true);
-            setUploadError(null);
-            setUploadSuccess(null);
-          }}
-          className="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg text-white bg-amber-600 hover:bg-amber-700 shadow-sm transition-colors"
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          Upload / Replace Roadmap (.xlsx)
-        </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleOpenCreateProposal}
+              disabled={!selectedStudent}
+              className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>+ Create Proposal</span>
+            </button>
+
+            <button
+              onClick={() => handleOpenAddSession()}
+              disabled={!selectedStudent}
+              className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-xs shadow-md transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Log Session &amp; MoM</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Main Grid: Student List Left, Roadmap Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Col: Student Selector */}
-        <div className="lg:col-span-1 space-y-3">
-          <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-sm">
+      {/* Main Grid: Student List & Detail View */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Student Selector (4 cols) */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-4">
             <div className="relative mb-3">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search students..."
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
 
-            <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
-              {filteredStudents.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400">
-                  No students found
-                </div>
+            <div className="space-y-1.5 max-h-[560px] overflow-y-auto pr-1">
+              {loading ? (
+                <div className="py-8 text-center text-xs text-slate-400">Loading students...</div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400">No profile building students found.</div>
               ) : (
                 filteredStudents.map((s) => {
                   const isSelected = s.student_id === selectedStudentId;
-                  const hasRoadmap = s.items.length > 0;
+                  const studentActiveProposal = s.items?.find((p) => p.status === 'APPROVED' || p.status === 'IN_PROGRESS');
+                  const sessionCount = s.sessions?.length || 0;
+
                   return (
                     <button
                       key={s.student_id}
                       onClick={() => handleSelectStudent(s.student_id)}
-                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all ${
+                      className={`w-full text-left p-3 rounded-xl transition-all border ${
                         isSelected
-                          ? 'bg-amber-50/80 border-amber-300 shadow-sm'
-                          : 'bg-white border-slate-200/70 hover:bg-slate-50'
+                          ? 'bg-amber-50/70 border-amber-300 shadow-xs'
+                          : 'bg-white border-transparent hover:bg-slate-50'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-900 truncate">
-                          {s.student_name}
-                        </span>
-                        {hasRoadmap ? (
-                          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-800 rounded">
-                            {s.stats.completed}/{s.stats.total_items}
-                          </span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-500 rounded">
-                            No Plan
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {s.aptech_student_id} • {s.student_email}
-                      </div>
-                      {hasRoadmap && (
-                        <div className="mt-2 w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-                          <div
-                            className="bg-amber-500 h-1 rounded-full transition-all"
-                            style={{ width: `${s.stats.completion_percentage}%` }}
-                          />
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{s.student_name}</p>
+                          <p className="text-[11px] text-slate-500 truncate">{s.student_email}</p>
                         </div>
-                      )}
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold flex-shrink-0">
+                          {s.aptech_student_id || 'ID'}
+                        </span>
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100/80 pt-1.5">
+                        <span className="truncate">
+                          {studentActiveProposal ? (
+                            <span className="text-emerald-700 font-semibold truncate">
+                              ● {studentActiveProposal.period}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">Consultation Phase</span>
+                          )}
+                        </span>
+                        <span className="font-bold text-slate-700">{sessionCount} sessions</span>
+                      </div>
                     </button>
                   );
                 })
@@ -572,810 +617,646 @@ export const AdminProfileRoadmapPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Col: Student Details & Roadmap Items */}
-        <div className="lg:col-span-3 space-y-4">
+        {/* Right Column: Selected Student Workspace (8 cols) */}
+        <div className="lg:col-span-8 space-y-5">
           {selectedStudent ? (
             <>
               {/* Student Overview Header Card */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h2 className="text-base font-bold text-slate-900">
-                        {selectedStudent.student_name}
-                      </h2>
-                      <span className="px-2 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-800 rounded-full">
-                        {selectedStudent.track_type.replace('_', ' ')}
+                      <h2 className="text-lg font-bold text-slate-900">{selectedStudent.student_name}</h2>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        Profile Building Track
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                      ID: {selectedStudent.aptech_student_id} • {selectedStudent.student_email}
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Aptech ID: <strong className="text-slate-800">{selectedStudent.aptech_student_id}</strong> • Email: <strong className="text-slate-800">{selectedStudent.student_email}</strong>
                     </p>
                   </div>
 
-                  <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+                  <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleOpenAddSession()}
-                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center shadow-xs transition-colors"
-                      title="Log a new mentorship session, discussion notes, and reference files"
+                      className="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
                     >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Log Session &amp; MoM
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Log Session</span>
                     </button>
 
                     <button
-                      onClick={handleOpenAddManualMilestone}
-                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center shadow-xs transition-colors"
-                      title="Add a single milestone/competition manually"
+                      onClick={handleOpenCreateProposal}
+                      className="inline-flex items-center space-x-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
                     >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Add Milestone
-                    </button>
-
-                    <button
-                      onClick={() => setShowUploadModal(true)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center shadow-xs"
-                      title="Upload or update full 12-month excel roadmap"
-                    >
-                      <Upload className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-                      {selectedStudent.items.length > 0 ? 'Upload Excel' : 'Upload Excel Plan'}
-                    </button>
-
-                    <button
-                      onClick={handleOpenHistoryModal}
-                      className="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 flex items-center transition-colors"
-                      title="View complete date-wise session attendance history modal"
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                      History Modal
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>New Proposal</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <div className="text-[11px] font-medium text-slate-500">Total Milestones</div>
-                    <div className="text-lg font-black text-slate-900 mt-0.5">
-                      {selectedStudent.stats.total_items} Months
+                {/* Quick KPI Stats Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Focus</div>
+                    <div className="text-xs font-bold text-slate-900 truncate mt-1">
+                      {activeProposal ? activeProposal.period : 'General Mentorship'}
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100">
-                    <div className="text-[11px] font-medium text-blue-700">Total Sessions Logged</div>
-                    <div className="text-lg font-black text-blue-800 mt-0.5">
-                      {selectedStudent.stats.total_sessions_count || selectedStudent.stats.completed} Sessions
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Sessions</div>
+                    <div className="text-base font-black text-slate-900 mt-0.5">
+                      {allSessions.length} <span className="text-xs font-normal text-slate-500">conducted</span>
                     </div>
                   </div>
-                  <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-100">
-                    <div className="text-[11px] font-medium text-amber-700">Completion Rate</div>
-                    <div className="text-lg font-black text-amber-800 mt-0.5">
-                      {selectedStudent.stats.completion_percentage}%
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Hours Logged</div>
+                    <div className="text-base font-black text-amber-700 mt-0.5">
+                      {totalHoursLogged} <span className="text-xs font-normal text-slate-500">hours</span>
                     </div>
                   </div>
-                  <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
-                    <div className="text-[11px] font-medium text-emerald-700">Mentorship Hours</div>
-                    <div className="text-lg font-black text-emerald-800 mt-0.5">
-                      {(selectedStudent.stats.total_session_minutes / 60).toFixed(1)} hrs
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Proposals</div>
+                    <div className="text-base font-black text-blue-700 mt-0.5">
+                      {proposalsList.length} <span className="text-xs font-normal text-slate-500">stages</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Section 1: Mentorship Sessions & MoM History */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <CalendarCheck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">
-                        Mentorship Sessions &amp; MoM History ({studentSessionsHistory.length})
-                      </h3>
-                      <p className="text-[11px] text-slate-500">
-                        Date-wise counseling sessions, discussion topics, and attached reference files.
+              {/* Navigation Tabs */}
+              <div className="flex items-center space-x-2 border-b border-slate-200">
+                <button
+                  onClick={() => setActiveTab('PROPOSALS')}
+                  className={`pb-3 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 transition-all ${
+                    activeTab === 'PROPOSALS'
+                      ? 'border-amber-600 text-amber-900'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Layers className="w-4 h-4" />
+                  <span>Proposals &amp; Action Plans</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700">
+                    {proposalsList.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('SESSIONS')}
+                  className={`pb-3 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 transition-all ${
+                    activeTab === 'SESSIONS'
+                      ? 'border-amber-600 text-amber-900'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Mentorship Sessions &amp; MoM</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700">
+                    {allSessions.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* TAB 1: Proposals & Action Plans */}
+              {activeTab === 'PROPOSALS' && (
+                <div className="space-y-4">
+                  {proposalsList.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                        <Compass className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-900">No Proposals Created Yet</h3>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        You can conduct discovery &amp; general mentorship sessions right away, or create a formal proposal (like Conrad Challenge, HOSA, or Research Paper) with an interactive HTML roadmap.
                       </p>
+                      <button
+                        onClick={handleOpenCreateProposal}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-xs"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>Create First Proposal</span>
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => handleOpenAddSession()}
-                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs self-start sm:self-auto"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Log New Session</span>
-                  </button>
-                </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {proposalsList.map((proposal, idx) => {
+                        const sessionsUnderProposal = allSessions.filter((s) => s.roadmap_item_id === proposal.id);
 
-                {studentSessionsHistory.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-slate-500 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    <p className="font-semibold text-slate-700">No sessions logged yet for this student.</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      You can log an introductory call, competition proposal discussion, or mentorship session right away.
-                    </p>
-                    <button
-                      onClick={() => handleOpenAddSession()}
-                      className="mt-3 inline-flex items-center px-3.5 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Log First Session Now
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {studentSessionsHistory.map((sess) => {
-                      const allAtts = (sess.attachments && sess.attachments.length > 0)
-                        ? sess.attachments
-                        : sess.document_url
-                        ? [{
-                            url: sess.document_url,
-                            name: sess.document_name || 'Attached Document',
-                            type: sess.document_type,
-                            size_bytes: sess.document_size_bytes,
-                          }]
-                        : [];
+                        return (
+                          <div
+                            key={proposal.id}
+                            className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 hover:border-slate-300 transition-all space-y-4"
+                          >
+                            {/* Proposal Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-xs font-mono font-bold text-slate-400">#{idx + 1}</span>
+                                  <h3 className="text-sm sm:text-base font-bold text-slate-900">{proposal.period}</h3>
+                                  {getProposalTypeBadge(proposal.proposal_type)}
+                                  {getStatusBadge(proposal.status)}
+                                </div>
+                                {proposal.session_date && (
+                                  <p className="text-xs text-slate-500 flex items-center space-x-1">
+                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                    <span>Timeline: {proposal.session_date}</span>
+                                  </p>
+                                )}
+                              </div>
 
-                      return (
-                        <div
-                          key={sess.id}
-                          className="bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-xl p-4 transition-all"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/60">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xs font-bold text-slate-900 flex items-center">
-                                <Calendar className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                                {sess.session_date}
-                              </span>
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                                  sess.status === 'PRESENT'
-                                    ? 'bg-emerald-100 text-emerald-800'
-                                    : sess.status === 'LATE'
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : sess.status === 'ABSENT'
-                                    ? 'bg-rose-100 text-rose-800'
-                                    : 'bg-slate-100 text-slate-700'
-                                }`}
-                              >
-                                {sess.status}
-                              </span>
-                              <span className="text-[11px] text-slate-500 font-medium">
-                                ⏱️ {sess.duration_minutes} mins
-                              </span>
-                              {sess.period && (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 bg-amber-50 text-amber-800 rounded border border-amber-200">
-                                  {sess.period}
-                                </span>
-                              )}
+                              {/* Action Buttons */}
+                              <div className="flex items-center space-x-2 flex-wrap">
+                                {proposal.proposal_html_url ? (
+                                  <button
+                                    onClick={() => handleOpenViewer(proposal)}
+                                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold shadow-xs transition-all"
+                                  >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>View Interactive Proposal (HTML)</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleOpenEditProposal(proposal)}
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+                                  >
+                                    <FileCode2 className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Attach HTML Proposal</span>
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => handleOpenEditProposal(proposal)}
+                                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                                  title="Edit details"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                  onClick={() => handleDeleteProposal(proposal.id)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                                  title="Delete proposal"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-1.5">
-                              {sess.marked_by_name && (
-                                <span className="text-[11px] text-slate-500 font-medium mr-1.5">
-                                  Faculty: <span className="font-semibold text-slate-700">{sess.marked_by_name}</span>
+
+                            {/* Scope & Deliverables */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+                              <div>
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                  Proposal Scope &amp; Main Actions
+                                </div>
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                                  {proposal.main_actions || 'No details provided.'}
+                                </p>
+                              </div>
+
+                              <div>
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                  Expected Deliverables &amp; Milestones
+                                </div>
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                                  {proposal.milestones_outputs || 'No deliverables recorded.'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Quick Status Changers & Sessions Info */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-2 border-t border-slate-100">
+                              <div className="flex items-center space-x-2 text-slate-600">
+                                <FolderOpen className="w-4 h-4 text-blue-600" />
+                                <span>
+                                  Sessions Conducted: <strong className="text-slate-900">{sessionsUnderProposal.length}</strong>
                                 </span>
-                              )}
-                              <button
-                                onClick={() => handleOpenEditSession(sess)}
-                                className="p-1 text-slate-500 hover:text-blue-600 rounded hover:bg-white transition-colors"
-                                title="Edit Session"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteSession(sess.id)}
-                                className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-white transition-colors"
-                                title="Delete Session"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                                <button
+                                  onClick={() => handleOpenAddSession(proposal.id)}
+                                  className="text-xs font-bold text-blue-600 hover:underline ml-2"
+                                >
+                                  + Log Session Under This Proposal
+                                </button>
+                              </div>
+
+                              <div className="flex items-center space-x-1.5">
+                                <span className="text-[11px] text-slate-400 font-medium">Quick Status:</span>
+                                {proposal.status !== 'APPROVED' && (
+                                  <button
+                                    onClick={() => handleQuickUpdateStatus(proposal, 'APPROVED')}
+                                    className="px-2 py-1 text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors"
+                                  >
+                                    Mark Approved
+                                  </button>
+                                )}
+                                {proposal.status !== 'COMPLETED' && (
+                                  <button
+                                    onClick={() => handleQuickUpdateStatus(proposal, 'COMPLETED')}
+                                    className="px-2 py-1 text-[11px] font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md border border-blue-200 transition-colors"
+                                  >
+                                    Mark Completed
+                                  </button>
+                                )}
+                                {proposal.status !== 'PROPOSED' && (
+                                  <button
+                                    onClick={() => handleQuickUpdateStatus(proposal, 'PROPOSED')}
+                                    className="px-2 py-1 text-[11px] font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-md border border-amber-200 transition-colors"
+                                  >
+                                    Set Under Review
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
-                          <div className="mt-2.5">
-                            <h4 className="text-xs sm:text-sm font-bold text-slate-900">{sess.topic}</h4>
-                            <p className="text-xs text-slate-700 mt-1 whitespace-pre-line leading-relaxed">
-                              {sess.description}
-                            </p>
-                            {sess.remarks && (
-                              <div className="text-[11px] text-slate-600 bg-amber-50/80 p-2 rounded-lg border border-amber-200/60 mt-2 italic">
-                                <span className="font-bold not-italic text-amber-900">Faculty Guidance: </span>
-                                {sess.remarks}
+              {/* TAB 2: Mentorship Sessions & MoM Logs */}
+              {activeTab === 'SESSIONS' && (
+                <div className="space-y-4">
+                  {/* Sessions Filter & Add Button */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs font-bold text-slate-700">Filter By Track:</span>
+                      <select
+                        value={sessionProposalFilter}
+                        onChange={(e) => setSessionProposalFilter(e.target.value)}
+                        className="text-xs font-semibold px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      >
+                        <option value="ALL">All Sessions ({allSessions.length})</option>
+                        <option value="GENERAL">General Mentorship / Discovery ({allSessions.filter((s) => !s.roadmap_item_id).length})</option>
+                        {proposalsList.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.period} ({allSessions.filter((s) => s.roadmap_item_id === p.id).length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => handleOpenAddSession()}
+                      className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Log New Session</span>
+                    </button>
+                  </div>
+
+                  {filteredSessions.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                        <Calendar className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-900">No Sessions Found</h3>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        You can log general mentorship discussions, discovery notes, or sessions linked to an approved proposal.
+                      </p>
+                      <button
+                        onClick={() => handleOpenAddSession()}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Log First Session</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredSessions.map((session) => {
+                        const linkedProposal = proposalsList.find((p) => p.id === session.roadmap_item_id);
+
+                        return (
+                          <div
+                            key={session.id}
+                            className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 hover:border-slate-300 transition-all space-y-3"
+                          >
+                            {/* Session Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                              <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                                    {session.session_date}
+                                  </span>
+
+                                  {linkedProposal ? (
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                      {linkedProposal.period}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                      General Mentorship Session
+                                    </span>
+                                  )}
+
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                                    {session.duration_minutes || 60} mins
+                                  </span>
+
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">
+                                    {session.status}
+                                  </span>
+                                </div>
+
+                                <h4 className="text-sm font-bold text-slate-900 mt-1">{session.topic}</h4>
                               </div>
-                            )}
 
-                            {/* Attached Documents */}
-                            {allAtts.length > 0 && (
-                              <div className="mt-3 pt-2.5 border-t border-slate-200/60 space-y-1.5">
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1">
-                                  <Paperclip className="w-3 h-3 text-blue-600" />
-                                  <span>Attached Documents ({allAtts.length}):</span>
+                              <div className="flex items-center space-x-1.5">
+                                <button
+                                  onClick={() => handleOpenEditSession(session)}
+                                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                                  title="Edit session"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSession(session.id)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                                  title="Delete session"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* MoM Notes */}
+                            <div className="bg-slate-50/80 rounded-xl p-3.5 border border-slate-200/70 text-xs text-slate-800 space-y-2">
+                              <div>
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                  What Was Taught / MoM Summary:
+                                </div>
+                                <div className="whitespace-pre-line leading-relaxed text-slate-700">
+                                  {session.description}
+                                </div>
+                              </div>
+
+                              {session.remarks && (
+                                <div className="pt-2 border-t border-slate-200/60 text-[11px] text-amber-950 italic bg-amber-50/70 p-2.5 rounded-lg">
+                                  <strong className="not-italic text-amber-950">Mentor Guidance: </strong>
+                                  {session.remarks}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Attachments Section */}
+                            {((session.attachments && session.attachments.length > 0) || session.document_url) && (
+                              <div className="pt-2 border-t border-slate-100">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center space-x-1">
+                                  <Paperclip className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>Attached Reference Documents &amp; Notes:</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                  {allAtts.map((att, attIdx) => (
+                                  {(session.attachments && session.attachments.length > 0 ? session.attachments : [{
+                                    url: session.document_url!,
+                                    name: session.document_name || 'Attached Document',
+                                    type: session.document_type,
+                                    size_bytes: session.document_size_bytes,
+                                  }]).map((doc, docIdx) => (
                                     <div
-                                      key={attIdx}
-                                      className="flex items-center space-x-2 bg-blue-50/80 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-900"
+                                      key={docIdx}
+                                      className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-xs font-medium text-blue-950"
                                     >
-                                      <FileText className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                                      <span className="truncate max-w-[200px]">{att.name}</span>
-                                      {att.size_bytes ? (
-                                        <span className="text-[10px] text-blue-700 font-normal">
-                                          ({(att.size_bytes / 1024).toFixed(0)} KB)
+                                      <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                      <span className="truncate max-w-[200px]">{doc.name}</span>
+                                      {doc.size_bytes && (
+                                        <span className="text-[10px] text-blue-700">
+                                          ({(doc.size_bytes / 1024).toFixed(0)} KB)
                                         </span>
-                                      ) : null}
+                                      )}
                                       <a
-                                        href={getDocDownloadUrl(att.url)}
+                                        href={getDocDownloadUrl(doc.url)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        download={att.name}
-                                        className="p-1 text-blue-700 hover:text-blue-950 rounded hover:bg-blue-100 transition-colors"
-                                        title="Download Document"
+                                        download={doc.name || 'session-doc'}
+                                        className="text-blue-700 hover:text-blue-900 font-bold ml-1 hover:underline flex items-center space-x-0.5"
                                       >
                                         <Download className="w-3 h-3" />
+                                        <span>Download</span>
                                       </a>
                                     </div>
                                   ))}
                                 </div>
                               </div>
                             )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
 
-              {/* Section 2: Month-Wise Roadmap Milestones List */}
-              {selectedStudent.items.length === 0 ? (
-                <div className="bg-white p-8 sm:p-10 text-center rounded-2xl border border-dashed border-slate-300 shadow-sm space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto">
-                    <Compass className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900">Roadmap Milestones Still In Discussion</h3>
-                    <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
-                      You can add milestones individually as competitions are shortlisted, or upload a full 12-month Excel plan whenever finalized.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center flex-wrap gap-2.5 pt-2">
-                    <button
-                      onClick={handleOpenAddManualMilestone}
-                      className="inline-flex items-center px-4 py-2 text-xs font-bold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all"
-                    >
-                      <Plus className="w-4 h-4 mr-1.5" />
-                      Add Milestone Manually
-                    </button>
-                    <button
-                      onClick={() => setShowUploadModal(true)}
-                      className="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 shadow-xs transition-all"
-                    >
-                      <Upload className="w-4 h-4 mr-1.5 text-slate-500" />
-                      Upload Full Excel Plan
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3.5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      Execution Plan &amp; Mentorship Log ({selectedStudent.items.length} Milestones)
-                    </h3>
-                    <span className="text-[11px] text-slate-500">
-                      Live synced with student portal
-                    </span>
-                  </div>
-
-                  {selectedStudent.items.map((item, idx) => {
-                    const isCompleted = item.status === 'COMPLETED';
-                    const isInProgress = item.status === 'IN_PROGRESS';
-
-                    return (
-                      <div
-                        key={item.id}
-                        className={`bg-white rounded-xl border p-4.5 transition-all shadow-sm ${
-                          isCompleted
-                            ? 'border-emerald-200/90 bg-emerald-50/20'
-                            : isInProgress
-                            ? 'border-blue-300 bg-blue-50/20'
-                            : 'border-slate-200 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                          {/* Period & Number */}
-                          <div className="flex items-start space-x-3">
-                            <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5 ${
-                                isCompleted
-                                  ? 'bg-emerald-600 text-white'
-                                  : isInProgress
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-slate-100 text-slate-600'
-                              }`}
-                            >
-                              {idx + 1}
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <h4 className="text-sm font-bold text-slate-900">
-                                  {item.period}
-                                </h4>
-                                <span
-                                  className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                                    isCompleted
-                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                      : isInProgress
-                                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                                      : 'bg-slate-100 text-slate-600 border border-slate-200'
-                                  }`}
-                                >
-                                  {item.status.replace('_', ' ')}
-                                </span>
-                              </div>
-                              
-                              {/* 1. Key Actions & Study Scope */}
-                              <div className="mt-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/70">
-                                <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                                  <span>Key Actions &amp; Focus Scope</span>
-                                </div>
-                                <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
-                                  {item.main_actions}
-                                </p>
-                              </div>
-
-                              {/* 2. Milestones & Expected Outputs */}
-                              <div className="mt-2.5 p-3 bg-amber-50/70 rounded-xl border border-amber-200/80">
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-amber-900 uppercase tracking-wider">
-                                    <Target className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Expected Milestones &amp; Deliverables</span>
-                                  </div>
-                                </div>
-                                {item.milestones_outputs ? (
-                                  <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
-                                    {item.milestones_outputs}
-                                  </p>
-                                ) : (
-                                  <div className="flex items-center justify-between text-xs text-amber-800/80 italic">
-                                    <span>No specific deliverables defined yet for this month.</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenEditModal(item)}
-                                      className="text-amber-700 underline font-semibold hover:text-amber-900 not-italic ml-2"
-                                    >
-                                      + Add Deliverables
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* 3. Conducted Sessions & Attendance */}
-                              <div className="mt-2.5 p-3 bg-blue-50/50 rounded-xl border border-blue-200/70">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-blue-900 uppercase tracking-wider">
-                                    <CalendarCheck className="w-3.5 h-3.5 text-blue-600" />
-                                    <span>Sessions &amp; Attendance ({item.sessions?.length || 0})</span>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenAddSession(item)}
-                                    className="inline-flex items-center px-2 py-0.5 text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-white border border-blue-200 rounded shadow-2xs hover:bg-blue-50 transition-colors"
-                                  >
-                                    <Plus className="w-3 h-3 mr-0.5 text-blue-600" />
-                                    Add Session
-                                  </button>
-                                </div>
-
-                                {item.sessions && item.sessions.length > 0 ? (
-                                  <div className="space-y-2">
-                                    {item.sessions.map((sess) => (
-                                      <div key={sess.id} className="bg-white p-2.5 rounded-lg border border-blue-100/90 shadow-2xs text-xs space-y-1">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center space-x-2">
-                                            <span className="font-bold text-slate-900 flex items-center">
-                                              <Calendar className="w-3 h-3 mr-1 text-slate-400" />
-                                              {sess.session_date}
-                                            </span>
-                                            <span className={`px-2 py-0.2 rounded-full text-[10px] font-extrabold uppercase ${
-                                              sess.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800' :
-                                              sess.status === 'LATE' ? 'bg-amber-100 text-amber-800' :
-                                              sess.status === 'ABSENT' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'
-                                            }`}>
-                                              {sess.status}
-                                            </span>
-                                            <span className="text-[11px] text-slate-500 font-medium">
-                                              ⏱️ {sess.duration_minutes} mins
-                                            </span>
-                                          </div>
-                                          <div className="flex items-center space-x-1">
-                                            <button
-                                              type="button"
-                                              onClick={() => handleOpenEditSession(sess, item)}
-                                              className="p-1 text-slate-400 hover:text-amber-700 rounded hover:bg-slate-50"
-                                              title="Edit Session"
-                                            >
-                                              <Edit3 className="w-3 h-3" />
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleDeleteSession(sess.id)}
-                                              className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-50"
-                                              title="Delete Session"
-                                            >
-                                              <Trash2 className="w-3 h-3" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                        <div className="font-semibold text-slate-800">{sess.topic}</div>
-                                        <p className="text-slate-600 text-[11px] whitespace-pre-line leading-relaxed">{sess.description}</p>
-                                        {sess.remarks && (
-                                          <div className="text-[10px] text-slate-400 italic">
-                                            Mentor Note: {sess.remarks}
-                                          </div>
-                                        )}
-                                        {sess.document_url && (
-                                          <div className="pt-1.5 mt-1 border-t border-slate-100 flex items-center justify-between">
-                                            <div className="flex items-center space-x-1 text-[11px] text-blue-900 font-medium truncate max-w-[220px]">
-                                              <Paperclip className="w-3 h-3 text-blue-600 flex-shrink-0" />
-                                              <span className="truncate">{sess.document_name || 'Attached Document'}</span>
-                                              {sess.document_size_bytes && (
-                                                <span className="text-[10px] text-slate-400">
-                                                  ({(sess.document_size_bytes / 1024).toFixed(0)} KB)
-                                                </span>
-                                              )}
-                                            </div>
-                                            <a
-                                              href={getDocDownloadUrl(sess.document_url)}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              download={sess.document_name || 'document'}
-                                              className="inline-flex items-center space-x-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold border border-blue-200 transition-colors"
-                                            >
-                                              <Download className="w-2.5 h-2.5" />
-                                              <span>Download</span>
-                                            </a>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-xs text-blue-700/80 italic flex items-center justify-between">
-                                    <span>No sessions logged yet for {item.period}.</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenAddSession(item)}
-                                      className="text-blue-700 underline font-semibold hover:text-blue-900 not-italic ml-2"
-                                    >
-                                      + Log 1st Session
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
+                            {/* Faculty Name Footer */}
+                            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                              <span>
+                                Conducted by: <strong className="text-slate-800">{session.marked_by_name || 'Faculty Mentor'}</strong>
+                              </span>
                             </div>
                           </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex sm:flex-col items-end gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => handleOpenAddSession(item)}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 shadow-2xs transition-colors"
-                            >
-                              <CalendarCheck className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
-                              Log Session
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenEditModal(item)}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
-                              title="Edit milestone focus area, actions and deliverables"
-                            >
-                              <Edit3 className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
-                              Edit Actions &amp; Outputs
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenMoMModal(item)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center shadow-sm transition-colors ${
-                                isCompleted
-                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                  : 'bg-amber-600 text-white hover:bg-amber-700'
-                              }`}
-                            >
-                              <MessageSquareText className="w-3.5 h-3.5 mr-1.5" />
-                              {isCompleted ? 'Edit MoM / Log' : 'Mark Completed'}
-                            </button>
-
-                            {/* Status Quick Switch */}
-                            <select
-                              value={item.status}
-                              onChange={(e) =>
-                                handleStatusChange(item.id, e.target.value as RoadmapItemStatusType)
-                              }
-                              className="text-[11px] border border-slate-200 rounded px-2 py-1 text-slate-600 bg-white"
-                            >
-                              <option value="PENDING">Pending</option>
-                              <option value="IN_PROGRESS">In Progress</option>
-                              <option value="COMPLETED">Completed</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Completed Session MoM Banner */}
-                        {isCompleted && item.meeting_notes && (
-                          <div className="mt-4 pt-3.5 border-t border-emerald-200/60 bg-emerald-50/50 rounded-xl p-3 border">
-                            <div className="flex flex-wrap items-center justify-between text-[11px] font-semibold text-emerald-900 mb-1.5">
-                              <div className="flex items-center space-x-2">
-                                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>{item.meeting_topic || 'Mentorship Session Log'}</span>
-                              </div>
-                              <div className="flex items-center space-x-3 text-slate-600">
-                                {item.session_date && (
-                                  <span className="flex items-center">
-                                    <Calendar className="w-3 h-3 mr-1 text-slate-400" />
-                                    {item.session_date}
-                                  </span>
-                                )}
-                                {item.session_duration_minutes && (
-                                  <span className="flex items-center">
-                                    <Clock className="w-3 h-3 mr-1 text-slate-400" />
-                                    {item.session_duration_minutes} mins
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-xs text-slate-700 bg-white/90 p-2.5 rounded-lg border border-emerald-100 whitespace-pre-line leading-relaxed">
-                              {item.meeting_notes}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </>
           ) : (
-            <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 text-xs text-slate-500">
-              Select a student to view or manage their Profile Building Roadmap.
+            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
+              <Compass className="w-12 h-12 mx-auto mb-3 opacity-30 text-amber-600" />
+              <p className="text-sm font-semibold">Select a student from the left panel to manage their proposals and sessions.</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Edit Milestone & Deliverables Modal */}
-      {activeItemForEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 1: Create / Edit Proposal Modal                          */}
+      {/* ------------------------------------------------------------- */}
+      {showProposalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Edit3 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Edit Milestone Actions &amp; Deliverables
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Configure study actions and tangible outputs for this stage
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveItemForEdit(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {editError && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{editError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveEdit} className="space-y-4 mt-4">
-              {/* Period / Month */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Period / Month *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editPeriod}
-                  onChange={(e) => setEditPeriod(e.target.value)}
-                  placeholder="e.g. November 2026"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                />
-              </div>
-
-              {/* Main Actions */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Key Actions &amp; Focus Scope *</span>
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={editMainActions}
-                  onChange={(e) => setEditMainActions(e.target.value)}
-                  placeholder="Detail what the student needs to learn, read, organize, or conduct..."
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed"
-                />
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Guides the student on what specific syllabus, research, or shadowing actions to execute.
-                </p>
-              </div>
-
-              {/* Milestones & Outputs */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
-                  <Target className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Expected Milestones &amp; Deliverables</span>
-                </label>
-                <textarea
-                  rows={4}
-                  value={editMilestonesOutputs}
-                  onChange={(e) => setEditMilestonesOutputs(e.target.value)}
-                  placeholder="e.g. &#10;• Literature review draft (min 15 citations) completed.&#10;• Completed first 10 hours at elderly care center (Project CARE).&#10;• Clinical shadowing clearance received from host physician."
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed"
-                />
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Tangible evidence, competition entries, documents, or logs the mentor will evaluate.
-                </p>
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setActiveItemForEdit(null)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={editLoading}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
-                >
-                  <Check className="w-4 h-4 mr-1.5" />
-                  {editLoading ? 'Saving...' : 'Save Milestone Details'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Mark Completed & Log MoM Modal */}
-      {activeItemForMoM && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Log Mentorship Session &amp; Minutes of Meeting (MoM)
+                <Sparkles className="w-5 h-5 text-amber-600" />
+                <h3 className="text-base font-bold text-slate-900">
+                  {editingProposalId ? 'Edit Proposal / Milestone' : 'Create New Proposal'}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Month: <span className="font-semibold text-amber-700">{activeItemForMoM.period}</span>
-                </p>
               </div>
               <button
-                onClick={() => setActiveItemForMoM(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                onClick={() => setShowProposalModal(false)}
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {momError && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{momError}</span>
-              </div>
-            )}
+            <form onSubmit={handleSaveProposal} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {proposalError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{proposalError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleSaveMoM} className="space-y-4 mt-4">
-              {/* Meeting Topic / Agenda */}
+              {/* Proposal Title */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Meeting Topic / Agenda *
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Proposal Title / Milestone Name <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  value={momTopic}
-                  onChange={(e) => setMomTopic(e.target.value)}
-                  placeholder="e.g. Research Methodology & Doctor Shadowing Outreach"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  placeholder="e.g. Conrad Challenge 2026-27 or HOSA Surgical Tech Preparation"
+                  value={proposalTitle}
+                  onChange={(e) => setProposalTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
               </div>
 
-              {/* Date & Duration */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Proposal Type & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Session Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={momDate}
-                    onChange={(e) => setMomDate(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                  />
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Initiative Type</label>
+                  <select
+                    value={proposalType}
+                    onChange={(e) => setProposalType(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
+                  >
+                    <option value="GLOBAL_COMPETITION">Global Competition (Conrad, HOSA, Olympiad)</option>
+                    <option value="RESEARCH_PAPER">Research Paper &amp; Publication</option>
+                    <option value="COMMUNITY_PROJECT">Community Initiative / NGO Project</option>
+                    <option value="INTERNSHIP">Clinical Shadowing / Industry Internship</option>
+                    <option value="ADMISSIONS_STRATEGY">Admissions Portfolio / Strategy</option>
+                  </select>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Duration (Minutes) *
-                  </label>
-                  <div className="flex items-center space-x-1.5">
-                    <input
-                      type="number"
-                      min={10}
-                      max={480}
-                      required
-                      value={momDuration}
-                      onChange={(e) => setMomDuration(Number(e.target.value))}
-                      className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                    />
-                    {[30, 45, 60].map((m) => (
-                      <button
-                        type="button"
-                        key={m}
-                        onClick={() => setMomDuration(m)}
-                        className={`px-2 py-1.5 text-[10px] font-bold rounded border ${
-                          momDuration === m
-                            ? 'bg-amber-600 text-white border-amber-600'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {m}m
-                      </button>
-                    ))}
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Proposal Status</label>
+                  <select
+                    value={proposalStatus}
+                    onChange={(e) => setProposalStatus(e.target.value as RoadmapItemStatusType)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
+                  >
+                    <option value="PROPOSED">PROPOSED (Under Review by Parents)</option>
+                    <option value="APPROVED">APPROVED (Active / Accepted)</option>
+                    <option value="COMPLETED">COMPLETED (Finished)</option>
+                    <option value="REJECTED">REJECTED (Needs Changes)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Target Period */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Target Timeline / Period</label>
+                <input
+                  type="text"
+                  placeholder="e.g. November 2026 - February 2027"
+                  value={proposalPeriod}
+                  onChange={(e) => setProposalPeriod(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
+                />
+              </div>
+
+              {/* Interactive HTML Proposal Upload */}
+              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold text-amber-950 flex items-center space-x-1.5">
+                      <FileCode2 className="w-4 h-4 text-amber-600" />
+                      <span>Interactive HTML Proposal Document (.html)</span>
+                    </label>
+                    <p className="text-[11px] text-amber-900 mt-0.5">
+                      Upload your visual, interactive roadmap file. Students and parents will view this with 1-click in an interactive iframe.
+                    </p>
                   </div>
                 </div>
+
+                {proposalHtmlUrl ? (
+                  <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-amber-200">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800">
+                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                      <span className="truncate max-w-sm">{proposalHtmlName || 'interactive-proposal.html'}</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewerTitle(proposalTitle || 'Proposal Preview');
+                          setViewerUrl(proposalHtmlUrl);
+                          setViewerOpen(true);
+                        }}
+                        className="px-2.5 py-1 text-xs font-bold bg-amber-500 text-slate-950 rounded-md hover:bg-amber-600"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProposalHtmlUrl(null);
+                          setProposalHtmlName(null);
+                        }}
+                        className="text-xs text-rose-600 hover:underline px-1"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="file"
+                      accept=".html,.htm"
+                      onChange={handleProposalHtmlFileUpload}
+                      disabled={proposalHtmlUploading}
+                      className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700"
+                    />
+                    {proposalHtmlUploading && (
+                      <p className="text-[11px] text-amber-800 mt-1">Uploading interactive proposal...</p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Minutes of Meeting (MoM) */}
+              {/* Scope & Main Actions */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Minutes of Meeting (MoM) &amp; Instructor Discussion Details *
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Scope, Objectives &amp; What We Plan To Do
                 </label>
                 <textarea
-                  rows={4}
-                  required
-                  value={momNotes}
-                  onChange={(e) => setMomNotes(e.target.value)}
-                  placeholder="e.g. Discussed primary research question. Literature review draft to be submitted by next week. Elderly home visit confirmed."
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed"
+                  rows={3}
+                  placeholder="Outline the core objective, mentor alignment, and preparation phases..."
+                  value={proposalActions}
+                  onChange={(e) => setProposalActions(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  These notes will be immediately visible to the student in their Profile Building portal.
-                </p>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              {/* Expected Deliverables */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Expected Deliverables &amp; Output Milestones
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Round 1 Submission, Problem Statement Paper, Pitch Deck, Prototype Video..."
+                  value={proposalOutputs}
+                  onChange={(e) => setProposalOutputs(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => setActiveItemForMoM(null)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
+                  onClick={() => setShowProposalModal(false)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={momLoading}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
+                  disabled={proposalLoading || proposalHtmlUploading}
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs"
                 >
-                  <Check className="w-4 h-4 mr-1.5" />
-                  {momLoading ? 'Saving...' : 'Save & Mark Completed'}
+                  {proposalLoading ? 'Saving...' : editingProposalId ? 'Save Changes' : 'Create Proposal'}
                 </button>
               </div>
             </form>
@@ -1383,273 +1264,201 @@ export const AdminProfileRoadmapPage: React.FC = () => {
         </div>
       )}
 
-      {/* Log / Edit Session Attendance Modal */}
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 2: Log / Edit Mentorship Session Modal                  */}
+      {/* ------------------------------------------------------------- */}
       {showSessionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <CalendarCheck className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {editingSessionId ? 'Edit Session Attendance' : 'Log Mentorship Session & Attendance'}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Student: <span className="font-semibold text-slate-800">{selectedStudent?.student_name}</span>
-                  </p>
-                </div>
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-bold text-slate-900">
+                  {editingSessionId ? 'Edit Session & MoM Log' : 'Log Mentorship Session & MoM'}
+                </h3>
               </div>
               <button
                 onClick={() => setShowSessionModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {sessionError && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{sessionError}</span>
-              </div>
-            )}
+            <form onSubmit={handleSaveSession} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {sessionError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{sessionError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handleSaveSession} className="space-y-4 mt-4">
-              {/* Linked Roadmap Month */}
+              {/* Proposal Link Selector */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Roadmap Month / Milestone Stage
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Link To Proposal / Milestone (Optional)
                 </label>
                 <select
-                  value={sessionTargetItem?.id || ''}
-                  onChange={(e) => {
-                    const item = selectedStudent?.items.find((i) => i.id === e.target.value);
-                    setSessionTargetItem(item || null);
-                  }}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={selectedProposalIdForSession}
+                  onChange={(e) => setSelectedProposalIdForSession(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
                 >
-                  <option value="">General Mentorship Session (Not linked to specific month)</option>
-                  {selectedStudent?.items.map((i) => (
-                    <option key={i.id} value={i.id}>
-                      Month {i.order_index}: {i.period}
+                  <option value="">General Mentorship Session (No Proposal / Discovery)</option>
+                  {proposalsList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.period} ({p.status})
                     </option>
                   ))}
                 </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  If this meeting was for initial consultation or general discovery, leave as General Mentorship Session.
+                </p>
               </div>
 
-              {/* Date & Duration */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Date, Duration, Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Session Date *
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Session Date *</label>
                   <input
                     type="date"
                     required
                     value={sessionDate}
                     onChange={(e) => setSessionDate(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Duration (Minutes) *
-                  </label>
-                  <div className="flex items-center space-x-1">
-                    <input
-                      type="number"
-                      min={10}
-                      max={480}
-                      required
-                      value={sessionDuration}
-                      onChange={(e) => setSessionDuration(Number(e.target.value))}
-                      className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                    {[30, 45, 60].map((m) => (
-                      <button
-                        type="button"
-                        key={m}
-                        onClick={() => setSessionDuration(m)}
-                        className={`px-1.5 py-1.5 text-[10px] font-bold rounded border ${
-                          sessionDuration === m
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {m}m
-                      </button>
-                    ))}
-                  </div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Duration (Mins)</label>
+                  <input
+                    type="number"
+                    min={15}
+                    max={360}
+                    value={sessionDuration}
+                    onChange={(e) => setSessionDuration(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Attendance Status</label>
+                  <select
+                    value={sessionStatus}
+                    onChange={(e) => setSessionStatus(e.target.value as AttendanceStatusType)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
+                  >
+                    <option value="PRESENT">PRESENT</option>
+                    <option value="ABSENT">ABSENT</option>
+                    <option value="LATE">LATE</option>
+                    <option value="EXCUSED">EXCUSED</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Attendance Status */}
+              {/* Session Topic */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Attendance Status *
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {(['PRESENT', 'LATE', 'ABSENT', 'EXCUSED'] as const).map((st) => (
-                    <button
-                      type="button"
-                      key={st}
-                      onClick={() => setSessionStatus(st)}
-                      className={`py-1.5 px-2 text-xs font-bold rounded-lg border text-center transition-all ${
-                        sessionStatus === st
-                          ? st === 'PRESENT'
-                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                            : st === 'LATE'
-                            ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
-                            : st === 'ABSENT'
-                            ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
-                            : 'bg-slate-800 text-white border-slate-800 shadow-xs'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Topic Taught */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Session Topic / Concept Taught *
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Topic / Agenda Covered <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. HOSA Theory Notes &amp; Guidelines Review, Conrad Idea Selection"
                   value={sessionTopic}
                   onChange={(e) => setSessionTopic(e.target.value)}
-                  placeholder="e.g. Research Methodology, Doctor Shadowing Prep, Diamond Pitch"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
                 />
               </div>
 
-              {/* Description / What was taught */}
+              {/* What Was Taught / MoM */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  What Was Taught / MoM &amp; Discussion Notes *
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Minutes of Meeting (MoM) &amp; What Was Taught <span className="text-rose-500">*</span>
                 </label>
                 <textarea
                   rows={4}
                   required
+                  placeholder="Detail the discussion points, concepts covered, student understanding, questions addressed..."
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
-                  placeholder="e.g. Discussed primary research question. Literature review draft to be submitted by next week. Elderly home visit schedule confirmed."
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  These details will be immediately visible to the student in their transparent attendance log.
-                </p>
               </div>
 
-              {/* Optional Remarks */}
+              {/* Mentor Guidance / Homework */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Faculty Guidance / Private Remarks (Optional)
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Mentor Guidance &amp; Next Action Items (Optional)
                 </label>
-                <input
-                  type="text"
+                <textarea
+                  rows={2}
+                  placeholder="Action items for student before next session..."
                   value={sessionRemarks}
                   onChange={(e) => setSessionRemarks(e.target.value)}
-                  placeholder="e.g. Student showed great curiosity; submitted case reflection on time"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium"
                 />
               </div>
 
-              {/* Session Reference Documents Upload (Supports Multiple Files) */}
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+              {/* Multi-Document Attachments (NO HTML ALLOWED) */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-800 flex items-center space-x-1.5">
-                    <Paperclip className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Session Reference Documents ({sessionAttachments.length})</span>
+                  <label className="block text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                    <Paperclip className="w-4 h-4 text-blue-600" />
+                    <span>Attach Study Materials &amp; Reference Documents</span>
                   </label>
-                  <span className="text-[10px] text-slate-400">PDF, Word, Excel, PPT, Images (Max 25MB each)</span>
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  Upload syllabus files, research papers, discussion drafts, or MoM documents. You can attach multiple files to a single session.
+                  Attach PDFs, Word (.docx), Excel (.xlsx), PPT (.pptx), or Images. Multiple files allowed. (HTML files are reserved for Proposals).
                 </p>
 
-                {/* Uploaded attachments list */}
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg"
+                  onChange={handleSessionDocUpload}
+                  disabled={sessionDocUploading}
+                  className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                />
+                {sessionDocUploading && (
+                  <p className="text-[11px] text-blue-600 mt-1 font-semibold">Uploading document(s)...</p>
+                )}
+
                 {sessionAttachments.length > 0 && (
-                  <div className="space-y-1.5 pt-1">
+                  <div className="pt-2 flex flex-wrap gap-2">
                     {sessionAttachments.map((att, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center space-x-2 truncate">
-                          <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <div className="truncate">
-                            <p className="text-xs font-bold text-blue-900 truncate">{att.name}</p>
-                            {att.size_bytes ? (
-                              <p className="text-[10px] text-blue-700">{(att.size_bytes / 1024).toFixed(0)} KB {att.type ? `• ${att.type}` : ''}</p>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <a
-                            href={getDocDownloadUrl(att.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download={att.name}
-                            className="p-1 text-blue-700 hover:text-blue-950 rounded hover:bg-blue-100 transition-colors"
-                            title="Download / View"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveAttachment(idx)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
-                            title="Remove Document"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                      <div
+                        key={idx}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900 font-medium"
+                      >
+                        <Paperclip className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="truncate max-w-[180px]">{att.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSessionAttachment(idx)}
+                          className="w-4 h-4 rounded-full bg-blue-200 hover:bg-rose-200 hover:text-rose-800 text-blue-800 flex items-center justify-center text-[10px]"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <div className="pt-1">
-                  <label className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-blue-500 rounded-lg text-xs font-semibold text-slate-700 hover:text-blue-600 cursor-pointer shadow-2xs transition-all">
-                    <Paperclip className="w-3.5 h-3.5 text-blue-600" />
-                    <span>{sessionDocUploading ? 'Uploading Attachment(s)...' : '+ Attach Document(s)'}</span>
-                    <input
-                      type="file"
-                      multiple
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.webp"
-                      onChange={handleUploadFiles}
-                      disabled={sessionDocUploading}
-                    />
-                  </label>
-                  {sessionDocUploading && (
-                    <span className="text-[11px] text-blue-600 font-medium ml-2 animate-pulse">
-                      Uploading to secure storage...
-                    </span>
-                  )}
-                </div>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setShowSessionModal(false)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={sessionLoading}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
+                  disabled={sessionLoading || sessionDocUploading}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs"
                 >
-                  <Check className="w-4 h-4 mr-1.5" />
-                  {sessionLoading ? 'Saving...' : editingSessionId ? 'Update Session' : 'Save Session & Attendance'}
+                  {sessionLoading ? 'Saving...' : editingSessionId ? 'Save Changes' : 'Save Session Log'}
                 </button>
               </div>
             </form>
@@ -1657,366 +1466,17 @@ export const AdminProfileRoadmapPage: React.FC = () => {
         </div>
       )}
 
-      {/* View All Sessions & Attendance History Modal */}
-      {showHistoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <CalendarCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Complete Attendance &amp; Mentorship Session History
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Student: <span className="font-semibold text-slate-800">{selectedStudent?.student_name}</span> ({selectedStudent?.aptech_student_id})
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowHistoryModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Quick KPI stats in History Modal */}
-            <div className="grid grid-cols-3 gap-3 my-4">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                <div className="text-[11px] font-bold text-slate-500 uppercase">Total Sessions</div>
-                <div className="text-xl font-black text-slate-900 mt-0.5">{studentSessionsHistory.length}</div>
-              </div>
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
-                <div className="text-[11px] font-bold text-emerald-700 uppercase">Present Rate</div>
-                <div className="text-xl font-black text-emerald-800 mt-0.5">
-                  {studentSessionsHistory.length > 0
-                    ? Math.round(
-                        (studentSessionsHistory.filter((s) => s.status === 'PRESENT').length /
-                          studentSessionsHistory.length) *
-                          100
-                      )
-                    : 100}
-                  %
-                </div>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 text-center">
-                <div className="text-[11px] font-bold text-blue-700 uppercase">Total Hours Logged</div>
-                <div className="text-xl font-black text-blue-800 mt-0.5">
-                  {(
-                    studentSessionsHistory.reduce((acc, s) => acc + s.duration_minutes, 0) / 60
-                  ).toFixed(1)}{' '}
-                  hrs
-                </div>
-              </div>
-            </div>
-
-            {/* History Table / Timeline */}
-            {historyLoading ? (
-              <div className="py-12 text-center text-xs text-slate-400">Loading complete session history...</div>
-            ) : studentSessionsHistory.length === 0 ? (
-              <div className="py-12 text-center text-xs text-slate-400">
-                No mentorship sessions recorded yet for this student. Click "Log Session &amp; Attendance" to record the first class.
-              </div>
-            ) : (
-              <div className="space-y-3 mt-2">
-                {studentSessionsHistory.map((s) => (
-                  <div key={s.id} className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200 text-xs space-y-1.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-200/60">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono font-bold text-slate-900 flex items-center">
-                          <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                          {s.session_date}
-                        </span>
-                        {s.period && (
-                          <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded">
-                            {s.period}
-                          </span>
-                        )}
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                            s.status === 'PRESENT'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : s.status === 'LATE'
-                              ? 'bg-amber-100 text-amber-800'
-                              : s.status === 'ABSENT'
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-slate-200 text-slate-700'
-                          }`}
-                        >
-                          {s.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-slate-500 text-[11px]">
-                        <span>⏱️ {s.duration_minutes} mins</span>
-                        <span>• Faculty: {s.marked_by_name || 'Admin'}</span>
-                        <div className="flex items-center space-x-1 ml-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowHistoryModal(false);
-                              handleOpenEditSession(s);
-                            }}
-                            className="p-1 text-slate-400 hover:text-amber-700 rounded hover:bg-slate-200"
-                            title="Edit"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSession(s.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-200"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="font-bold text-slate-900">{s.topic}</span>
-                    </div>
-
-                    <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200/60">
-                      {s.description}
-                    </p>
-
-                    {s.remarks && (
-                      <div className="text-[11px] text-slate-500 italic">
-                        <span className="font-semibold text-slate-600 not-italic">Faculty Guidance: </span>
-                        {s.remarks}
-                      </div>
-                    )}
-
-                    {s.document_url && (
-                      <div className="pt-2 mt-1 border-t border-slate-200/60 flex items-center justify-between">
-                        <div className="flex items-center space-x-1.5 text-xs text-blue-900 font-semibold truncate max-w-[280px]">
-                          <Paperclip className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                          <span className="truncate">{s.document_name || 'Session Document'}</span>
-                          {s.document_size_bytes && (
-                            <span className="text-[10px] text-slate-400 font-normal">
-                              ({(s.document_size_bytes / 1024).toFixed(0)} KB)
-                            </span>
-                          )}
-                        </div>
-                        <a
-                          href={getDocDownloadUrl(s.document_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download={s.document_name || 'document'}
-                          className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-2xs transition-colors"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>Download</span>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex justify-end pt-4 border-t border-slate-100 mt-4">
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800"
-              >
-                Close History
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upload Excel Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">
-                Upload Profile Execution Plan (.xlsx)
-              </h3>
-              <button
-                onClick={() => setShowUploadModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {uploadError && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{uploadError}</span>
-              </div>
-            )}
-
-            {uploadSuccess && (
-              <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span>{uploadSuccess}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleUploadExcel} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Target Student *
-                </label>
-                <select
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                >
-                  {students.map((s) => (
-                    <option key={s.student_id} value={s.student_id}>
-                      {s.student_name} ({s.aptech_student_id})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Excel Spreadsheet (.xlsx) *
-                </label>
-                <input
-                  type="file"
-                  accept=".xlsx,.xlsm"
-                  required
-                  onChange={(e) => setUploadFile(e.target.files ? e.target.files[0] : null)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                />
-                <div className="mt-2 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                  <span className="font-bold text-slate-700">Supported Columns:</span>
-                  <ul className="list-disc list-inside mt-1 space-y-0.5">
-                    <li><b>Period / Month</b> (e.g. "November 2026" or serial date)</li>
-                    <li><b>Main actions</b> (Detailed plan for the month)</li>
-                    <li><b>Milestones and outputs</b> (Deliverables &amp; projects)</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowUploadModal(false)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={uploadLoading || !uploadFile}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
-                >
-                  <Upload className="w-4 h-4 mr-1.5" />
-                  {uploadLoading ? 'Uploading & Parsing...' : 'Upload & Generate Roadmap'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Manual Milestone Creation Modal */}
-      {showAddMilestoneModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <Target className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Add Milestone / Competition Manually</h3>
-                  <p className="text-xs text-slate-500">Student: {selectedStudent?.student_name}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowAddMilestoneModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {manualError && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>{manualError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveManualMilestone} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Milestone Name / Period *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={manualPeriod}
-                  onChange={(e) => setManualPeriod(e.target.value)}
-                  placeholder="e.g. November 2026 or Milestone 1: HOSA Surgical Technologist"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Key Actions &amp; Study Focus *
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={manualActions}
-                  onChange={(e) => setManualActions(e.target.value)}
-                  placeholder="e.g. Introduction to AST guidelines, Surgical Technologist Theory Notes (Q1-Q35), reference textbook study."
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Deliverables &amp; Expected Outputs (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={manualOutputs}
-                  onChange={(e) => setManualOutputs(e.target.value)}
-                  placeholder="e.g. Chapter 1-3 summary notes completed, initial test score 80%+"
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowAddMilestoneModal(false)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={manualLoading}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm disabled:opacity-50 flex items-center"
-                >
-                  <Check className="w-4 h-4 mr-1.5" />
-                  {manualLoading ? 'Saving Milestone...' : 'Save Milestone'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 3: Interactive HTML Proposal Viewer Modal                */}
+      {/* ------------------------------------------------------------- */}
+      <InteractiveProposalModal
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        title={viewerTitle}
+        proposalHtmlUrl={viewerUrl}
+        proposalType={viewerType}
+        status={viewerStatus}
+      />
     </div>
   );
 };
-export default AdminProfileRoadmapPage;
-

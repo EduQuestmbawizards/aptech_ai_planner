@@ -8,11 +8,15 @@ class ProfileRoadmapItemBase(BaseModel):
     order_index: int = 1
     main_actions: str
     milestones_outputs: Optional[str] = None
-    status: str = "PENDING"
+    status: str = "PROPOSED"
     meeting_topic: Optional[str] = None
     session_date: Optional[str] = None
     session_duration_minutes: Optional[int] = None
     meeting_notes: Optional[str] = None
+    proposal_html_url: Optional[str] = None
+    proposal_html_name: Optional[str] = None
+    proposal_type: Optional[str] = "GLOBAL_COMPETITION"
+    feedback_notes: Optional[str] = None
 
 
 class ProfileRoadmapItemCreate(ProfileRoadmapItemBase):
@@ -29,6 +33,10 @@ class ProfileRoadmapItemUpdate(BaseModel):
     session_date: Optional[str] = None
     session_duration_minutes: Optional[int] = None
     meeting_notes: Optional[str] = None
+    proposal_html_url: Optional[str] = None
+    proposal_html_name: Optional[str] = None
+    proposal_type: Optional[str] = None
+    feedback_notes: Optional[str] = None
 
 
 class ProfileRoadmapCompleteRequest(BaseModel):
@@ -134,6 +142,10 @@ class ProfileRoadmapItemResponse(BaseModel):
     meeting_notes: Optional[str] = None
     completed_at: Optional[datetime] = None
     marked_by: Optional[str] = None
+    proposal_html_url: Optional[str] = None
+    proposal_html_name: Optional[str] = None
+    proposal_type: Optional[str] = None
+    feedback_notes: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     sessions: Optional[List[ProfileSessionAttendanceResponse]] = []

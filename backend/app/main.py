@@ -87,6 +87,10 @@ def _ensure_all_schema_columns():
                 ("meeting_notes", "TEXT"),
                 ("completed_at", "TIMESTAMP"),
                 ("marked_by", "VARCHAR(36)"),
+                ("proposal_html_url", "VARCHAR(512)"),
+                ("proposal_html_name", "VARCHAR(255)"),
+                ("proposal_type", "VARCHAR(64) DEFAULT 'GLOBAL_COMPETITION'"),
+                ("feedback_notes", "TEXT"),
             ],
             "profile_session_attendances": [
                 ("status", "VARCHAR(16) NOT NULL DEFAULT 'PRESENT'"),

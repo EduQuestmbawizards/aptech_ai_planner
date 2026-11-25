@@ -10,6 +10,9 @@ class RoadmapItemStatus(str, Enum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
+    PROPOSED = "PROPOSED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
 
 
 class ProfileRoadmapItem(Base):
@@ -30,6 +33,12 @@ class ProfileRoadmapItem(Base):
     meeting_notes = Column(Text, nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     marked_by = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # Proposal & Interactive HTML Roadmap
+    proposal_html_url = Column(String(512), nullable=True)
+    proposal_html_name = Column(String(255), nullable=True)
+    proposal_type = Column(String(64), default="GLOBAL_COMPETITION", nullable=True)
+    feedback_notes = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

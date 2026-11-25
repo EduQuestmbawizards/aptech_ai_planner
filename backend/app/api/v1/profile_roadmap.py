@@ -43,6 +43,13 @@ SESSION_DOCS_DIR = os.path.join(
 )
 os.makedirs(SESSION_DOCS_DIR, exist_ok=True)
 
+PROPOSAL_DOCS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+    "uploads",
+    "proposal_documents"
+)
+os.makedirs(PROPOSAL_DOCS_DIR, exist_ok=True)
+
 ALLOWED_DOC_EXTS = {
     ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
     ".txt", ".csv", ".rtf", ".odt", ".ods", ".odp",
@@ -124,6 +131,10 @@ def _serialize_item(item: ProfileRoadmapItem) -> ProfileRoadmapItemResponse:
         meeting_notes=item.meeting_notes,
         completed_at=item.completed_at,
         marked_by=item.marked_by,
+        proposal_html_url=getattr(item, "proposal_html_url", None),
+        proposal_html_name=getattr(item, "proposal_html_name", None),
+        proposal_type=getattr(item, "proposal_type", "GLOBAL_COMPETITION"),
+        feedback_notes=getattr(item, "feedback_notes", None),
         created_at=item.created_at,
         updated_at=item.updated_at,
         sessions=sessions
@@ -333,6 +344,10 @@ def add_manual_roadmap_item(
         session_date=body.session_date,
         session_duration_minutes=body.session_duration_minutes,
         meeting_notes=body.meeting_notes,
+        proposal_html_url=body.proposal_html_url,
+        proposal_html_name=body.proposal_html_name,
+        proposal_type=body.proposal_type or "GLOBAL_COMPETITION",
+        feedback_notes=body.feedback_notes,
         marked_by=admin.id if body.status == RoadmapItemStatus.COMPLETED.value else None
     )
     db.add(item)
@@ -389,6 +404,115 @@ def get_my_profile_roadmap(
         stats=ProfileRoadmapStats(**stats),
         items=[_serialize_item(i) for i in items],
         sessions=[_serialize_session(s) for s in sessions]
+    )
+
+
+# -------------------------------------------------------------
+# Proposal Interactive HTML Endpoints
+# -------------------------------------------------------------
+
+@router.post("/proposals/upload-html")
+async def upload_proposal_html(
+    file: UploadFile = File(...),
+    admin: User = Depends(require_admin)
+):
+    """
+    Admin uploads an interactive HTML proposal document (.html, .htm).
+    Max size: 30MB.
+    Returns: proposal_html_url, proposal_html_name, size_bytes
+    """
+    filename = file.filename or "proposal.html"
+    _, ext = os.path.splitext(filename)
+    ext = ext.lower()
+
+    if ext not in {".html", ".htm"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file format '{ext}'. Only HTML files (.html, .htm) are allowed for interactive proposals."
+        )
+
+    try:
+        content = await file.read()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to read file: {str(e)}")
+
+    if len(content) > 30 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds the 30MB limit."
+        )
+
+    clean_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', filename)
+    unique_filename = f"{uuid.uuid4().hex[:12]}_{clean_name}"
+    dest_path = os.path.join(PROPOSAL_DOCS_DIR, unique_filename)
+
+    try:
+        with open(dest_path, "wb") as f:
+            f.write(content)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to save proposal file: {str(e)}")
+
+    file_url = f"/api/profile-roadmap/proposals/view-html/{unique_filename}"
+    return {
+        "proposal_html_url": file_url,
+        "proposal_html_name": filename,
+        "size_bytes": len(content)
+    }
+
+
+@router.get("/proposals/view-html/{filename}")
+def view_proposal_html(
+    filename: str,
+    request: Request,
+    token: Optional[str] = Query(None),
+    download: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows authenticated users (Admin or Student) to view or download the interactive HTML proposal.
+    Accepts auth via:
+    1. Authorization Bearer header
+    2. Cookie 'access_token'
+    3. Query parameter ?token=...
+    """
+    auth_token = None
+    if request:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ")[1]
+        elif "access_token" in request.cookies:
+            auth_token = request.cookies.get("access_token")
+
+    if not auth_token and token:
+        auth_token = token
+
+    if not auth_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required to view proposal.")
+
+    payload = decode_access_token(auth_token)
+    if not payload or not payload.get("sub"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired authentication token.")
+
+    safe_basename = os.path.basename(filename)
+    file_path = os.path.join(PROPOSAL_DOCS_DIR, safe_basename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal HTML file not found.")
+
+    parts = safe_basename.split("_", 1)
+    download_filename = parts[1] if len(parts) > 1 else safe_basename
+
+    media_type = "application/octet-stream" if download else "text/html; charset=utf-8"
+    headers = {
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;"
+    }
+    if download:
+        headers["Content-Disposition"] = f'attachment; filename="{download_filename}"'
+
+    return FileResponse(
+        file_path,
+        media_type=media_type,
+        headers=headers
     )
 
 

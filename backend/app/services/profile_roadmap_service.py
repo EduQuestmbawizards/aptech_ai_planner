@@ -272,6 +272,10 @@ class ProfileRoadmapService:
             "session_date",
             "session_duration_minutes",
             "meeting_notes",
+            "proposal_html_url",
+            "proposal_html_name",
+            "proposal_type",
+            "feedback_notes",
         ]
 
         for field in allowed_fields:
