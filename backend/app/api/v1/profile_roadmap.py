@@ -30,6 +30,10 @@ from app.services.profile_roadmap_service import (
     parse_profile_roadmap_excel,
     ProfileRoadmapService
 )
+from app.services.supabase_storage import (
+    upload_file_to_supabase,
+    download_file_from_supabase
+)
 
 logger = logging.getLogger("aptech_planner.api.profile_roadmap")
 
@@ -428,6 +432,106 @@ def get_my_profile_roadmap(
 # Proposal Interactive HTML Endpoints
 # -------------------------------------------------------------
 
+def _generate_proposal_html(item: ProfileRoadmapItem) -> str:
+    student_name = item.student.user.full_name if item.student and item.student.user else "Student"
+    student_id_str = item.student.aptech_student_id if item.student else "01"
+    proposal_title = item.period or "Profile Building Proposal"
+    proposal_type_fmt = (item.proposal_type or "STRATEGIC_PROPOSAL").replace("_", " ")
+    timeline = item.session_date or "Target Academic Cycle"
+    main_actions = (item.main_actions or "No specific action items listed.").replace("\n", "<br/>")
+    milestones = (item.milestones_outputs or "No deliverables recorded.").replace("\n", "<br/>")
+    status_fmt = item.status or "ACTIVE"
+
+    sessions_html = ""
+    if item.sessions:
+        for s in item.sessions:
+            s_date = str(s.session_date) if s.session_date else "Recorded"
+            s_topic = s.topic or "Mentorship Session"
+            s_desc = (s.description or "").replace("\n", "<br/>")
+            sessions_html += f"""
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-weight:700; color:#0f172a; font-size:14px;">{s_topic}</span>
+                    <span style="background:#e0f2fe; color:#0369a1; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">{s_date}</span>
+                </div>
+                <div style="font-size:12px; color:#475569; line-height:1.6;">{s_desc}</div>
+            </div>
+            """
+    else:
+        sessions_html = """
+        <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:24px; text-align:center; color:#64748b; font-size:13px;">
+            Mentorship sessions for this initiative will appear here once conducted and logged by your faculty mentors.
+        </div>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{proposal_title} - Strategic Proposal Roadmap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: 'Plus Jakarta Sans', sans-serif; background: #0f172a; color: #1e293b; padding: 24px; min-height: 100vh; }}
+        .container {{ max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }}
+        .header {{ background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #31104b 100%); color: #ffffff; padding: 40px; position: relative; }}
+        .badge {{ display: inline-block; padding: 6px 14px; border-radius: 9999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); margin-bottom: 12px; }}
+        .status-badge {{ display: inline-block; padding: 5px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; background: #dcfce7; color: #15803d; margin-left: 10px; }}
+        .title {{ font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 12px; line-height: 1.3; }}
+        .meta {{ font-size: 13px; color: #cbd5e1; display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }}
+        .meta-item {{ display: flex; align-items: center; gap: 6px; }}
+        .content {{ padding: 36px 40px; background: #ffffff; }}
+        .section-title {{ font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }}
+        .card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; }}
+        .prose {{ font-size: 14px; line-height: 1.7; color: #334155; }}
+        .footer {{ background: #f1f5f9; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }}
+        .btn {{ display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: #0f172a; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; }}
+        .btn:hover {{ background: #1e293b; }}
+        @media print {{ body {{ background: #ffffff; padding: 0; }} .container {{ box-shadow: none; border: none; }} .btn {{ display: none; }} }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="badge">{proposal_type_fmt}</span>
+            <span class="status-badge">{status_fmt}</span>
+            <h1 class="title">{proposal_title}</h1>
+            <div class="meta">
+                <div class="meta-item">👤 <strong>Student:</strong> {student_name} ({student_id_str})</div>
+                <div class="meta-item">🗓️ <strong>Target Timeline:</strong> {timeline}</div>
+                <div class="meta-item">🏛️ <strong>Program:</strong> EduQuest Strategic Mentorship</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <div class="section-title">🎯 Initiative Scope & Strategic Action Plan</div>
+                <div class="prose">{main_actions}</div>
+            </div>
+
+            <div class="card" style="border-left: 4px solid #f59e0b;">
+                <div class="section-title" style="color: #b45309;">🏆 Key Milestones, Outputs & Deliverables</div>
+                <div class="prose">{milestones}</div>
+            </div>
+
+            <div style="margin-top: 32px;">
+                <div class="section-title">📝 Associated Mentorship Sessions & Class Logs</div>
+                {sessions_html}
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>EduQuest AI Study & Profile Planner &bull; Official Student Proposal</span>
+            <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        </div>
+    </div>
+</body>
+</html>"""
+
+
 @router.post("/proposals/upload-html")
 async def upload_proposal_html(
     file: UploadFile = File(...),
@@ -467,7 +571,10 @@ async def upload_proposal_html(
         with open(dest_path, "wb") as f:
             f.write(content)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to save proposal file: {str(e)}")
+        logger.warning(f"Failed to cache proposal locally: {e}")
+
+    # Persist permanently to Supabase Storage
+    upload_file_to_supabase(f"proposals/{unique_filename}", content, "text/html; charset=utf-8")
 
     file_url = f"/api/profile-roadmap/proposals/view-html/{unique_filename}"
     return {
@@ -512,8 +619,35 @@ def view_proposal_html(
 
     safe_basename = os.path.basename(filename)
     file_path = os.path.join(PROPOSAL_DOCS_DIR, safe_basename)
+
+    # 1. Local disk cache hit
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal HTML file not found.")
+        # 2. Check Supabase Storage
+        remote_content = download_file_from_supabase(f"proposals/{safe_basename}")
+        if remote_content:
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(remote_content)
+            except Exception:
+                pass
+        else:
+            # 3. Fallback: Lookup matching proposal item in DB and construct interactive view dynamically
+            item = (
+                db.query(ProfileRoadmapItem)
+                .filter(ProfileRoadmapItem.proposal_html_url.ilike(f"%{safe_basename}%"))
+                .first()
+            )
+            if item:
+                generated_html = _generate_proposal_html(item)
+                html_bytes = generated_html.encode("utf-8")
+                try:
+                    with open(file_path, "wb") as f:
+                        f.write(html_bytes)
+                except Exception:
+                    pass
+                upload_file_to_supabase(f"proposals/{safe_basename}", html_bytes, "text/html; charset=utf-8")
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal HTML file not found.")
 
     parts = safe_basename.split("_", 1)
     download_filename = parts[1] if len(parts) > 1 else safe_basename
@@ -573,8 +707,15 @@ async def upload_session_document(
     saved_filename = f"{uuid.uuid4().hex}_{safe_name}"
     file_path = os.path.join(SESSION_DOCS_DIR, saved_filename)
 
-    with open(file_path, "wb") as f:
-        f.write(content)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(content)
+    except Exception as e:
+        logger.warning(f"Failed to cache session doc locally: {e}")
+
+    # Persist permanently to Supabase Storage
+    content_type_header = "application/pdf" if ext == ".pdf" else "application/octet-stream"
+    upload_file_to_supabase(f"sessions/{saved_filename}", content, content_type_header)
 
     doc_type = ext.replace(".", "").upper()
     document_url = f"/api/profile-roadmap/sessions/documents/{saved_filename}"
@@ -622,7 +763,15 @@ def get_session_document(
     safe_basename = os.path.basename(filename)
     file_path = os.path.join(SESSION_DOCS_DIR, safe_basename)
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session document file not found.")
+        remote_data = download_file_from_supabase(f"sessions/{safe_basename}")
+        if remote_data:
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(remote_data)
+            except Exception:
+                pass
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session document file not found.")
 
     parts = safe_basename.split("_", 1)
     download_filename = parts[1] if len(parts) > 1 else safe_basename
