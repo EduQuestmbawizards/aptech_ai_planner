@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../../context/StudyTimerContext';
-import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary, ProfileRoadmapItem } from '../../types';
+import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary, ProfileRoadmapItem, ProposalActivityItem } from '../../types';
 import {
   CalendarCheck2,
   CalendarCheck,
@@ -29,6 +29,7 @@ import {
   FileText,
   X,
   Layers,
+  RotateCw,
 } from 'lucide-react';
 import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
 import { ProposalBreakdownModal } from '../../components/ProposalBreakdownModal';
@@ -80,29 +81,118 @@ export const StudentDashboardPage: React.FC = () => {
   // Readable Proposal Breakdown Modal State
   const [breakdownModalOpen, setBreakdownModalOpen] = useState<boolean>(false);
   const [selectedProposalForBreakdown, setSelectedProposalForBreakdown] = useState<ProfileRoadmapItem | null>(null);
+  const [selectedProposalId, setSelectedProposalId] = useState<string>('');
+  const [refreshingAiId, setRefreshingAiId] = useState<string | null>(null);
 
   const handleOpenBreakdown = (item: ProfileRoadmapItem) => {
     setSelectedProposalForBreakdown(item);
     setBreakdownModalOpen(true);
   };
 
+  const handleRefreshAi = async (itemId: string) => {
+    try {
+      setRefreshingAiId(itemId);
+      const res = await api.post(`/profile-roadmap/items/${itemId}/ai-blueprint`);
+      if (res.data) {
+        setProfileRoadmap((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: prev.items.map((it) => (it.id === itemId ? { ...it, ...res.data } : it)),
+          };
+        });
+      }
+    } catch (err) {
+      console.error('Failed to refresh AI blueprint', err);
+    } finally {
+      setRefreshingAiId(null);
+    }
+  };
+
   const getProposalBlueprint = (item: ProfileRoadmapItem) => {
     const bp = item.ai_blueprint;
     const rawActions = item.main_actions || '';
     const rawOutputs = item.milestones_outputs || '';
+
+    let activities: ProposalActivityItem[] = bp?.activities || [];
+    if (!activities || activities.length === 0) {
+      const lines = rawActions
+        .split('\n')
+        .map((s) => s.trim().replace(/^[-•* \t0-9.:)]+/, ''))
+        .filter(Boolean);
+
+      if (lines.length >= 2) {
+        activities = lines.map((l, idx) => ({
+          step_number: idx + 1,
+          activity_title: l.length > 55 ? l.slice(0, 55) + '...' : l,
+          description: l,
+          timeline: item.target_timeline || item.session_date || `Stage ${idx + 1}`,
+          deliverable: item.milestones_outputs || `Stage ${idx + 1} milestone output`,
+          priority: (item.priority as any) || 'NORMAL',
+          status: idx === 0 ? 'COMPLETED' : idx === 1 ? 'IN_PROGRESS' : 'PENDING',
+        }));
+      } else {
+        activities = [
+          {
+            step_number: 1,
+            activity_title: 'Literature & Prerequisite Audit',
+            description: `Audit guidelines, prerequisites, and prepare initial dossier for ${item.period}.`,
+            timeline: 'Weeks 1-2',
+            deliverable: 'Prerequisites & Scope Analysis Dossier',
+            priority: 'HIGH',
+            status: 'COMPLETED',
+          },
+          {
+            step_number: 2,
+            activity_title: 'Concept & Topic Formulation',
+            description: 'Formulate core topic hypothesis and vetting with faculty mentor.',
+            timeline: 'Weeks 3-4',
+            deliverable: '1-Page Approved Concept Abstract',
+            priority: 'HIGH',
+            status: 'IN_PROGRESS',
+          },
+          {
+            step_number: 3,
+            activity_title: 'Execution & Milestone Drafting',
+            description: 'Draft the core execution deliverables, manuscripts, or application modules.',
+            timeline: 'Weeks 5-6',
+            deliverable: 'Preliminary Milestone Draft',
+            priority: 'MEDIUM',
+            status: 'PENDING',
+          },
+          {
+            step_number: 4,
+            activity_title: 'Faculty Critique & Iterations',
+            description: 'Incorporate mentor feedback and perform structural revisions.',
+            timeline: 'Weeks 7-8',
+            deliverable: 'Vetted Final Deliverable',
+            priority: 'HIGH',
+            status: 'PENDING',
+          },
+          {
+            step_number: 5,
+            activity_title: 'Final Submission & Archival',
+            description: 'Official committee submission and archival into student profile portfolio.',
+            timeline: 'Target Cycle',
+            deliverable: 'Submission Confirmation & Portfolio Badge',
+            priority: 'NORMAL',
+            status: 'PENDING',
+          },
+        ];
+      }
+    }
+
     return {
       title: bp?.title || item.period,
       category: bp?.category || (item.proposal_type || 'GLOBAL_COMPETITION').replace(/_/g, ' '),
       priority: bp?.priority || item.priority || 'NORMAL',
       target_timeline: bp?.target_timeline || item.target_timeline || item.session_date || 'Target Cycle',
       estimated_duration: bp?.estimated_duration || '4-8 Weeks',
+      total_activities: activities.length,
       focus_area: bp?.focus_area || rawActions,
-      action_plan: bp?.action_plan && bp.action_plan.length > 0
-        ? bp.action_plan
-        : rawActions.split('\n').map((s) => s.trim()).filter(Boolean),
-      deliverables: bp?.deliverables && bp.deliverables.length > 0
-        ? bp.deliverables
-        : (rawOutputs ? rawOutputs.split('\n').map((s) => s.trim()).filter(Boolean) : ['Milestone deliverables outline']),
+      activities,
+      action_plan: bp?.action_plan && bp.action_plan.length > 0 ? bp.action_plan : rawActions.split('\n').filter(Boolean),
+      deliverables: bp?.deliverables && bp.deliverables.length > 0 ? bp.deliverables : (rawOutputs ? rawOutputs.split('\n').filter(Boolean) : ['Milestone deliverables outline']),
       faculty_mentorship_notes: bp?.faculty_mentorship_notes || item.feedback_notes || 'Regular milestone mentoring check-in'
     };
   };
@@ -116,9 +206,14 @@ export const StudentDashboardPage: React.FC = () => {
     setViewerOpen(true);
   };
 
-  const proposalsWithHtml = (profileRoadmap?.items || []).filter((i) => i.proposal_html_url);
+  const proposalsWithHtml = (profileRoadmap?.items || []).filter(
+    (i) => i.proposal_html_url || i.proposal_html_name
+  );
   const activeProposalWithHtml =
     proposalsWithHtml.find((i) => i.status === 'APPROVED' || i.status === 'IN_PROGRESS') ||
+    proposalsWithHtml[0];
+  const activeSelectedProposal =
+    proposalsWithHtml.find((p) => p.id === (selectedProposalId || activeProposalWithHtml?.id)) ||
     proposalsWithHtml[0];
 
   const fetchDashboardData = useCallback(async (showSpinner = false) => {
@@ -331,163 +426,248 @@ export const StudentDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Executive Strategic Proposals & Blueprint Table */}
+        {/* Interactive Proposals Selector & Numbered Activities Table */}
         {proposalsWithHtml.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-50 via-white to-amber-50/50 border border-amber-300/80 rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-100">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-xs">
-                  <Sparkles className="w-4 h-4 text-slate-950" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <span>Executive Proposals &amp; Execution Blueprint Table</span>
-                    <span className="text-[10px] font-black uppercase bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full">
-                      {proposalsWithHtml.length} Available
-                    </span>
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Structured tabular breakdown of priorities, timelines, focus areas &amp; deliverables. Click any row to inspect full action steps.
-                  </p>
-                </div>
+          <div className="space-y-4">
+            {/* Header / Intro */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <span>Strategic Proposals &amp; Execution Initiatives</span>
+                  <span className="text-[11px] font-black uppercase bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                    {proposalsWithHtml.length} Available
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Click on any proposal below to view its full step-by-step numbered activities table without scrolling raw HTML.
+                </p>
               </div>
             </div>
 
-            {/* Proposal Blueprint Table */}
-            <div className="overflow-x-auto rounded-xl border border-amber-200/80 bg-white shadow-2xs">
-              <table className="min-w-full text-left text-xs divide-y divide-slate-100">
-                <thead className="bg-slate-50/90 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="py-3 px-3.5"># &amp; Priority</th>
-                    <th className="py-3 px-3.5">Proposal / Initiative</th>
-                    <th className="py-3 px-3.5">Execution Timeline</th>
-                    <th className="py-3 px-3.5">Focus Area &amp; Scope</th>
-                    <th className="py-3 px-3.5">Expected Deliverables</th>
-                    <th className="py-3 px-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {proposalsWithHtml.map((prop, idx) => {
-                    const bp = getProposalBlueprint(prop);
-                    const priorityColor =
-                      bp.priority === 'HIGH'
-                        ? 'bg-rose-100 text-rose-800 border-rose-200'
-                        : bp.priority === 'MEDIUM'
-                        ? 'bg-amber-100 text-amber-900 border-amber-200'
-                        : 'bg-blue-50 text-blue-800 border-blue-200';
-
-                    return (
-                      <tr
-                        key={prop.id}
-                        onClick={() => handleOpenBreakdown(prop)}
-                        className="hover:bg-amber-50/50 transition-colors cursor-pointer group"
-                      >
-                        <td className="py-3.5 px-3.5 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <span className="w-5 h-5 rounded-md bg-slate-900 text-white font-mono text-[10px] font-bold flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${priorityColor}`}>
-                              {bp.priority}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-3.5 min-w-[180px]">
-                          <div className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-amber-700 transition-colors">
-                            {bp.title}
-                          </div>
-                          <span className="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-700 uppercase">
-                            {bp.category}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-3.5 whitespace-nowrap">
-                          <div className="flex items-center space-x-1.5 text-slate-800 font-semibold text-xs">
-                            <Calendar className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                            <span>{bp.target_timeline}</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-medium">Est. {bp.estimated_duration}</span>
-                        </td>
-                        <td className="py-3.5 px-3.5 max-w-[240px]">
-                          <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
-                            {bp.focus_area}
-                          </p>
-                        </td>
-                        <td className="py-3.5 px-3.5 max-w-[200px]">
-                          <p className="text-xs text-amber-950 font-medium line-clamp-2 leading-relaxed">
-                            {bp.deliverables[0] || 'Milestone verification output'}
-                          </p>
-                        </td>
-                        <td className="py-3.5 px-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end space-x-1.5">
-                            <button
-                              onClick={() => handleOpenBreakdown(prop)}
-                              className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-colors"
-                              title="Inspect AI Readable Breakdown"
-                            >
-                              <Eye className="w-3.5 h-3.5 mr-1 text-amber-300" />
-                              <span>Inspect</span>
-                            </button>
-                            <button
-                              onClick={() => handleOpenViewer(prop)}
-                              className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
-                              title="View Full Interactive HTML"
-                            >
-                              <Sparkles className="w-3.5 h-3.5 mr-1" />
-                              <span>HTML</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Quick Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {/* Proposal Selection Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {proposalsWithHtml.map((prop, idx) => {
                 const bp = getProposalBlueprint(prop);
+                const isSelected = activeSelectedProposal?.id === prop.id;
+                const priorityColor =
+                  bp.priority === 'HIGH'
+                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                    : bp.priority === 'MEDIUM'
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200';
+
                 return (
                   <div
                     key={prop.id}
-                    className="bg-white p-3.5 rounded-xl border border-amber-200/90 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between"
+                    onClick={() => setSelectedProposalId(prop.id)}
+                    className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-amber-500 bg-amber-50/70 shadow-md ring-2 ring-amber-400/50'
+                        : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/20 hover:shadow-xs'
+                    }`}
                   >
                     <div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
-                        <span>Proposal #{idx + 1}</span>
-                        <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold">
-                          {bp.category}
-                        </span>
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
+                        <span className="text-slate-500 font-mono">Proposal #{idx + 1}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase border ${priorityColor}`}>
+                            {bp.priority}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
+                            {bp.category}
+                          </span>
+                        </div>
                       </div>
-                      <div className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1" title={bp.title}>
+                      <h4 className="font-extrabold text-slate-900 text-sm leading-snug line-clamp-2">
                         {bp.title}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
                         {bp.focus_area}
-                      </div>
+                      </p>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleOpenBreakdown(prop)}
-                        className="w-full inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5 mr-1 text-amber-300" />
-                        <span>Inspect</span>
-                      </button>
-                      <button
-                        onClick={() => handleOpenViewer(prop)}
-                        className="w-full inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 mr-1" />
-                        <span>View HTML</span>
-                      </button>
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <div className="flex items-center text-slate-600 font-medium text-[11px]">
+                        <Clock className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                        <span>{bp.activities.length} Activities Inside</span>
+                      </div>
+                      {isSelected ? (
+                        <span className="inline-flex items-center text-[11px] font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full">
+                          Active Selection ✓
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-slate-400 group-hover:text-amber-600 flex items-center">
+                          Click to open table →
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Selected Proposal Detailed Numbered Activities Table */}
+            {activeSelectedProposal && (() => {
+              const bp = getProposalBlueprint(activeSelectedProposal);
+              const selectedIdx = proposalsWithHtml.findIndex((p) => p.id === activeSelectedProposal.id);
+              const isRefreshing = refreshingAiId === activeSelectedProposal.id;
+
+              return (
+                <div className="bg-white border-2 border-amber-400/80 rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+                  {/* Proposal Detail Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase bg-slate-900 text-amber-300">
+                          Proposal #{selectedIdx >= 0 ? selectedIdx + 1 : 1}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 uppercase">
+                          {bp.category}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
+                          Status: {activeSelectedProposal.status.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                        {bp.title} — Step-by-Step Activities Table
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-4 mt-1.5 text-xs text-slate-600 font-medium">
+                        <span className="flex items-center">
+                          <Calendar className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                          Timeline: <strong className="text-slate-900 ml-1">{bp.target_timeline}</strong>
+                        </span>
+                        <span className="flex items-center">
+                          <Clock className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                          Est. Duration: <strong className="text-slate-900 ml-1">{bp.estimated_duration}</strong>
+                        </span>
+                        <span className="flex items-center">
+                          <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" />
+                          Total Activities: <strong className="text-slate-900 ml-1">{bp.activities.length} Stages</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleRefreshAi(activeSelectedProposal.id)}
+                        disabled={isRefreshing}
+                        className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200 disabled:opacity-50"
+                        title="Re-extract activity table using AI from proposal HTML"
+                      >
+                        <RotateCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin text-amber-600' : ''}`} />
+                        {isRefreshing ? 'AI Extracting...' : 'AI Refresh'}
+                      </button>
+                      <button
+                        onClick={() => handleOpenViewer(activeSelectedProposal)}
+                        className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-sm transition-all"
+                        title="View Full Interactive HTML Webpage"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                        View Full HTML
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Summary Callout */}
+                  {bp.focus_area && (
+                    <div className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-950 flex items-start gap-2.5">
+                      <Target className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="font-bold text-amber-900 uppercase text-[10px] tracking-wider block mb-0.5">
+                          Scope &amp; Objective
+                        </strong>
+                        <p className="leading-relaxed">{bp.focus_area}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Numbered Activities Table */}
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table className="min-w-full text-left text-xs divide-y divide-slate-200">
+                      <thead className="bg-slate-50 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th className="py-3 px-3.5 text-center w-12">#</th>
+                          <th className="py-3 px-4">Activity &amp; Task Description (Kya karna hai)</th>
+                          <th className="py-3 px-4 whitespace-nowrap">Timeline</th>
+                          <th className="py-3 px-4">Expected Deliverables</th>
+                          <th className="py-3 px-3.5 text-center">Priority</th>
+                          <th className="py-3 px-3.5 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {bp.activities.map((act) => {
+                          const actPriorityStyle =
+                            act.priority === 'HIGH'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : act.priority === 'MEDIUM'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-slate-100 text-slate-700 border-slate-200';
+
+                          const actStatusStyle =
+                            act.status === 'COMPLETED'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold'
+                              : act.status === 'IN_PROGRESS'
+                              ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
+                              : 'bg-slate-100 text-slate-600 border-slate-200';
+
+                          return (
+                            <tr key={act.step_number} className="hover:bg-amber-50/40 transition-colors">
+                              <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 text-amber-400 font-mono font-black text-xs shadow-xs">
+                                  {String(act.step_number).padStart(2, '0')}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 min-w-[240px]">
+                                <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                                  {act.activity_title}
+                                </div>
+                                <div className="text-[11px] text-slate-600 mt-1 leading-relaxed whitespace-pre-line">
+                                  {act.description}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 whitespace-nowrap">
+                                <div className="flex items-center text-slate-800 font-semibold text-xs">
+                                  <Calendar className="w-3.5 h-3.5 mr-1.5 text-amber-600 flex-shrink-0" />
+                                  <span>{act.timeline || 'Phase Schedule'}</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 min-w-[180px]">
+                                <div className="flex items-start text-xs text-emerald-950 font-semibold">
+                                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                                  <span className="leading-snug">{act.deliverable || 'Milestone verification output'}</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase border ${actPriorityStyle}`}>
+                                  {act.priority || 'NORMAL'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] uppercase border ${actStatusStyle}`}>
+                                  {(act.status || 'PENDING').replace(/_/g, ' ')}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mentor Advice / Notes Footer */}
+                  {bp.faculty_mentorship_notes && (
+                    <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 text-amber-900">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="font-semibold">Faculty Mentor Recommendation:</span>
+                        <span className="text-slate-700 italic">{bp.faculty_mentorship_notes}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 

@@ -477,13 +477,26 @@ export interface ProfileSessionAttendance {
   updated_at?: string;
 }
 
+export interface ProposalActivityItem {
+  step_number: number;
+  activity_title: string;
+  description: string;
+  timeline?: string;
+  deliverable?: string;
+  priority?: 'HIGH' | 'MEDIUM' | 'NORMAL' | string;
+  status?: 'COMPLETED' | 'IN_PROGRESS' | 'PENDING' | string;
+}
+
 export interface ProposalAIBlueprint {
   title?: string;
   category?: string;
   priority?: 'HIGH' | 'MEDIUM' | 'NORMAL' | string;
   target_timeline?: string;
   estimated_duration?: string;
+  total_activities?: number;
+  summary?: string;
   focus_area?: string;
+  activities?: ProposalActivityItem[];
   action_plan?: string[];
   deliverables?: string[];
   faculty_mentorship_notes?: string;

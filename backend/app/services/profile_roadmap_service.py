@@ -606,7 +606,8 @@ def extract_proposal_ai_blueprint(
             client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
             prompt = f"""You are an elite academic roadmap & admissions strategist.
-Analyze the following student profile building proposal and extract an executive structured blueprint in JSON.
+Analyze the following student profile building proposal and extract an executive structured activities breakdown table in JSON.
+Every activity/milestone phase in this proposal must be broken down into a numbered activity row (between 4 to 8 activities).
 
 Proposal Title: {title or 'Strategic Profile Building Initiative'}
 Proposal Category: {proposal_type}
@@ -621,34 +622,59 @@ Respond ONLY with valid JSON conforming to this schema (no extra prose, no markd
   "title": "Clear concise initiative title",
   "category": "e.g. Global Competition / Research Paper / Summer School / Clinical Shadowing",
   "priority": "HIGH" or "MEDIUM" or "NORMAL",
-  "target_timeline": "e.g. December 2026 – January 2027",
-  "estimated_duration": "e.g. 2 Months or 6 Weeks",
-  "focus_area": "1-2 concise sentences summarizing the scope and focus of this stage",
+  "target_timeline": "e.g. November 2026 to March 2027",
+  "estimated_duration": "e.g. 4-8 Weeks",
+  "total_activities": 6,
+  "summary": "1-2 concise sentences summarizing the scope and objective",
+  "activities": [
+    {{
+      "step_number": 1,
+      "activity_title": "Specific Activity / Phase Title",
+      "description": "Clear explanation of what the student has to do in this activity",
+      "timeline": "Target timeline e.g. Nov 2026 (Weeks 1-2)",
+      "deliverable": "Specific tangible output or submission produced by this activity",
+      "priority": "HIGH" or "MEDIUM" or "NORMAL",
+      "status": "COMPLETED" or "IN_PROGRESS" or "PENDING"
+    }}
+  ],
   "action_plan": [
-    "Step 1: Specific action item",
-    "Step 2: Specific action item",
-    "Step 3: Specific action item"
+    "Step 1: Short summary",
+    "Step 2: Short summary"
   ],
   "deliverables": [
-    "Expected deliverable / output 1",
-    "Expected deliverable / output 2"
+    "Output 1",
+    "Output 2"
   ],
   "faculty_mentorship_notes": "Key mentorship focus area or milestone review target"
 }}"""
             completion = client.chat.completions.create(
                 model=settings.OPENAI_MODEL or "gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You extract structured academic proposal blueprints into strict JSON."},
+                    {"role": "system", "content": "You extract structured academic proposal blueprints into strict JSON with detailed numbered activities table."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.2,
-                max_tokens=600,
+                max_tokens=1000,
                 response_format={"type": "json_object"}
             )
             raw_res = completion.choices[0].message.content
             if raw_res:
                 parsed = json.loads(raw_res)
-                if "title" in parsed and "action_plan" in parsed:
+                if "title" in parsed and ("activities" in parsed or "action_plan" in parsed):
+                    if "activities" not in parsed or not parsed["activities"]:
+                        # Convert action_plan to activities
+                        parsed["activities"] = [
+                            {
+                                "step_number": idx + 1,
+                                "activity_title": act[:50],
+                                "description": act,
+                                "timeline": parsed.get("target_timeline", "Ongoing"),
+                                "deliverable": (parsed.get("deliverables") or ["Milestone output"])[idx % len(parsed.get("deliverables") or [1])],
+                                "priority": parsed.get("priority", "NORMAL"),
+                                "status": "IN_PROGRESS" if idx == 0 else "PENDING"
+                            }
+                            for idx, act in enumerate(parsed.get("action_plan", []))
+                        ]
                     return parsed
         except Exception as e:
             logger.warning(f"OpenAI extraction failed, using fallback heuristic: {e}")
@@ -671,33 +697,44 @@ Respond ONLY with valid JSON conforming to this schema (no extra prose, no markd
     else:
         priority = "NORMAL"
 
-    action_items = []
-    raw_action_lines = [l.strip("-•* \t") for l in (actions or clean_text).splitlines() if l.strip("-•* \t")]
-    for l in raw_action_lines:
-        if len(l) > 10 and not l.startswith("<"):
-            action_items.append(l[:180])
-        if len(action_items) >= 4:
-            break
-    if not action_items:
-        action_items = [
-            f"Review execution plan for {p_title} with appointed faculty mentor.",
-            "Draft core literature/application prerequisites and compile materials.",
-            "Submit draft milestone review for verification."
-        ]
+    # Build 5 to 7 detailed numbered activities
+    activities = []
+    raw_action_lines = [l.strip("-•* \t0123456789.:) ") for l in (actions or clean_text).splitlines() if len(l.strip("-•* \t0123456789.:) ")) > 10 and not l.strip().startswith("<")]
 
-    deliverable_items = []
-    raw_output_lines = [l.strip("-•* \t") for l in (outputs or clean_text).splitlines() if l.strip("-•* \t")]
-    for l in raw_output_lines:
-        if len(l) > 10 and not l.startswith("<"):
-            deliverable_items.append(l[:180])
-        if len(deliverable_items) >= 3:
-            break
-    if not deliverable_items:
-        deliverable_items = [
-            f"Completed portfolio milestone for {p_title}.",
-            "Faculty verified progress verification log."
+    if len(raw_action_lines) >= 3:
+        for idx, act in enumerate(raw_action_lines[:7]):
+            activities.append({
+                "step_number": idx + 1,
+                "activity_title": act[:60] if len(act) > 60 else act,
+                "description": act,
+                "timeline": f"Stage {idx + 1} ({timeline})" if idx > 0 else f"Initial Stage ({timeline})",
+                "deliverable": f"Verified completion of {act[:40]}",
+                "priority": "HIGH" if idx < 2 else priority,
+                "status": "COMPLETED" if idx == 0 else ("IN_PROGRESS" if idx == 1 else "PENDING")
+            })
+    else:
+        # Default structured academic activities based on category
+        default_templates = [
+            ("Literature & Prerequisite Audit", f"Audit academic prerequisites, guidelines, and benchmark previous successful submissions for {p_title}.", "Month 1 (Weeks 1-2)", "Target Dossier & Gap Analysis", "HIGH"),
+            ("Concept Note & Topic Formulation", "Formulate targeted research problem statement and hypothesis vetted by appointed faculty mentor.", "Month 1 (Weeks 3-4)", "Approved 1-page Concept Abstract", "HIGH"),
+            ("Execution & Data / Draft Preparation", "Execute primary experimentation, methodology development, or portfolio creation according to syllabus.", "Month 2 (Weeks 1-2)", "Interim Draft & Results Dataset", "MEDIUM"),
+            ("Faculty Mentor Critiques & Iteration", "Detailed review and structural revisions addressing faculty commentary and scoring rubrics.", "Month 2 (Weeks 3-4)", "Revised Manuscript / Application Draft", "HIGH"),
+            ("Final Verification & Deliverable Submission", f"Perform final quality audit and official submission of {p_title} to governing committee / portal.", "Month 3 (Week 1)", "Official Submission Receipt & Dossier", "HIGH"),
+            ("Milestone Debrief & Portfolio Integration", "Document learnings, archive submission outputs, and integrate achievements into student profile CV.", "Month 3 (Week 2)", "Portfolio Verification Badge & Log", "NORMAL"),
         ]
+        for idx, (a_title, a_desc, a_time, a_deliv, a_prio) in enumerate(default_templates):
+            activities.append({
+                "step_number": idx + 1,
+                "activity_title": a_title,
+                "description": a_desc,
+                "timeline": a_time,
+                "deliverable": a_deliv,
+                "priority": a_prio,
+                "status": "COMPLETED" if idx == 0 else ("IN_PROGRESS" if idx == 1 else "PENDING")
+            })
 
+    action_items = [f"Step {a['step_number']}: {a['activity_title']}" for a in activities]
+    deliverable_items = [a['deliverable'] for a in activities]
     focus = (actions[:180] + "...") if len(actions) > 180 else (actions or f"Focused execution on {p_title}")
 
     return {
@@ -706,7 +743,10 @@ Respond ONLY with valid JSON conforming to this schema (no extra prose, no markd
         "priority": priority,
         "target_timeline": timeline,
         "estimated_duration": "4-8 Weeks",
+        "total_activities": len(activities),
+        "summary": focus,
         "focus_area": focus,
+        "activities": activities,
         "action_plan": action_items,
         "deliverables": deliverable_items,
         "faculty_mentorship_notes": f"Regular milestone check-ins with mentor to ensure timely output for {p_title}."

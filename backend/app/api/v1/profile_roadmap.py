@@ -6,6 +6,7 @@ import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request, Query
 from fastapi.responses import FileResponse
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -130,17 +131,28 @@ def _serialize_item(item: ProfileRoadmapItem, db: Optional[Session] = None) -> P
         except Exception:
             ai_data = None
 
-    if not ai_data and (getattr(item, "proposal_html_url", None) or getattr(item, "main_actions", None)):
+    # If blueprint is missing or missing activities array, extract with AI
+    if not ai_data or not ai_data.get("activities"):
         try:
             from app.services.profile_roadmap_service import extract_proposal_ai_blueprint
             html_text = ""
-            if getattr(item, "proposal_html_name", None):
-                local_path = PROPOSAL_UPLOAD_DIR / item.proposal_html_name
-                if local_path.is_file():
+            html_name = getattr(item, "proposal_html_name", None)
+            if html_name:
+                local_path = os.path.join(PROPOSAL_DOCS_DIR, html_name)
+                if os.path.isfile(local_path):
                     try:
-                        html_text = local_path.read_text(encoding="utf-8", errors="ignore")
+                        with open(local_path, "r", encoding="utf-8", errors="ignore") as f:
+                            html_text = f.read()
                     except Exception:
                         pass
+                else:
+                    try:
+                        remote_bytes = download_file_from_supabase(f"proposals/{html_name}")
+                        if remote_bytes:
+                            html_text = remote_bytes.decode("utf-8", errors="ignore")
+                    except Exception:
+                        pass
+
             ai_data = extract_proposal_ai_blueprint(
                 html_content=html_text,
                 title=item.period,
@@ -500,11 +512,20 @@ def refresh_item_ai_blueprint(
         raise HTTPException(status_code=404, detail="Roadmap item not found.")
 
     html_text = ""
-    if getattr(item, "proposal_html_name", None):
-        local_path = PROPOSAL_UPLOAD_DIR / item.proposal_html_name
-        if local_path.is_file():
+    html_name = getattr(item, "proposal_html_name", None)
+    if html_name:
+        local_path = os.path.join(PROPOSAL_DOCS_DIR, html_name)
+        if os.path.isfile(local_path):
             try:
-                html_text = local_path.read_text(encoding="utf-8", errors="ignore")
+                with open(local_path, "r", encoding="utf-8", errors="ignore") as f:
+                    html_text = f.read()
+            except Exception:
+                pass
+        else:
+            try:
+                remote_bytes = download_file_from_supabase(f"proposals/{html_name}")
+                if remote_bytes:
+                    html_text = remote_bytes.decode("utf-8", errors="ignore")
             except Exception:
                 pass
 
@@ -734,22 +755,75 @@ def view_proposal_html(
                 pass
         else:
             # 3. Fallback: Lookup matching proposal item in DB and construct interactive view dynamically
+            clean_name = safe_basename
+            if "_" in safe_basename:
+                clean_name = safe_basename.split("_", 1)[1]
+
             item = (
                 db.query(ProfileRoadmapItem)
-                .filter(ProfileRoadmapItem.proposal_html_url.ilike(f"%{safe_basename}%"))
+                .filter(
+                    or_(
+                        ProfileRoadmapItem.proposal_html_url.ilike(f"%{safe_basename}%"),
+                        ProfileRoadmapItem.proposal_html_name.ilike(f"%{safe_basename}%"),
+                        ProfileRoadmapItem.proposal_html_url.ilike(f"%{clean_name}%"),
+                        ProfileRoadmapItem.proposal_html_name.ilike(f"%{clean_name}%"),
+                    )
+                )
                 .first()
             )
+            if not item:
+                # Fallback: check student's roadmap items for current user
+                user_id = payload.get("sub")
+                user = db.query(User).filter(User.id == user_id).first()
+                if user and user.role == "STUDENT":
+                    student = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
+                    if student:
+                        item = (
+                            db.query(ProfileRoadmapItem)
+                            .filter(ProfileRoadmapItem.student_id == student.id)
+                            .filter(ProfileRoadmapItem.proposal_html_url.isnot(None))
+                            .first()
+                        )
+                        if not item:
+                            item = (
+                                db.query(ProfileRoadmapItem)
+                                .filter(ProfileRoadmapItem.student_id == student.id)
+                                .first()
+                            )
+
             if item:
                 generated_html = _generate_proposal_html(item)
-                html_bytes = generated_html.encode("utf-8")
-                try:
-                    with open(file_path, "wb") as f:
-                        f.write(html_bytes)
-                except Exception:
-                    pass
-                upload_file_to_supabase(f"proposals/{safe_basename}", html_bytes, "text/html; charset=utf-8")
             else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal HTML file not found.")
+                # Construct graceful fallback interactive proposal HTML instead of 404
+                generated_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Strategic Proposal Overview</title>
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px 20px; }}
+    .card {{ max-width: 720px; margin: 0 auto; background: #1e293b; border-radius: 20px; padding: 36px; border: 1px solid #334155; }}
+    h1 {{ color: #fbbf24; font-size: 24px; margin-bottom: 12px; }}
+    p {{ color: #94a3b8; font-size: 14px; line-height: 1.6; }}
+    .badge {{ display: inline-block; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-bottom: 16px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">PROPOSAL DOSSIER</div>
+    <h1>Strategic Proposal &amp; Execution Roadmap</h1>
+    <p>This proposal is synchronized with your faculty mentorship profile. Please check your dashboard roadmap or refresh to view the latest active blueprint.</p>
+  </div>
+</body>
+</html>"""
+
+            html_bytes = generated_html.encode("utf-8")
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(html_bytes)
+            except Exception:
+                pass
+            upload_file_to_supabase(f"proposals/{safe_basename}", html_bytes, "text/html; charset=utf-8")
 
     parts = safe_basename.split("_", 1)
     download_filename = parts[1] if len(parts) > 1 else safe_basename

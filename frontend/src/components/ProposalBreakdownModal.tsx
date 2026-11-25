@@ -120,25 +120,69 @@ export const ProposalBreakdownModal: React.FC<ProposalBreakdownModalProps> = ({
             </p>
           </div>
 
-          {/* Card 2: Step-by-Step Action Plan (Kya karna hai) */}
-          <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs">
-            <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
-              <BookOpen className="w-4 h-4 text-blue-600" />
-              <span>2. Execution Action Plan (Kya karna hai — Step-by-Step)</span>
+          {/* Card 2: Numbered Execution Activities Table (Kya karna hai) */}
+          <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+            <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <BookOpen className="w-4 h-4 text-blue-600" />
+                <span>2. Execution Action Steps &amp; Activities Table ({bp?.activities?.length || actionPlan.length} Stages)</span>
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                AI Extracted
+              </span>
             </div>
-            <div className="space-y-2">
-              {actionPlan.map((step, sIdx) => (
-                <div
-                  key={sIdx}
-                  className="flex items-start space-x-2.5 text-xs text-slate-800 bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs hover:border-amber-300 transition-colors"
-                >
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {sIdx + 1}
-                  </span>
-                  <p className="font-medium leading-relaxed">{step}</p>
-                </div>
-              ))}
-            </div>
+
+            {bp?.activities && bp.activities.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <table className="min-w-full text-left text-xs divide-y divide-slate-200">
+                  <thead className="bg-slate-50 font-bold text-slate-700 uppercase text-[10px]">
+                    <tr>
+                      <th className="py-2.5 px-3 text-center">#</th>
+                      <th className="py-2.5 px-3">Activity &amp; Description</th>
+                      <th className="py-2.5 px-3 whitespace-nowrap">Timeline</th>
+                      <th className="py-2.5 px-3">Deliverable</th>
+                      <th className="py-2.5 px-3 text-center">Priority</th>
+                      <th className="py-2.5 px-3 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {bp.activities.map((act) => (
+                      <tr key={act.step_number} className="hover:bg-amber-50/30">
+                        <td className="py-2.5 px-3 text-center font-mono font-bold text-amber-600">
+                          {String(act.step_number).padStart(2, '0')}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="font-bold text-slate-900">{act.activity_title}</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{act.description}</div>
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-700">{act.timeline || 'Phase'}</td>
+                        <td className="py-2.5 px-3 font-semibold text-emerald-900">{act.deliverable}</td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">{act.priority || 'NORMAL'}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">{act.status || 'PENDING'}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {actionPlan.map((step, sIdx) => (
+                  <div
+                    key={sIdx}
+                    className="flex items-start space-x-2.5 text-xs text-slate-800 bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs hover:border-amber-300 transition-colors"
+                  >
+                    <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      {sIdx + 1}
+                    </span>
+                    <p className="font-medium leading-relaxed">{step}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Card 3: Expected Deliverables & Milestones */}
