@@ -27,7 +27,11 @@
             "estimated_hours": 6.0,
             "difficulty": "BEGINNER",
             "order_index": 1,
-            "subtopics": ["Main Idea & Purpose", "Textual Evidence", "Basic Graphs & Tables"]
+            "subtopics": [
+              "Main Idea & Purpose",
+              "Textual Evidence",
+              "Basic Graphs & Tables"
+            ]
           },
           {
             "topic_code": "PSAT8-RW-2",
@@ -36,7 +40,10 @@
             "estimated_hours": 5.0,
             "difficulty": "BEGINNER",
             "order_index": 2,
-            "subtopics": ["Words in Context", "Text Structure & Purpose"]
+            "subtopics": [
+              "Words in Context",
+              "Text Structure & Purpose"
+            ]
           },
           {
             "topic_code": "PSAT8-RW-3",
@@ -45,7 +52,10 @@
             "estimated_hours": 6.0,
             "difficulty": "BEGINNER",
             "order_index": 3,
-            "subtopics": ["Sentence Boundaries", "Punctuation & Agreement"]
+            "subtopics": [
+              "Sentence Boundaries",
+              "Punctuation & Agreement"
+            ]
           },
           {
             "topic_code": "PSAT8-RW-4",
@@ -54,7 +64,10 @@
             "estimated_hours": 5.0,
             "difficulty": "BEGINNER",
             "order_index": 4,
-            "subtopics": ["Logical Transitions", "Rhetorical Synthesis"]
+            "subtopics": [
+              "Logical Transitions",
+              "Rhetorical Synthesis"
+            ]
           }
         ]
       },
@@ -72,7 +85,11 @@
             "estimated_hours": 7.0,
             "difficulty": "BEGINNER",
             "order_index": 1,
-            "subtopics": ["Linear Equations", "Slope & Intercepts", "Linear Inequalities"]
+            "subtopics": [
+              "Linear Equations",
+              "Slope & Intercepts",
+              "Linear Inequalities"
+            ]
           },
           {
             "topic_code": "PSAT8-M-2",
@@ -81,7 +98,11 @@
             "estimated_hours": 7.0,
             "difficulty": "BEGINNER",
             "order_index": 2,
-            "subtopics": ["Ratios & Proportions", "Percentages", "Mean, Median & Charts"]
+            "subtopics": [
+              "Ratios & Proportions",
+              "Percentages",
+              "Mean, Median & Charts"
+            ]
           },
           {
             "topic_code": "PSAT8-M-3",
@@ -90,7 +111,10 @@
             "estimated_hours": 6.0,
             "difficulty": "BEGINNER",
             "order_index": 3,
-            "subtopics": ["Area & Volume", "Angles & Triangles"]
+            "subtopics": [
+              "Area & Volume",
+              "Angles & Triangles"
+            ]
           }
         ]
       },
@@ -108,7 +132,10 @@
             "estimated_hours": 6.0,
             "difficulty": "BEGINNER",
             "order_index": 1,
-            "subtopics": ["Timed Pacing", "Error Log Review"]
+            "subtopics": [
+              "Timed Pacing",
+              "Error Log Review"
+            ]
           }
         ]
       }
@@ -142,7 +169,10 @@
             "estimated_hours": 7.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Inferences", "Command of Evidence"]
+            "subtopics": [
+              "Inferences",
+              "Command of Evidence"
+            ]
           },
           {
             "topic_code": "PSAT9-RW-2",
@@ -151,7 +181,10 @@
             "estimated_hours": 5.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Dual Texts", "Academic Vocabulary"]
+            "subtopics": [
+              "Dual Texts",
+              "Academic Vocabulary"
+            ]
           },
           {
             "topic_code": "PSAT9-RW-3",
@@ -160,7 +193,11 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 3,
-            "subtopics": ["Clause Boundaries", "Modifiers & Tense", "Transitions & Synthesis"]
+            "subtopics": [
+              "Clause Boundaries",
+              "Modifiers & Tense",
+              "Transitions & Synthesis"
+            ]
           }
         ]
       },
@@ -178,7 +215,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Linear Systems", "Graphical Solutions"]
+            "subtopics": [
+              "Linear Systems",
+              "Graphical Solutions"
+            ]
           },
           {
             "topic_code": "PSAT9-M-2",
@@ -187,7 +227,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Scatterplots & Lines of Best Fit", "Probability & Two-Way Tables"]
+            "subtopics": [
+              "Scatterplots & Lines of Best Fit",
+              "Probability & Two-Way Tables"
+            ]
           },
           {
             "topic_code": "PSAT9-M-3",
@@ -196,7 +239,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 3,
-            "subtopics": ["Triangles & Circles", "Quadratic Basics"]
+            "subtopics": [
+              "Triangles & Circles",
+              "Quadratic Basics"
+            ]
           }
         ]
       },
@@ -214,7 +260,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Bluebook Timing", "Desmos Speed Drills"]
+            "subtopics": [
+              "Bluebook Timing",
+              "Desmos Speed Drills"
+            ]
           }
         ]
       }
@@ -249,7 +298,11 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Words in Context", "Text Structure & Purpose", "Cross-Text Connections"]
+            "subtopics": [
+              "Words in Context",
+              "Text Structure & Purpose",
+              "Cross-Text Connections"
+            ]
           },
           {
             "topic_code": "SAT-RW-2",
@@ -258,7 +311,11 @@
             "estimated_hours": 10.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Central Ideas & Details", "Command of Evidence", "Inferences"]
+            "subtopics": [
+              "Central Ideas & Details",
+              "Command of Evidence",
+              "Inferences"
+            ]
           },
           {
             "topic_code": "SAT-RW-3",
@@ -267,7 +324,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 3,
-            "subtopics": ["Boundaries", "Form, Structure & Sense"]
+            "subtopics": [
+              "Boundaries",
+              "Form, Structure & Sense"
+            ]
           },
           {
             "topic_code": "SAT-RW-4",
@@ -276,7 +336,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 4,
-            "subtopics": ["Transitions", "Rhetorical Synthesis"]
+            "subtopics": [
+              "Transitions",
+              "Rhetorical Synthesis"
+            ]
           }
         ]
       },
@@ -294,7 +357,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Linear Equations", "Systems & Inequalities"]
+            "subtopics": [
+              "Linear Equations",
+              "Systems & Inequalities"
+            ]
           },
           {
             "topic_code": "SAT-M-2",
@@ -303,7 +369,11 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Quadratics & Discriminant", "Polynomials & Rational Functions", "Exponential Growth"]
+            "subtopics": [
+              "Quadratics & Discriminant",
+              "Polynomials & Rational Functions",
+              "Exponential Growth"
+            ]
           },
           {
             "topic_code": "SAT-M-3",
@@ -312,7 +382,10 @@
             "estimated_hours": 7.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 3,
-            "subtopics": ["Ratios & Percentages", "Statistics & Sampling"]
+            "subtopics": [
+              "Ratios & Percentages",
+              "Statistics & Sampling"
+            ]
           },
           {
             "topic_code": "SAT-M-4",
@@ -321,7 +394,10 @@
             "estimated_hours": 7.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 4,
-            "subtopics": ["Circle Equations", "Triangles & Trigonometry"]
+            "subtopics": [
+              "Circle Equations",
+              "Triangles & Trigonometry"
+            ]
           }
         ]
       },
@@ -339,7 +415,10 @@
             "estimated_hours": 8.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Adaptive Pacing", "Desmos Shortcuts"]
+            "subtopics": [
+              "Adaptive Pacing",
+              "Desmos Shortcuts"
+            ]
           }
         ]
       }
@@ -373,7 +452,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Punctuation Rules", "Grammar & Sentence Structure"]
+            "subtopics": [
+              "Punctuation Rules",
+              "Grammar & Sentence Structure"
+            ]
           },
           {
             "topic_code": "ACT-E-2",
@@ -382,7 +464,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Rhetorical Strategy", "Conciseness & Precision"]
+            "subtopics": [
+              "Rhetorical Strategy",
+              "Conciseness & Precision"
+            ]
           }
         ]
       },
@@ -400,7 +485,10 @@
             "estimated_hours": 10.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Algebra & Functions", "Matrices & Logs"]
+            "subtopics": [
+              "Algebra & Functions",
+              "Matrices & Logs"
+            ]
           },
           {
             "topic_code": "ACT-M-2",
@@ -409,7 +497,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Plane & Coordinate Geometry", "Trigonometry"]
+            "subtopics": [
+              "Plane & Coordinate Geometry",
+              "Trigonometry"
+            ]
           },
           {
             "topic_code": "ACT-M-3",
@@ -418,7 +509,10 @@
             "estimated_hours": 4.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 3,
-            "subtopics": ["Probability & Counting", "Data & Modeling"]
+            "subtopics": [
+              "Probability & Counting",
+              "Data & Modeling"
+            ]
           }
         ]
       },
@@ -436,7 +530,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Detail Location", "Tone & Purpose"]
+            "subtopics": [
+              "Detail Location",
+              "Tone & Purpose"
+            ]
           },
           {
             "topic_code": "ACT-R-2",
@@ -445,7 +542,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Dual Passages", "Argument Analysis"]
+            "subtopics": [
+              "Dual Passages",
+              "Argument Analysis"
+            ]
           }
         ]
       },
@@ -463,7 +563,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Graph & Table Reading", "Experimental Design"]
+            "subtopics": [
+              "Graph & Table Reading",
+              "Experimental Design"
+            ]
           },
           {
             "topic_code": "ACT-S-2",
@@ -472,7 +575,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Conflicting Viewpoints", "Perspective Essay Structure"]
+            "subtopics": [
+              "Conflicting Viewpoints",
+              "Perspective Essay Structure"
+            ]
           }
         ]
       }
@@ -506,7 +612,10 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Polynomials & Surds", "Inequalities & Transformations"]
+            "subtopics": [
+              "Polynomials & Surds",
+              "Inequalities & Transformations"
+            ]
           },
           {
             "topic_code": "TMUA-P1-2",
@@ -515,7 +624,11 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Circles & Geometry", "Trigonometric Identities", "Exponentials & Logs"]
+            "subtopics": [
+              "Circles & Geometry",
+              "Trigonometric Identities",
+              "Exponentials & Logs"
+            ]
           },
           {
             "topic_code": "TMUA-P1-3",
@@ -524,7 +637,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 3,
-            "subtopics": ["Sequences & Binomial", "Differentiation & Integration"]
+            "subtopics": [
+              "Sequences & Binomial",
+              "Differentiation & Integration"
+            ]
           }
         ]
       },
@@ -542,7 +658,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Necessary & Sufficient", "Quantifiers & Negation"]
+            "subtopics": [
+              "Necessary & Sufficient",
+              "Quantifiers & Negation"
+            ]
           },
           {
             "topic_code": "TMUA-P2-2",
@@ -551,7 +670,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Contradiction & Exhaustion", "Counterexamples & Proof Errors"]
+            "subtopics": [
+              "Contradiction & Exhaustion",
+              "Counterexamples & Proof Errors"
+            ]
           }
         ]
       },
@@ -569,7 +691,10 @@
             "estimated_hours": 8.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["75-Min Paper Pacing", "Mental Calculation Accuracy"]
+            "subtopics": [
+              "75-Min Paper Pacing",
+              "Mental Calculation Accuracy"
+            ]
           }
         ]
       }
@@ -603,7 +728,10 @@
             "estimated_hours": 10.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Surds & Indices", "Algebraic Manipulation"]
+            "subtopics": [
+              "Surds & Indices",
+              "Algebraic Manipulation"
+            ]
           },
           {
             "topic_code": "ESAT-M1-2",
@@ -612,7 +740,10 @@
             "estimated_hours": 10.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Geometry & Trig", "Probability & Stats"]
+            "subtopics": [
+              "Geometry & Trig",
+              "Probability & Stats"
+            ]
           }
         ]
       },
@@ -630,7 +761,10 @@
             "estimated_hours": 9.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Logs & Exponentials", "Radian Trig"]
+            "subtopics": [
+              "Logs & Exponentials",
+              "Radian Trig"
+            ]
           },
           {
             "topic_code": "ESAT-M2-2",
@@ -639,7 +773,10 @@
             "estimated_hours": 9.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Calculus Applications", "Sequences & Series"]
+            "subtopics": [
+              "Calculus Applications",
+              "Sequences & Series"
+            ]
           }
         ]
       },
@@ -657,7 +794,10 @@
             "estimated_hours": 8.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Kinematics & Dynamics", "Momentum & Energy"]
+            "subtopics": [
+              "Kinematics & Dynamics",
+              "Momentum & Energy"
+            ]
           },
           {
             "topic_code": "ESAT-P-2",
@@ -666,7 +806,10 @@
             "estimated_hours": 8.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Circuits & Fields", "Waves & Nuclear"]
+            "subtopics": [
+              "Circuits & Fields",
+              "Waves & Nuclear"
+            ]
           }
         ]
       },
@@ -684,7 +827,10 @@
             "estimated_hours": 8.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Stoichiometry & Energetics", "Kinetics & Equilibria"]
+            "subtopics": [
+              "Stoichiometry & Energetics",
+              "Kinetics & Equilibria"
+            ]
           },
           {
             "topic_code": "ESAT-C-2",
@@ -693,7 +839,10 @@
             "estimated_hours": 6.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Isomerism & Functional Groups", "Organic Mechanisms"]
+            "subtopics": [
+              "Isomerism & Functional Groups",
+              "Organic Mechanisms"
+            ]
           }
         ]
       },
@@ -711,7 +860,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Cell Structure & Enzymes", "Molecular Genetics"]
+            "subtopics": [
+              "Cell Structure & Enzymes",
+              "Molecular Genetics"
+            ]
           },
           {
             "topic_code": "ESAT-B-2",
@@ -720,7 +872,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Physiology & Homeostasis", "Evolution & Ecology"]
+            "subtopics": [
+              "Physiology & Homeostasis",
+              "Evolution & Ecology"
+            ]
           }
         ]
       }
@@ -754,7 +909,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Conditional Diagramming", "Necessary vs Sufficient Assumptions"]
+            "subtopics": [
+              "Conditional Diagramming",
+              "Necessary vs Sufficient Assumptions"
+            ]
           },
           {
             "topic_code": "LSAT-LR-2",
@@ -763,7 +921,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Causal & Sampling Flaws", "Strengthen/Weaken"]
+            "subtopics": [
+              "Causal & Sampling Flaws",
+              "Strengthen/Weaken"
+            ]
           },
           {
             "topic_code": "LSAT-LR-3",
@@ -772,7 +933,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 3,
-            "subtopics": ["Must Be True / Inference", "Parallel & Principle"]
+            "subtopics": [
+              "Must Be True / Inference",
+              "Parallel & Principle"
+            ]
           }
         ]
       },
@@ -790,7 +954,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Viewpoint Tracking", "Main Point & Function"]
+            "subtopics": [
+              "Viewpoint Tracking",
+              "Main Point & Function"
+            ]
           },
           {
             "topic_code": "LSAT-RC-2",
@@ -799,7 +966,10 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Comparative Synthesis", "Inference & Application"]
+            "subtopics": [
+              "Comparative Synthesis",
+              "Inference & Application"
+            ]
           }
         ]
       },
@@ -817,7 +987,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Argumentative Writing", "120-180 Scale Stamina"]
+            "subtopics": [
+              "Argumentative Writing",
+              "120-180 Scale Stamina"
+            ]
           }
         ]
       }
@@ -851,7 +1024,11 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Main Conclusion", "Drawing Conclusions", "Assumptions"]
+            "subtopics": [
+              "Main Conclusion",
+              "Drawing Conclusions",
+              "Assumptions"
+            ]
           },
           {
             "topic_code": "TARA-CT-2",
@@ -860,7 +1037,11 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Impact of Evidence", "Reasoning Errors", "Matching Arguments & Principles"]
+            "subtopics": [
+              "Impact of Evidence",
+              "Reasoning Errors",
+              "Matching Arguments & Principles"
+            ]
           }
         ]
       },
@@ -878,7 +1059,10 @@
             "estimated_hours": 8.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Relevant Selection", "Table & Chart Parsing"]
+            "subtopics": [
+              "Relevant Selection",
+              "Table & Chart Parsing"
+            ]
           },
           {
             "topic_code": "TARA-PS-2",
@@ -887,7 +1071,10 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Finding Procedures", "Identifying Similarity"]
+            "subtopics": [
+              "Finding Procedures",
+              "Identifying Similarity"
+            ]
           }
         ]
       },
@@ -905,7 +1092,11 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Balanced Argumentation", "40-Min Essay Pacing", "Full 2-Hr Mocks"]
+            "subtopics": [
+              "Balanced Argumentation",
+              "40-Min Essay Pacing",
+              "Full 2-Hr Mocks"
+            ]
           }
         ]
       }
@@ -939,7 +1130,10 @@
             "estimated_hours": 16.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Acid-Base & Electrochem", "Organic Reactions & Spectroscopy"]
+            "subtopics": [
+              "Acid-Base & Electrochem",
+              "Organic Reactions & Spectroscopy"
+            ]
           },
           {
             "topic_code": "MCAT-CP-2",
@@ -948,7 +1142,10 @@
             "estimated_hours": 16.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Fluids & Mechanics", "Circuits & Optics"]
+            "subtopics": [
+              "Fluids & Mechanics",
+              "Circuits & Optics"
+            ]
           }
         ]
       },
@@ -966,7 +1163,10 @@
             "estimated_hours": 24.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Foundations of Comprehension", "Reasoning Within & Beyond Text"]
+            "subtopics": [
+              "Foundations of Comprehension",
+              "Reasoning Within & Beyond Text"
+            ]
           }
         ]
       },
@@ -984,7 +1184,10 @@
             "estimated_hours": 18.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Amino Acids & Enzymes", "Central Metabolism"]
+            "subtopics": [
+              "Amino Acids & Enzymes",
+              "Central Metabolism"
+            ]
           },
           {
             "topic_code": "MCAT-BB-2",
@@ -993,7 +1196,10 @@
             "estimated_hours": 16.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Genetics & Cell Biology", "Human Organ Systems"]
+            "subtopics": [
+              "Genetics & Cell Biology",
+              "Human Organ Systems"
+            ]
           }
         ]
       },
@@ -1011,7 +1217,10 @@
             "estimated_hours": 16.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Learning & Cognition", "Neurobiology & Disorders"]
+            "subtopics": [
+              "Learning & Cognition",
+              "Neurobiology & Disorders"
+            ]
           },
           {
             "topic_code": "MCAT-PS-2",
@@ -1020,7 +1229,10 @@
             "estimated_hours": 14.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Sociological Theories", "Research & Statistics"]
+            "subtopics": [
+              "Sociological Theories",
+              "Research & Statistics"
+            ]
           }
         ]
       }
@@ -1054,7 +1266,11 @@
             "estimated_hours": 16.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Keyword Scanning", "True/False/Can't Tell", "Inference Speed Drills"]
+            "subtopics": [
+              "Keyword Scanning",
+              "True/False/Can't Tell",
+              "Inference Speed Drills"
+            ]
           }
         ]
       },
@@ -1072,7 +1288,11 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Syllogisms", "Logic Puzzles", "Strongest Arguments"]
+            "subtopics": [
+              "Syllogisms",
+              "Logic Puzzles",
+              "Strongest Arguments"
+            ]
           },
           {
             "topic_code": "UCAT-DM-2",
@@ -1081,7 +1301,10 @@
             "estimated_hours": 6.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Venn Diagrams", "Probability Reasoning"]
+            "subtopics": [
+              "Venn Diagrams",
+              "Probability Reasoning"
+            ]
           }
         ]
       },
@@ -1099,7 +1322,11 @@
             "estimated_hours": 16.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Calculator Numpad Drills", "Percentages & Ratios", "Multi-Table Interpretation"]
+            "subtopics": [
+              "Calculator Numpad Drills",
+              "Percentages & Ratios",
+              "Multi-Table Interpretation"
+            ]
           }
         ]
       },
@@ -1117,7 +1344,11 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Confidentiality & Honesty", "Teamwork & Escalation", "Full 111-Min UCAT Mocks"]
+            "subtopics": [
+              "Confidentiality & Honesty",
+              "Teamwork & Escalation",
+              "Full 111-Min UCAT Mocks"
+            ]
           }
         ]
       }
@@ -1151,7 +1382,11 @@
             "estimated_hours": 11.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Reading Comprehension", "Logical Inference", "Author Attitude"]
+            "subtopics": [
+              "Reading Comprehension",
+              "Logical Inference",
+              "Author Attitude"
+            ]
           },
           {
             "topic_code": "ISAT-CR-2",
@@ -1160,7 +1395,11 @@
             "estimated_hours": 11.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Assumptions & Flaws", "Strengthen & Weaken", "Conditional Deduction"]
+            "subtopics": [
+              "Assumptions & Flaws",
+              "Strengthen & Weaken",
+              "Conditional Deduction"
+            ]
           }
         ]
       },
@@ -1178,7 +1417,11 @@
             "estimated_hours": 11.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Chart & Graph Trends", "Multi-Table Parsing", "Experimental Data"]
+            "subtopics": [
+              "Chart & Graph Trends",
+              "Multi-Table Parsing",
+              "Experimental Data"
+            ]
           },
           {
             "topic_code": "ISAT-QR-2",
@@ -1187,7 +1430,11 @@
             "estimated_hours": 11.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Mental Estimation", "Proportional Reasoning", "Mathematical Deduction"]
+            "subtopics": [
+              "Mental Estimation",
+              "Proportional Reasoning",
+              "Mathematical Deduction"
+            ]
           }
         ]
       },
@@ -1205,7 +1452,11 @@
             "estimated_hours": 10.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["108-Sec/Q Pacing", "3-Hour Stamina", "Error Diagnostics"]
+            "subtopics": [
+              "108-Sec/Q Pacing",
+              "3-Hour Stamina",
+              "Error Diagnostics"
+            ]
           }
         ]
       }
@@ -1239,7 +1490,10 @@
             "estimated_hours": 15.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Number Properties", "Rates, Ratios & Mixtures"]
+            "subtopics": [
+              "Number Properties",
+              "Rates, Ratios & Mixtures"
+            ]
           },
           {
             "topic_code": "GMAT-Q-2",
@@ -1248,7 +1502,10 @@
             "estimated_hours": 15.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Inequalities & Quadratics", "Counting & Probability"]
+            "subtopics": [
+              "Inequalities & Quadratics",
+              "Counting & Probability"
+            ]
           }
         ]
       },
@@ -1266,7 +1523,10 @@
             "estimated_hours": 14.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Assumption & Flaw", "Strengthen/Weaken & Boldface"]
+            "subtopics": [
+              "Assumption & Flaw",
+              "Strengthen/Weaken & Boldface"
+            ]
           },
           {
             "topic_code": "GMAT-V-2",
@@ -1275,7 +1535,10 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Passage Mapping", "Inference & Tone"]
+            "subtopics": [
+              "Passage Mapping",
+              "Inference & Tone"
+            ]
           }
         ]
       },
@@ -1293,7 +1556,10 @@
             "estimated_hours": 14.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Data Sufficiency", "Two-Part Analysis"]
+            "subtopics": [
+              "Data Sufficiency",
+              "Two-Part Analysis"
+            ]
           },
           {
             "topic_code": "GMAT-DI-2",
@@ -1302,7 +1568,10 @@
             "estimated_hours": 14.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Multi-Source Reasoning", "Table & Graph Analysis"]
+            "subtopics": [
+              "Multi-Source Reasoning",
+              "Table & Graph Analysis"
+            ]
           }
         ]
       }
@@ -1336,7 +1605,10 @@
             "estimated_hours": 16.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["1-3 Blank Text Completion", "Sentence Equivalence Pairs"]
+            "subtopics": [
+              "1-3 Blank Text Completion",
+              "Sentence Equivalence Pairs"
+            ]
           },
           {
             "topic_code": "GRE-V-2",
@@ -1345,7 +1617,10 @@
             "estimated_hours": 14.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Passage Structure", "Argument Analysis"]
+            "subtopics": [
+              "Passage Structure",
+              "Argument Analysis"
+            ]
           }
         ]
       },
@@ -1363,7 +1638,10 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["QC Comparison Traps", "Number Properties"]
+            "subtopics": [
+              "QC Comparison Traps",
+              "Number Properties"
+            ]
           },
           {
             "topic_code": "GRE-Q-2",
@@ -1372,7 +1650,10 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 2,
-            "subtopics": ["Algebra & Graphs", "Geometry & 3D Solids"]
+            "subtopics": [
+              "Algebra & Graphs",
+              "Geometry & 3D Solids"
+            ]
           },
           {
             "topic_code": "GRE-Q-3",
@@ -1381,7 +1662,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 3,
-            "subtopics": ["Stats & Normal Curve", "Data Interpretation"]
+            "subtopics": [
+              "Stats & Normal Curve",
+              "Data Interpretation"
+            ]
           }
         ]
       },
@@ -1399,7 +1683,10 @@
             "estimated_hours": 12.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Issue Essay Templates", "Full Shorter GRE Mocks"]
+            "subtopics": [
+              "Issue Essay Templates",
+              "Full Shorter GRE Mocks"
+            ]
           }
         ]
       }
@@ -1433,7 +1720,10 @@
             "estimated_hours": 20.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Passage Selection", "Inference & Elimination"]
+            "subtopics": [
+              "Passage Selection",
+              "Inference & Elimination"
+            ]
           },
           {
             "topic_code": "CAT-VARC-2",
@@ -1442,7 +1732,10 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["TITA Para Jumbles", "Para Summary & Odd Sentence"]
+            "subtopics": [
+              "TITA Para Jumbles",
+              "Para Summary & Odd Sentence"
+            ]
           }
         ]
       },
@@ -1460,7 +1753,10 @@
             "estimated_hours": 20.0,
             "difficulty": "ADVANCED",
             "order_index": 1,
-            "subtopics": ["Circular & Matrix Arrangements", "Games & Tournaments"]
+            "subtopics": [
+              "Circular & Matrix Arrangements",
+              "Games & Tournaments"
+            ]
           },
           {
             "topic_code": "CAT-DILR-2",
@@ -1469,7 +1765,10 @@
             "estimated_hours": 18.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Maxima-Minima Venn", "Missing Data Caselets"]
+            "subtopics": [
+              "Maxima-Minima Venn",
+              "Missing Data Caselets"
+            ]
           }
         ]
       },
@@ -1487,7 +1786,10 @@
             "estimated_hours": 14.0,
             "difficulty": "INTERMEDIATE",
             "order_index": 1,
-            "subtopics": ["Ratios, Mixtures & TSD", "Time-Work & Averages"]
+            "subtopics": [
+              "Ratios, Mixtures & TSD",
+              "Time-Work & Averages"
+            ]
           },
           {
             "topic_code": "CAT-QA-2",
@@ -1496,7 +1798,10 @@
             "estimated_hours": 14.0,
             "difficulty": "ADVANCED",
             "order_index": 2,
-            "subtopics": ["Inequalities & Modulus", "Logs, Functions & Series"]
+            "subtopics": [
+              "Inequalities & Modulus",
+              "Logs, Functions & Series"
+            ]
           },
           {
             "topic_code": "CAT-QA-3",
@@ -1505,7 +1810,254 @@
             "estimated_hours": 12.0,
             "difficulty": "ADVANCED",
             "order_index": 3,
-            "subtopics": ["Triangles & Circles", "Numbers & P&C"]
+            "subtopics": [
+              "Triangles & Circles",
+              "Numbers & P&C"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "course_code": "AP-ECON-COMBO",
+    "name": "AP Micro and Macro Economics (Combined Track)",
+    "description": "Comprehensive 4-month College Board Advanced Placement (AP) Economics track integrating both AP Microeconomics and AP Macroeconomics into a single cohesive curriculum. Designed with teacher-directed modular flexibility: faculty mentors can customize the pacing sequence to teach Microeconomics first, Macroeconomics first, or concurrently based on student diagnostic assessment. Features rigorous conceptual foundations, mathematical models, dual-graph mastery, real-world case analysis, and extensive College Board FRQ & MCQ exam preparation.",
+    "official_duration_value": 4,
+    "official_duration_unit": "MONTHS",
+    "total_learning_hours": 64.0,
+    "syllabus_version": "2026.1",
+    "category": "EduQuest",
+    "difficulty_level": "ADVANCED",
+    "prerequisites": [
+      "High School Algebra I & Graphical Foundations",
+      "Basic Quantitative & Analytical Reasoning"
+    ],
+    "modules": [
+      {
+        "module_code": "AP-MICRO",
+        "title": "AP Microeconomics (Individual Markets, Firm Behavior & Efficiency)",
+        "description": "Complete College Board AP Microeconomics curriculum (Units 1-6). Covers supply and demand mechanics, consumer choice, production costs across market structures, factor markets, and market failure solutions.",
+        "order_index": 1,
+        "estimated_hours": 30.0,
+        "topics": [
+          {
+            "topic_code": "AP-MIC-U1",
+            "title": "Unit 1: Basic Economic Concepts & Comparative Advantage",
+            "description": "Scarcity, opportunity cost, Production Possibilities Curve (PPC), specialization, comparative vs. absolute advantage, terms of trade, and marginal analysis.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": [
+              "Scarcity, Choice & Opportunity Cost",
+              "Production Possibilities Curve (PPC)",
+              "Comparative Advantage & Terms of Trade",
+              "Marginal Analysis & Consumer Choice Utility"
+            ]
+          },
+          {
+            "topic_code": "AP-MIC-U2",
+            "title": "Unit 2: Supply, Demand, Elasticity & Market Equilibrium",
+            "description": "Law of demand and supply, determinants of shifts vs. movements, market equilibrium, consumer and producer surplus, price elasticity of demand/supply, cross-price and income elasticity, government interventions (price ceilings, price floors, per-unit/lump-sum taxes, subsidies, tariffs) and deadweight loss.",
+            "estimated_hours": 6.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "Demand & Supply Shifts vs. Quantity Changes",
+              "Market Equilibrium & Disequilibrium",
+              "Elasticity of Demand, Supply & Income",
+              "Consumer/Producer Surplus & Deadweight Loss",
+              "Government Intervention: Ceilings, Floors & Taxes"
+            ]
+          },
+          {
+            "topic_code": "AP-MIC-U3",
+            "title": "Unit 3: Production, Cost Curves & Perfect Competition",
+            "description": "Production functions, law of diminishing marginal returns, short-run costs (FC, VC, TC, MC, AFC, AVC, ATC), long-run economies and diseconomies of scale, profit maximization rule (MR=MC), shut-down condition, short-run vs. long-run equilibrium in Perfect Competition, allocative and productive efficiency.",
+            "estimated_hours": 6.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": [
+              "Short-Run Production & Diminishing Returns",
+              "Cost Curves: Marginal, Average & Total Costs",
+              "Long-Run Costs & Economies of Scale",
+              "Perfect Competition: Short-Run & Long-Run Equilibrium",
+              "Allocative vs. Productive Efficiency & Zero Economic Profit"
+            ]
+          },
+          {
+            "topic_code": "AP-MIC-U4",
+            "title": "Unit 4: Imperfect Competition & Game Theory",
+            "description": "Monopoly price-making and deadweight loss, price discrimination, natural monopolies and regulation, Monopolistic Competition in short and long run, Oligopoly interdependence, payoff matrices, dominant strategies, and Nash Equilibrium.",
+            "estimated_hours": 6.0,
+            "difficulty": "ADVANCED",
+            "order_index": 4,
+            "subtopics": [
+              "Monopoly Model, Inefficiency & Price Discrimination",
+              "Natural Monopolies & Government Price Regulation",
+              "Monopolistic Competition & Excess Capacity",
+              "Oligopoly, Collusion & Cartels",
+              "Game Theory: Payoff Matrix, Dominant Strategy & Nash Equilibrium"
+            ]
+          },
+          {
+            "topic_code": "AP-MIC-U5",
+            "title": "Unit 5: Factor Markets & Resource Allocation",
+            "description": "Derived demand for factors of production, Marginal Revenue Product (MRP) and Marginal Factor Cost (MFC), profit-maximizing hiring rule, perfectly competitive vs. monopsonistic labor markets.",
+            "estimated_hours": 4.0,
+            "difficulty": "ADVANCED",
+            "order_index": 5,
+            "subtopics": [
+              "Derived Factor Demand & Factor Markets",
+              "Marginal Revenue Product (MRP) & Factor Cost (MFC)",
+              "Hiring Rules & Least-Cost Rule",
+              "Monopsonistic Labor Markets vs. Competitive Labor Markets"
+            ]
+          },
+          {
+            "topic_code": "AP-MIC-U6",
+            "title": "Unit 6: Market Failure & The Role of Government",
+            "description": "Socially optimal vs. market output, negative and positive externalities, per-unit corrective taxes and subsidies, public goods vs. private goods, free-rider problem, asymmetric information, income inequality and the Lorenz curve.",
+            "estimated_hours": 4.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 6,
+            "subtopics": [
+              "Negative & Positive Externalities & Coase Theorem",
+              "Per-Unit Pigouvian Taxes & Subsidies",
+              "Public Goods, Club Goods & Free-Rider Problem",
+              "Income Inequality, Gini Coefficient & Lorenz Curve"
+            ]
+          }
+        ]
+      },
+      {
+        "module_code": "AP-MACRO",
+        "title": "AP Macroeconomics (National Economy, Financial System, Stabilization & International Finance)",
+        "description": "Complete College Board AP Macroeconomics curriculum (Units 1-6). Covers macroeconomic indicators (GDP, CPI, Unemployment), Aggregate Demand/Aggregate Supply, monetary and fiscal policy mechanics, the Phillips curve, and open-economy international exchange.",
+        "order_index": 2,
+        "estimated_hours": 28.0,
+        "topics": [
+          {
+            "topic_code": "AP-MAC-U1",
+            "title": "Unit 1: Basic Macroeconomic Concepts & Circular Flow",
+            "description": "Macroeconomic scope, the circular flow model of income and expenditures, scarcity and resource allocation in national economies, real vs. nominal economic variables.",
+            "estimated_hours": 3.0,
+            "difficulty": "BEGINNER",
+            "order_index": 1,
+            "subtopics": [
+              "Macroeconomic Perspective & Circular Flow Model",
+              "Real vs. Nominal Variables & Base Year Pricing",
+              "Scarcity & Production Frontiers in Macroeconomics"
+            ]
+          },
+          {
+            "topic_code": "AP-MAC-U2",
+            "title": "Unit 2: Economic Indicators & The Business Cycle",
+            "description": "GDP measurement (expenditure approach, what is included/excluded), unemployment rate, labor force participation, frictional/structural/cyclical unemployment, natural rate of unemployment (NRU), inflation, Consumer Price Index (CPI), GDP deflator, costs of inflation, and phases of the business cycle.",
+            "estimated_hours": 5.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 2,
+            "subtopics": [
+              "Gross Domestic Product (GDP): Nominal, Real & Deflator",
+              "Unemployment: Categories, Natural Rate & Full Employment",
+              "Inflation, CPI, Basket Cost & Cost of Living",
+              "The Business Cycle: Peaks, Troughs, Recession & Output Gaps"
+            ]
+          },
+          {
+            "topic_code": "AP-MAC-U3",
+            "title": "Unit 3: National Income & Price Determination (AD-AS Framework)",
+            "description": "Aggregate Demand (AD) and its downward slope, shifts in AD, Short-Run Aggregate Supply (SRAS) and sticky wages, Long-Run Aggregate Supply (LRAS) and full employment output, recessionary and inflationary output gaps, spending multiplier and tax multiplier, discretionary fiscal policy and automatic stabilizers.",
+            "estimated_hours": 6.0,
+            "difficulty": "ADVANCED",
+            "order_index": 3,
+            "subtopics": [
+              "Aggregate Demand (AD) & Determinants of Shifts",
+              "Short-Run & Long-Run Aggregate Supply (SRAS / LRAS)",
+              "Macroeconomic Equilibrium: Recessionary vs. Inflationary Gaps",
+              "Spending Multiplier & Tax Multiplier Calculations",
+              "Fiscal Policy: Expansionary vs. Contractionary Interventions"
+            ]
+          },
+          {
+            "topic_code": "AP-MAC-U4",
+            "title": "Unit 4: Financial Sector, Central Banking & Monetary Policy",
+            "description": "Financial assets (money, bonds, stocks), time value of money, definitions of money (M1, M2), commercial banking and balance sheets (T-accounts), fractional reserve banking and money multiplier, Central Bank policy tools in limited-reserves vs. ample-reserves regimes (IORB, policy rates, discount rate, reserve requirements), the money market graph vs. the loanable funds market graph.",
+            "estimated_hours": 6.0,
+            "difficulty": "ADVANCED",
+            "order_index": 4,
+            "subtopics": [
+              "Financial Assets, Money Supply (M1/M2) & Time Value",
+              "Fractional Reserve Banking, T-Accounts & Money Multiplier",
+              "Money Market Model & Nominal Interest Rates",
+              "Loanable Funds Market & Real Interest Rates",
+              "Monetary Policy in Limited vs. Ample Reserves Regimes"
+            ]
+          },
+          {
+            "topic_code": "AP-MAC-U5",
+            "title": "Unit 5: Long-Run Consequences of Stabilization Policies",
+            "description": "Short-run vs. long-run Phillips curve, trade-off between inflation and unemployment, government budget deficits and national debt, crowding-out effect on real interest rates and capital investment, determinants of economic growth and shifts in the LRAS / PPC.",
+            "estimated_hours": 4.0,
+            "difficulty": "ADVANCED",
+            "order_index": 5,
+            "subtopics": [
+              "Short-Run & Long-Run Phillips Curve (SRPC / LRPC)",
+              "Fiscal-Monetary Policy Interactions",
+              "Government Deficits, National Debt & Crowding Out",
+              "Economic Growth, Human Capital & Physical Capital Formation"
+            ]
+          },
+          {
+            "topic_code": "AP-MAC-U6",
+            "title": "Unit 6: Open Economy — International Trade and Finance",
+            "description": "Balance of Payments accounts: Current Account (trade balance) and Capital/Financial Account, foreign exchange (FOREX) market demand and supply of currencies, appreciation and depreciation, determinants of exchange rates, net capital flows and foreign currency linkage with domestic loanable funds.",
+            "estimated_hours": 4.0,
+            "difficulty": "ADVANCED",
+            "order_index": 6,
+            "subtopics": [
+              "Balance of Payments: Current vs. Financial Account",
+              "Foreign Exchange (FOREX) Market Dynamics",
+              "Currency Appreciation vs. Depreciation Determinants",
+              "Real Exchange Rates, Capital Inflow/Outflow & Interest Linkages"
+            ]
+          }
+        ]
+      },
+      {
+        "module_code": "AP-ECON-STRATEGY",
+        "title": "Teacher-Directed Pacing, Dual Graph Mastery & AP Exam Strategy",
+        "description": "Flexible modular roadmap allowing faculty mentors to choose the optimal teaching sequence (Micro-First, Macro-First, or Concurrent). Includes side-by-side graph synthesis, official College Board FRQ rubrics, calculator-free arithmetic, and timed full-length simulations.",
+        "order_index": 3,
+        "estimated_hours": 6.0,
+        "topics": [
+          {
+            "topic_code": "AP-STRAT-T1",
+            "title": "Teacher-Decided Sequencing & Diagnostic Planning",
+            "description": "Mentor evaluates student background to choose Path A (Microeconomics first then Macroeconomics), Path B (Macroeconomics first then Microeconomics), or Path C (Concurrent parallel tracking).",
+            "estimated_hours": 2.0,
+            "difficulty": "INTERMEDIATE",
+            "order_index": 1,
+            "subtopics": [
+              "Faculty Assessment of Student Strengths",
+              "Sequencing Path A: Micro-First Foundation",
+              "Sequencing Path B: Macro-First Foundation",
+              "Custom 4-Month Modular Milestone Scheduling"
+            ]
+          },
+          {
+            "topic_code": "AP-STRAT-T2",
+            "title": "Dual Graph Mastery & Free-Response (FRQ) Scoring Workshop",
+            "description": "Synthesis of the core 14 essential AP graphs (PPC, Supply/Demand, Cost Curves, Monopoly, Factor Market, AD-AS, Money Market, Loanable Funds, Phillips Curve, FOREX). High-scoring FRQ step-by-step writing strategies and full-length College Board mock exams.",
+            "estimated_hours": 4.0,
+            "difficulty": "ADVANCED",
+            "order_index": 2,
+            "subtopics": [
+              "Core 14 AP Economics Graphs Side-by-Side Workshop",
+              "College Board FRQ Structure, Assertion-Reason & Justifications",
+              "Timed Full-Length Micro & Macro Practice Simulations",
+              "Error Analysis & Score Maximization Plan"
+            ]
           }
         ]
       }
