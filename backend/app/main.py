@@ -55,6 +55,9 @@ def _ensure_all_schema_columns():
                 ("phone", "VARCHAR(32)"),
                 ("current_level", "VARCHAR(32) DEFAULT 'BEGINNER'"),
                 ("target_career", "VARCHAR(128)"),
+                ("profile_timeline", "VARCHAR(128)"),
+                ("profile_start_date", "VARCHAR(64)"),
+                ("profile_end_date", "VARCHAR(64)"),
             ],
             "users": [
                 ("is_suspended", "BOOLEAN NOT NULL DEFAULT FALSE"),
@@ -91,6 +94,9 @@ def _ensure_all_schema_columns():
                 ("proposal_html_name", "VARCHAR(255)"),
                 ("proposal_type", "VARCHAR(64) DEFAULT 'GLOBAL_COMPETITION'"),
                 ("feedback_notes", "TEXT"),
+                ("ai_blueprint", "TEXT"),
+                ("target_timeline", "VARCHAR(128)"),
+                ("priority", "VARCHAR(32) DEFAULT 'NORMAL'"),
             ],
             "profile_session_attendances": [
                 ("status", "VARCHAR(16) NOT NULL DEFAULT 'PRESENT'"),

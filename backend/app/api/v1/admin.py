@@ -234,6 +234,9 @@ def list_students(
                 "access_type": access_type,
                 "has_trial_enrollment": has_trial,
                 "track_type": getattr(p, "track_type", "COURSE") or "COURSE",
+                "profile_timeline": getattr(p, "profile_timeline", None),
+                "profile_start_date": getattr(p, "profile_start_date", None),
+                "profile_end_date": getattr(p, "profile_end_date", None),
             })
 
         return {"total": total, "items": results}
@@ -289,7 +292,10 @@ def create_student(
         user_id=user.id,
         aptech_student_id=payload.aptech_student_id.strip(),
         phone=payload.phone,
-        track_type=track_type
+        track_type=track_type,
+        profile_timeline=payload.profile_timeline,
+        profile_start_date=payload.profile_start_date,
+        profile_end_date=payload.profile_end_date,
     )
     db.add(student)
     db.flush()
@@ -442,6 +448,12 @@ def update_student(id: str, payload: StudentUpdateRequest, db: Session = Depends
         student.target_career = payload.target_career
     if payload.current_level is not None:
         student.current_level = payload.current_level
+    if payload.profile_timeline is not None:
+        student.profile_timeline = payload.profile_timeline
+    if payload.profile_start_date is not None:
+        student.profile_start_date = payload.profile_start_date
+    if payload.profile_end_date is not None:
+        student.profile_end_date = payload.profile_end_date
 
     db.commit()
     return {"success": True, "message": "Student profile updated successfully."}

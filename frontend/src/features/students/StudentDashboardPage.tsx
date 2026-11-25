@@ -24,8 +24,14 @@ import {
   Download,
   Paperclip,
   Sparkles,
+  Calendar,
+  Eye,
+  FileText,
+  X,
+  Layers,
 } from 'lucide-react';
 import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
+import { ProposalBreakdownModal } from '../../components/ProposalBreakdownModal';
 
 const getDocDownloadUrl = (url?: string | null) => {
   if (!url) return '';
@@ -70,6 +76,36 @@ export const StudentDashboardPage: React.FC = () => {
   const [viewerUrl, setViewerUrl] = useState<string>('');
   const [viewerType, setViewerType] = useState<string | null>(null);
   const [viewerStatus, setViewerStatus] = useState<string | null>(null);
+
+  // Readable Proposal Breakdown Modal State
+  const [breakdownModalOpen, setBreakdownModalOpen] = useState<boolean>(false);
+  const [selectedProposalForBreakdown, setSelectedProposalForBreakdown] = useState<ProfileRoadmapItem | null>(null);
+
+  const handleOpenBreakdown = (item: ProfileRoadmapItem) => {
+    setSelectedProposalForBreakdown(item);
+    setBreakdownModalOpen(true);
+  };
+
+  const getProposalBlueprint = (item: ProfileRoadmapItem) => {
+    const bp = item.ai_blueprint;
+    const rawActions = item.main_actions || '';
+    const rawOutputs = item.milestones_outputs || '';
+    return {
+      title: bp?.title || item.period,
+      category: bp?.category || (item.proposal_type || 'GLOBAL_COMPETITION').replace(/_/g, ' '),
+      priority: bp?.priority || item.priority || 'NORMAL',
+      target_timeline: bp?.target_timeline || item.target_timeline || item.session_date || 'Target Cycle',
+      estimated_duration: bp?.estimated_duration || '4-8 Weeks',
+      focus_area: bp?.focus_area || rawActions,
+      action_plan: bp?.action_plan && bp.action_plan.length > 0
+        ? bp.action_plan
+        : rawActions.split('\n').map((s) => s.trim()).filter(Boolean),
+      deliverables: bp?.deliverables && bp.deliverables.length > 0
+        ? bp.deliverables
+        : (rawOutputs ? rawOutputs.split('\n').map((s) => s.trim()).filter(Boolean) : ['Milestone deliverables outline']),
+      faculty_mentorship_notes: bp?.faculty_mentorship_notes || item.feedback_notes || 'Regular milestone mentoring check-in'
+    };
+  };
 
   const handleOpenViewer = (item: ProfileRoadmapItem) => {
     if (!item.proposal_html_url) return;
@@ -239,10 +275,18 @@ export const StudentDashboardPage: React.FC = () => {
         <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-500/20 relative overflow-hidden">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <span className="inline-flex items-center text-xs font-mono font-bold text-amber-300 uppercase tracking-widest bg-amber-500/20 border border-amber-400/30 px-3 py-1 rounded-full">
-                <Compass className="w-3.5 h-3.5 mr-1.5" />
-                Mentorship &amp; Profile Building Track
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center text-xs font-mono font-bold text-amber-300 uppercase tracking-widest bg-amber-500/20 border border-amber-400/30 px-3 py-1 rounded-full">
+                  <Compass className="w-3.5 h-3.5 mr-1.5" />
+                  Mentorship &amp; Profile Building Track
+                </span>
+                {(profileRoadmap?.profile_timeline || user?.profile_timeline) && (
+                  <span className="inline-flex items-center text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-3 py-1 rounded-full">
+                    <Calendar className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                    Timeline: {profileRoadmap?.profile_timeline || user?.profile_timeline}
+                  </span>
+                )}
+              </div>
               <h1 className="text-2xl md:text-3xl font-extrabold mt-3 tracking-tight">
                 Welcome, {user?.full_name}!
               </h1>
@@ -287,9 +331,9 @@ export const StudentDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Interactive Strategic Proposals Section (if available) */}
+        {/* Executive Strategic Proposals & Blueprint Table */}
         {proposalsWithHtml.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-50 via-white to-amber-50/50 border border-amber-300/80 rounded-2xl p-5 shadow-sm">
+          <div className="bg-gradient-to-r from-amber-50 via-white to-amber-50/50 border border-amber-300/80 rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-100">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-xs">
@@ -297,48 +341,152 @@ export const StudentDashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <span>Interactive Proposals &amp; Execution Plans</span>
+                    <span>Executive Proposals &amp; Execution Blueprint Table</span>
                     <span className="text-[10px] font-black uppercase bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full">
                       {proposalsWithHtml.length} Available
                     </span>
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Open interactive HTML models, deliverables, milestones &amp; faculty notes in 1-click.
+                    Structured tabular breakdown of priorities, timelines, focus areas &amp; deliverables. Click any row to inspect full action steps.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
-              {proposalsWithHtml.map((prop, idx) => (
-                <div
-                  key={prop.id}
-                  className="bg-white p-3.5 rounded-xl border border-amber-200/90 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
-                      <span>Proposal #{idx + 1}</span>
-                      <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold">
-                        {prop.proposal_type || 'ROADMAP'}
-                      </span>
+            {/* Proposal Blueprint Table */}
+            <div className="overflow-x-auto rounded-xl border border-amber-200/80 bg-white shadow-2xs">
+              <table className="min-w-full text-left text-xs divide-y divide-slate-100">
+                <thead className="bg-slate-50/90 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-3 px-3.5"># &amp; Priority</th>
+                    <th className="py-3 px-3.5">Proposal / Initiative</th>
+                    <th className="py-3 px-3.5">Execution Timeline</th>
+                    <th className="py-3 px-3.5">Focus Area &amp; Scope</th>
+                    <th className="py-3 px-3.5">Expected Deliverables</th>
+                    <th className="py-3 px-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {proposalsWithHtml.map((prop, idx) => {
+                    const bp = getProposalBlueprint(prop);
+                    const priorityColor =
+                      bp.priority === 'HIGH'
+                        ? 'bg-rose-100 text-rose-800 border-rose-200'
+                        : bp.priority === 'MEDIUM'
+                        ? 'bg-amber-100 text-amber-900 border-amber-200'
+                        : 'bg-blue-50 text-blue-800 border-blue-200';
+
+                    return (
+                      <tr
+                        key={prop.id}
+                        onClick={() => handleOpenBreakdown(prop)}
+                        className="hover:bg-amber-50/50 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span className="w-5 h-5 rounded-md bg-slate-900 text-white font-mono text-[10px] font-bold flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${priorityColor}`}>
+                              {bp.priority}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-3.5 min-w-[180px]">
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-amber-700 transition-colors">
+                            {bp.title}
+                          </div>
+                          <span className="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-700 uppercase">
+                            {bp.category}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <div className="flex items-center space-x-1.5 text-slate-800 font-semibold text-xs">
+                            <Calendar className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                            <span>{bp.target_timeline}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">Est. {bp.estimated_duration}</span>
+                        </td>
+                        <td className="py-3.5 px-3.5 max-w-[240px]">
+                          <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                            {bp.focus_area}
+                          </p>
+                        </td>
+                        <td className="py-3.5 px-3.5 max-w-[200px]">
+                          <p className="text-xs text-amber-950 font-medium line-clamp-2 leading-relaxed">
+                            {bp.deliverables[0] || 'Milestone verification output'}
+                          </p>
+                        </td>
+                        <td className="py-3.5 px-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end space-x-1.5">
+                            <button
+                              onClick={() => handleOpenBreakdown(prop)}
+                              className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-colors"
+                              title="Inspect AI Readable Breakdown"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                              <span>Inspect</span>
+                            </button>
+                            <button
+                              onClick={() => handleOpenViewer(prop)}
+                              className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
+                              title="View Full Interactive HTML"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 mr-1" />
+                              <span>HTML</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Quick Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+              {proposalsWithHtml.map((prop, idx) => {
+                const bp = getProposalBlueprint(prop);
+                return (
+                  <div
+                    key={prop.id}
+                    className="bg-white p-3.5 rounded-xl border border-amber-200/90 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                        <span>Proposal #{idx + 1}</span>
+                        <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold">
+                          {bp.category}
+                        </span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1" title={bp.title}>
+                        {bp.title}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                        {bp.focus_area}
+                      </div>
                     </div>
-                    <div className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1" title={prop.period}>
-                      {prop.period}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-1 line-clamp-2">
-                      {prop.main_actions || 'Curated roadmap execution strategy'}
+
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleOpenBreakdown(prop)}
+                        className="w-full inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenViewer(prop)}
+                        className="w-full inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 mr-1" />
+                        <span>View HTML</span>
+                      </button>
                     </div>
                   </div>
-
-                  <button
-                    onClick={() => handleOpenViewer(prop)}
-                    className="mt-3 w-full inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    <span>View Interactive HTML</span>
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -586,6 +734,14 @@ export const StudentDashboardPage: React.FC = () => {
           proposalHtmlUrl={viewerUrl}
           proposalType={viewerType}
           status={viewerStatus}
+        />
+
+        {/* Readable AI Proposal Breakdown Modal */}
+        <ProposalBreakdownModal
+          isOpen={breakdownModalOpen}
+          onClose={() => setBreakdownModalOpen(false)}
+          proposal={selectedProposalForBreakdown}
+          onViewHtml={(prop) => handleOpenViewer(prop)}
         />
       </div>
     );
@@ -1121,6 +1277,14 @@ export const StudentDashboardPage: React.FC = () => {
         proposalHtmlUrl={viewerUrl}
         proposalType={viewerType}
         status={viewerStatus}
+      />
+
+      {/* Readable AI Proposal Breakdown Modal */}
+      <ProposalBreakdownModal
+        isOpen={breakdownModalOpen}
+        onClose={() => setBreakdownModalOpen(false)}
+        proposal={selectedProposalForBreakdown}
+        onViewHtml={(prop) => handleOpenViewer(prop)}
       />
     </div>
   );

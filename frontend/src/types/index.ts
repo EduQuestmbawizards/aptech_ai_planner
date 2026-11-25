@@ -20,6 +20,9 @@ export interface User {
   aptech_student_id?: string;
   phone?: string;
   track_type?: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
+  profile_timeline?: string;
+  profile_start_date?: string;
+  profile_end_date?: string;
 }
 
 export interface StudentDetail {
@@ -39,6 +42,9 @@ export interface StudentDetail {
   access_type?: 'FULL' | 'TRIAL';
   has_trial_enrollment?: boolean;
   track_type?: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
+  profile_timeline?: string | null;
+  profile_start_date?: string | null;
+  profile_end_date?: string | null;
   invitation_token?: string | null;
   activation_url?: string | null;
 }
@@ -471,6 +477,18 @@ export interface ProfileSessionAttendance {
   updated_at?: string;
 }
 
+export interface ProposalAIBlueprint {
+  title?: string;
+  category?: string;
+  priority?: 'HIGH' | 'MEDIUM' | 'NORMAL' | string;
+  target_timeline?: string;
+  estimated_duration?: string;
+  focus_area?: string;
+  action_plan?: string[];
+  deliverables?: string[];
+  faculty_mentorship_notes?: string;
+}
+
 export interface ProfileRoadmapItem {
   id: string;
   student_id: string;
@@ -489,6 +507,9 @@ export interface ProfileRoadmapItem {
   proposal_html_name?: string | null;
   proposal_type?: string | null;
   feedback_notes?: string | null;
+  ai_blueprint?: ProposalAIBlueprint | null;
+  target_timeline?: string | null;
+  priority?: 'HIGH' | 'MEDIUM' | 'NORMAL' | string | null;
   created_at?: string;
   updated_at?: string;
   sessions?: ProfileSessionAttendance[];
@@ -510,6 +531,9 @@ export interface ProfileRoadmapStudentSummary {
   student_email: string;
   aptech_student_id: string;
   track_type: 'COURSE' | 'PROFILE_BUILDING' | 'BOTH';
+  profile_timeline?: string | null;
+  profile_start_date?: string | null;
+  profile_end_date?: string | null;
   stats: ProfileRoadmapStats;
   items: ProfileRoadmapItem[];
   sessions?: ProfileSessionAttendance[];

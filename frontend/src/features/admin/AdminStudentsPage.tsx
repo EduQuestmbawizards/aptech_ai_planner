@@ -22,6 +22,8 @@ import {
   Copy,
   Check,
   Link as LinkIcon,
+  Clock,
+  Calendar,
 } from 'lucide-react';
 
 export const AdminStudentsPage: React.FC = () => {
@@ -54,6 +56,9 @@ export const AdminStudentsPage: React.FC = () => {
     payment_reference: '',
     notes: '',
     track_type: 'COURSE' as 'COURSE' | 'PROFILE_BUILDING' | 'BOTH',
+    profile_timeline: '',
+    profile_start_date: '',
+    profile_end_date: '',
   });
   const [excelFile, setExcelFile] = useState<File | null>(null);
 
@@ -102,9 +107,13 @@ export const AdminStudentsPage: React.FC = () => {
     setNewActivationLink(null);
 
     try {
+      const computedTimeline = formData.profile_timeline || (formData.profile_start_date && formData.profile_end_date ? `${formData.profile_start_date} to ${formData.profile_end_date}` : undefined);
       const payloadToSend = {
         ...formData,
         course_id: formData.track_type === 'PROFILE_BUILDING' ? undefined : formData.course_id,
+        profile_timeline: computedTimeline,
+        profile_start_date: formData.profile_start_date || undefined,
+        profile_end_date: formData.profile_end_date || undefined,
       };
       const res = await api.post('/admin/students', payloadToSend);
       const studentId = res.data.student_id;
@@ -145,6 +154,9 @@ export const AdminStudentsPage: React.FC = () => {
         payment_reference: '',
         notes: '',
         track_type: 'COURSE',
+        profile_timeline: '',
+        profile_start_date: '',
+        profile_end_date: '',
       });
       setExcelFile(null);
     } catch (err: any) {
@@ -587,6 +599,68 @@ export const AdminStudentsPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Profile Building Engagement Timeline */}
+              {(formData.track_type === 'PROFILE_BUILDING' || formData.track_type === 'BOTH') && (
+                <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/90 space-y-2.5">
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900">
+                    <Clock className="w-4 h-4 text-amber-600" />
+                    <span>Mentorship &amp; Profile Building Timeline *</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Start Month / Date
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. November 2026"
+                        value={formData.profile_start_date}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            profile_start_date: val,
+                            profile_timeline: prev.profile_end_date ? `${val} to ${prev.profile_end_date}` : val
+                          }));
+                        }}
+                        className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        End Month / Target Date
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. December 2027"
+                        value={formData.profile_end_date}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            profile_end_date: val,
+                            profile_timeline: prev.profile_start_date ? `${prev.profile_start_date} to ${val}` : val
+                          }));
+                        }}
+                        className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-slate-800"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Timeline Label (Shown to student on Dashboard)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. November 2026 to December 2027"
+                      value={formData.profile_timeline}
+                      onChange={(e) => setFormData({ ...formData, profile_timeline: e.target.value })}
+                      className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-slate-800"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Upload Profile Execution Plan (.xlsx) when Profile Building or Both is selected */}
               {(formData.track_type === 'PROFILE_BUILDING' || formData.track_type === 'BOTH') && (

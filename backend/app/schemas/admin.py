@@ -12,12 +12,18 @@ class StudentCreateRequest(BaseModel):
     payment_reference: Optional[str] = None
     notes: Optional[str] = None
     track_type: Optional[str] = "COURSE" # COURSE, PROFILE_BUILDING, BOTH
+    profile_timeline: Optional[str] = None # e.g. "November 2026 to December 2027"
+    profile_start_date: Optional[str] = None
+    profile_end_date: Optional[str] = None
 
 class StudentUpdateRequest(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
     target_career: Optional[str] = None
     current_level: Optional[str] = None
+    profile_timeline: Optional[str] = None
+    profile_start_date: Optional[str] = None
+    profile_end_date: Optional[str] = None
 
 class StudentStatusUpdateRequest(BaseModel):
     is_active: Optional[bool] = None

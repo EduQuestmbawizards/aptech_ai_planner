@@ -194,9 +194,17 @@ export const StudentProfileRoadmapPage: React.FC = () => {
       <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-amber-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden border border-amber-500/20">
         <div className="relative z-10 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-              <Compass className="w-3.5 h-3.5 mr-1.5" />
-              Strategic Profile Building Track
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                <Compass className="w-3.5 h-3.5 mr-1.5" />
+                Strategic Profile Building Track
+              </div>
+              {data.profile_timeline && (
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <Calendar className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                  Timeline: {data.profile_timeline}
+                </div>
+              )}
             </div>
 
             {proposalWithHtml && (

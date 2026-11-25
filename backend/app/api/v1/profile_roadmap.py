@@ -119,8 +119,48 @@ def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceR
     )
 
 
-def _serialize_item(item: ProfileRoadmapItem) -> ProfileRoadmapItemResponse:
+def _serialize_item(item: ProfileRoadmapItem, db: Optional[Session] = None) -> ProfileRoadmapItemResponse:
     sessions = [_serialize_session(s) for s in (item.sessions or [])]
+
+    ai_data = None
+    raw_ai = getattr(item, "ai_blueprint", None)
+    if raw_ai:
+        try:
+            ai_data = json.loads(raw_ai) if isinstance(raw_ai, str) else raw_ai
+        except Exception:
+            ai_data = None
+
+    if not ai_data and (getattr(item, "proposal_html_url", None) or getattr(item, "main_actions", None)):
+        try:
+            from app.services.profile_roadmap_service import extract_proposal_ai_blueprint
+            html_text = ""
+            if getattr(item, "proposal_html_name", None):
+                local_path = PROPOSAL_UPLOAD_DIR / item.proposal_html_name
+                if local_path.is_file():
+                    try:
+                        html_text = local_path.read_text(encoding="utf-8", errors="ignore")
+                    except Exception:
+                        pass
+            ai_data = extract_proposal_ai_blueprint(
+                html_content=html_text,
+                title=item.period,
+                actions=item.main_actions or "",
+                outputs=item.milestones_outputs or "",
+                proposal_type=getattr(item, "proposal_type", "GLOBAL_COMPETITION") or "GLOBAL_COMPETITION"
+            )
+            if db and ai_data:
+                try:
+                    item.ai_blueprint = json.dumps(ai_data)
+                    db.add(item)
+                    db.commit()
+                except Exception:
+                    db.rollback()
+        except Exception as err:
+            logger.warning(f"Could not auto-extract AI blueprint for item {item.id}: {err}")
+
+    p_priority = getattr(item, "priority", None) or (ai_data.get("priority") if isinstance(ai_data, dict) else "NORMAL") or "NORMAL"
+    p_timeline = getattr(item, "target_timeline", None) or (ai_data.get("target_timeline") if isinstance(ai_data, dict) else None)
+
     return ProfileRoadmapItemResponse(
         id=item.id,
         student_id=item.student_id,
@@ -139,6 +179,9 @@ def _serialize_item(item: ProfileRoadmapItem) -> ProfileRoadmapItemResponse:
         proposal_html_name=getattr(item, "proposal_html_name", None),
         proposal_type=getattr(item, "proposal_type", "GLOBAL_COMPETITION"),
         feedback_notes=getattr(item, "feedback_notes", None),
+        ai_blueprint=ai_data,
+        target_timeline=p_timeline,
+        priority=p_priority,
         created_at=item.created_at,
         updated_at=item.updated_at,
         sessions=sessions
@@ -188,8 +231,11 @@ async def upload_roadmap_excel(
         student_email=student.user.email if student.user else "",
         aptech_student_id=student.aptech_student_id,
         track_type=student.track_type,
+        profile_timeline=getattr(student, "profile_timeline", None),
+        profile_start_date=getattr(student, "profile_start_date", None),
+        profile_end_date=getattr(student, "profile_end_date", None),
         stats=ProfileRoadmapStats(**stats),
-        items=[_serialize_item(i) for i in saved_items]
+        items=[_serialize_item(i, db) for i in saved_items]
     )
 
 
@@ -222,8 +268,11 @@ def list_students_with_roadmaps(
                     student_email=s.user.email if s.user and s.user.email else "",
                     aptech_student_id=s.aptech_student_id or "",
                     track_type=s.track_type or "COURSE",
+                    profile_timeline=getattr(s, "profile_timeline", None),
+                    profile_start_date=getattr(s, "profile_start_date", None),
+                    profile_end_date=getattr(s, "profile_end_date", None),
                     stats=ProfileRoadmapStats(**stats),
-                    items=[_serialize_item(i) for i in items],
+                    items=[_serialize_item(i, db) for i in items],
                     sessions=[_serialize_session(ses) for ses in sessions]
                 )
             )
@@ -236,6 +285,9 @@ def list_students_with_roadmaps(
                     student_email=s.user.email if s.user and s.user.email else "",
                     aptech_student_id=s.aptech_student_id or "",
                     track_type=s.track_type or "COURSE",
+                    profile_timeline=getattr(s, "profile_timeline", None),
+                    profile_start_date=getattr(s, "profile_start_date", None),
+                    profile_end_date=getattr(s, "profile_end_date", None),
                     stats=ProfileRoadmapStats(),
                     items=[],
                     sessions=[]
@@ -270,8 +322,11 @@ def get_student_roadmap(
         student_email=student.user.email if student.user and student.user.email else "",
         aptech_student_id=student.aptech_student_id or "",
         track_type=student.track_type or "COURSE",
+        profile_timeline=getattr(student, "profile_timeline", None),
+        profile_start_date=getattr(student, "profile_start_date", None),
+        profile_end_date=getattr(student, "profile_end_date", None),
         stats=ProfileRoadmapStats(**stats),
-        items=[_serialize_item(i) for i in items],
+        items=[_serialize_item(i, db) for i in items],
         sessions=[_serialize_session(s) for s in sessions]
     )
 
@@ -422,10 +477,57 @@ def get_my_profile_roadmap(
         student_email=current_user.email or "",
         aptech_student_id=student.aptech_student_id or "",
         track_type=student.track_type or "COURSE",
+        profile_timeline=getattr(student, "profile_timeline", None),
+        profile_start_date=getattr(student, "profile_start_date", None),
+        profile_end_date=getattr(student, "profile_end_date", None),
         stats=ProfileRoadmapStats(**stats),
-        items=[_serialize_item(i) for i in items],
+        items=[_serialize_item(i, db) for i in items],
         sessions=[_serialize_session(s) for s in sessions]
     )
+
+
+@router.post("/items/{item_id}/ai-blueprint", response_model=ProfileRoadmapItemResponse)
+def refresh_item_ai_blueprint(
+    item_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Triggers an on-demand AI blueprint extraction for a proposal / roadmap item.
+    """
+    item = db.query(ProfileRoadmapItem).filter(ProfileRoadmapItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Roadmap item not found.")
+
+    html_text = ""
+    if getattr(item, "proposal_html_name", None):
+        local_path = PROPOSAL_UPLOAD_DIR / item.proposal_html_name
+        if local_path.is_file():
+            try:
+                html_text = local_path.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                pass
+
+    from app.services.profile_roadmap_service import extract_proposal_ai_blueprint
+    ai_data = extract_proposal_ai_blueprint(
+        html_content=html_text,
+        title=item.period,
+        actions=item.main_actions or "",
+        outputs=item.milestones_outputs or "",
+        proposal_type=getattr(item, "proposal_type", "GLOBAL_COMPETITION") or "GLOBAL_COMPETITION"
+    )
+
+    item.ai_blueprint = json.dumps(ai_data)
+    if isinstance(ai_data, dict):
+        if ai_data.get("priority"):
+            item.priority = ai_data.get("priority")
+        if ai_data.get("target_timeline"):
+            item.target_timeline = ai_data.get("target_timeline")
+
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return _serialize_item(item, db)
 
 
 # -------------------------------------------------------------

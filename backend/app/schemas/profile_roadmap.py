@@ -146,11 +146,27 @@ class ProfileRoadmapItemResponse(BaseModel):
     proposal_html_name: Optional[str] = None
     proposal_type: Optional[str] = None
     feedback_notes: Optional[str] = None
+    ai_blueprint: Optional[Any] = None
+    target_timeline: Optional[str] = None
+    priority: Optional[str] = "NORMAL"
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     sessions: Optional[List[ProfileSessionAttendanceResponse]] = []
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+    @field_validator("ai_blueprint", mode="before")
+    @classmethod
+    def parse_ai_blueprint(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            try:
+                import json
+                return json.loads(v)
+            except Exception:
+                return None
+        return v
 
 
 class ProfileRoadmapStats(BaseModel):
@@ -171,6 +187,9 @@ class ProfileRoadmapStudentSummary(BaseModel):
     student_email: Optional[str] = ""
     aptech_student_id: Optional[str] = ""
     track_type: Optional[str] = "COURSE"
+    profile_timeline: Optional[str] = None
+    profile_start_date: Optional[str] = None
+    profile_end_date: Optional[str] = None
     stats: Optional[ProfileRoadmapStats] = None
     items: Optional[List[ProfileRoadmapItemResponse]] = []
     sessions: Optional[List[ProfileSessionAttendanceResponse]] = []

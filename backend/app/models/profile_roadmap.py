@@ -39,6 +39,9 @@ class ProfileRoadmapItem(Base):
     proposal_html_name = Column(String(255), nullable=True)
     proposal_type = Column(String(64), default="GLOBAL_COMPETITION", nullable=True)
     feedback_notes = Column(Text, nullable=True)
+    ai_blueprint = Column(Text, nullable=True)
+    target_timeline = Column(String(128), nullable=True)
+    priority = Column(String(32), default="NORMAL", nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

@@ -40,6 +40,9 @@ class StudentProfile(Base):
     current_level = Column(String(32), default="BEGINNER")
     target_career = Column(String(128), nullable=True)
     track_type = Column(String(32), default="COURSE", nullable=False)
+    profile_timeline = Column(String(128), nullable=True)
+    profile_start_date = Column(String(64), nullable=True)
+    profile_end_date = Column(String(64), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

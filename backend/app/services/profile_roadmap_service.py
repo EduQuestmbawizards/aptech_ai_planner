@@ -571,3 +571,144 @@ class ProfileRoadmapService:
             "total_sessions_count": total_sessions
         }
 
+
+import re
+
+def _clean_html_text(html: str) -> str:
+    if not html:
+        return ""
+    text = re.sub(r'<script.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<style.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
+    text = re.sub(r'</?(?:p|div|li|tr|h[1-6])\b.*?>', '\n', text, flags=re.IGNORECASE)
+    text = re.sub(r'<.*?>', ' ', text)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return '\n'.join(lines)
+
+
+def extract_proposal_ai_blueprint(
+    html_content: str = "",
+    title: str = "",
+    actions: str = "",
+    outputs: str = "",
+    proposal_type: str = "GLOBAL_COMPETITION"
+) -> Dict[str, Any]:
+    """
+    Extracts a crisp, executive blueprint from an HTML proposal and item details.
+    Uses OpenAI (gpt-4o-mini) when available, with a reliable deterministic heuristic fallback.
+    """
+    clean_text = _clean_html_text(html_content)[:6000] if html_content else ""
+
+    from app.core.config import settings
+    if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY != "your-openai-api-key-here":
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+            prompt = f"""You are an elite academic roadmap & admissions strategist.
+Analyze the following student profile building proposal and extract an executive structured blueprint in JSON.
+
+Proposal Title: {title or 'Strategic Profile Building Initiative'}
+Proposal Category: {proposal_type}
+Recorded Actions: {actions}
+Recorded Outputs: {outputs}
+
+HTML Content / Context:
+{clean_text or actions or title}
+
+Respond ONLY with valid JSON conforming to this schema (no extra prose, no markdown fences):
+{{
+  "title": "Clear concise initiative title",
+  "category": "e.g. Global Competition / Research Paper / Summer School / Clinical Shadowing",
+  "priority": "HIGH" or "MEDIUM" or "NORMAL",
+  "target_timeline": "e.g. December 2026 – January 2027",
+  "estimated_duration": "e.g. 2 Months or 6 Weeks",
+  "focus_area": "1-2 concise sentences summarizing the scope and focus of this stage",
+  "action_plan": [
+    "Step 1: Specific action item",
+    "Step 2: Specific action item",
+    "Step 3: Specific action item"
+  ],
+  "deliverables": [
+    "Expected deliverable / output 1",
+    "Expected deliverable / output 2"
+  ],
+  "faculty_mentorship_notes": "Key mentorship focus area or milestone review target"
+}}"""
+            completion = client.chat.completions.create(
+                model=settings.OPENAI_MODEL or "gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You extract structured academic proposal blueprints into strict JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=600,
+                response_format={"type": "json_object"}
+            )
+            raw_res = completion.choices[0].message.content
+            if raw_res:
+                parsed = json.loads(raw_res)
+                if "title" in parsed and "action_plan" in parsed:
+                    return parsed
+        except Exception as e:
+            logger.warning(f"OpenAI extraction failed, using fallback heuristic: {e}")
+
+    # Fallback heuristic
+    p_title = title or "Strategic Mentorship Initiative"
+    category = proposal_type.replace("_", " ").title() if proposal_type else "Mentorship Track"
+
+    timeline = "Scheduled Stage"
+    for line in (clean_text + "\n" + actions + "\n" + title).splitlines():
+        if any(m in line.lower() for m in ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "2026", "2027", "2028"]):
+            timeline = line[:60].strip()
+            break
+
+    p_lower = (p_title + " " + actions + " " + outputs).lower()
+    if any(k in p_lower for k in ["competition", "summer school", "olympiad", "urgent", "tier 1", "published", "patent"]):
+        priority = "HIGH"
+    elif any(k in p_lower for k in ["research", "internship", "shadowing", "community"]):
+        priority = "MEDIUM"
+    else:
+        priority = "NORMAL"
+
+    action_items = []
+    raw_action_lines = [l.strip("-•* \t") for l in (actions or clean_text).splitlines() if l.strip("-•* \t")]
+    for l in raw_action_lines:
+        if len(l) > 10 and not l.startswith("<"):
+            action_items.append(l[:180])
+        if len(action_items) >= 4:
+            break
+    if not action_items:
+        action_items = [
+            f"Review execution plan for {p_title} with appointed faculty mentor.",
+            "Draft core literature/application prerequisites and compile materials.",
+            "Submit draft milestone review for verification."
+        ]
+
+    deliverable_items = []
+    raw_output_lines = [l.strip("-•* \t") for l in (outputs or clean_text).splitlines() if l.strip("-•* \t")]
+    for l in raw_output_lines:
+        if len(l) > 10 and not l.startswith("<"):
+            deliverable_items.append(l[:180])
+        if len(deliverable_items) >= 3:
+            break
+    if not deliverable_items:
+        deliverable_items = [
+            f"Completed portfolio milestone for {p_title}.",
+            "Faculty verified progress verification log."
+        ]
+
+    focus = (actions[:180] + "...") if len(actions) > 180 else (actions or f"Focused execution on {p_title}")
+
+    return {
+        "title": p_title,
+        "category": category,
+        "priority": priority,
+        "target_timeline": timeline,
+        "estimated_duration": "4-8 Weeks",
+        "focus_area": focus,
+        "action_plan": action_items,
+        "deliverables": deliverable_items,
+        "faculty_mentorship_notes": f"Regular milestone check-ins with mentor to ensure timely output for {p_title}."
+    }
+
