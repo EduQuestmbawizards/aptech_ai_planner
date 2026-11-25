@@ -114,36 +114,42 @@ export const StudentDashboardPage: React.FC = () => {
       }
 
       // 2. Fetch active course study plan (skip if pure profile building student with no academic courses)
-      const isPureProfileStudent = (!enrRes.data?.items || enrRes.data.items.length === 0) && !!roadmapRes?.data;
+      const isPureProfileStudent =
+        user?.track_type === 'PROFILE_BUILDING' ||
+        ((!enrRes.data?.items || enrRes.data.items.length === 0) && !!roadmapRes?.data);
       if (isPureProfileStudent) {
         setActivePlan(null);
       } else {
         try {
-          const planRes = await api.get('/plans/current');
-          setActivePlan(planRes.data);
+          const planRes = await api.get<StudyPlan | null>('/plans/current');
+          if (planRes.data && planRes.data.id) {
+            setActivePlan(planRes.data);
 
-          // 3. Fetch today's tasks, all pending tasks, and progress overview in parallel
-          const [todayRes, allTasksRes, progRes] = await Promise.all([
-            api.get('/tasks/today'),
-            api.get('/tasks'),
-            api.get('/progress/overview'),
-          ]);
+            // 3. Fetch today's tasks, all pending tasks, and progress overview in parallel
+            const [todayRes, allTasksRes, progRes] = await Promise.all([
+              api.get('/tasks/today'),
+              api.get('/tasks'),
+              api.get('/progress/overview'),
+            ]);
 
-          const todayList: StudyTask[] = todayRes.data || [];
-          const allList: StudyTask[] = allTasksRes.data || [];
-          const pendingList = allList.filter((t) => t.status !== 'COMPLETED');
+            const todayList: StudyTask[] = todayRes.data || [];
+            const allList: StudyTask[] = allTasksRes.data || [];
+            const pendingList = allList.filter((t) => t.status !== 'COMPLETED');
 
-          setTodayTasks(todayList);
-          setUpcomingTasks(pendingList);
-          setOverview(progRes.data);
+            setTodayTasks(todayList);
+            setUpcomingTasks(pendingList);
+            setOverview(progRes.data);
 
-          // Pre-select a sensible task for the live timer dropdown
-          const defaultTask =
-            todayList.find((t) => t.status !== 'COMPLETED') || pendingList[0];
-          if (defaultTask) {
-            setSelectedTimerTaskId((prev) =>
-              prev && pendingList.some((p) => p.id === prev) ? prev : defaultTask.id
-            );
+            // Pre-select a sensible task for the live timer dropdown
+            const defaultTask =
+              todayList.find((t) => t.status !== 'COMPLETED') || pendingList[0];
+            if (defaultTask) {
+              setSelectedTimerTaskId((prev) =>
+                prev && pendingList.some((p) => p.id === prev) ? prev : defaultTask.id
+              );
+            }
+          } else {
+            setActivePlan(null);
           }
         } catch {
           // No active plan yet

@@ -209,7 +209,7 @@ def generate_study_plan(
 
     return serialize_study_plan(plan, include_tasks=False)
 
-@router.get("/current", response_model=StudyPlanResponse)
+@router.get("/current", response_model=Optional[StudyPlanResponse])
 def get_current_active_plan(
     student: StudentProfile = Depends(require_student),
     db: Session = Depends(get_db)
@@ -222,7 +222,7 @@ def get_current_active_plan(
     )
 
     if not plan:
-        raise HTTPException(status_code=404, detail="No active study plan found. Please complete the onboarding wizard.")
+        return None
 
     return serialize_study_plan(plan, include_tasks=False)
 

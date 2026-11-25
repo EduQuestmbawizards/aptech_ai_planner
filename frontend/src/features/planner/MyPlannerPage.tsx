@@ -72,23 +72,29 @@ export const MyPlannerPage: React.FC = () => {
   const fetchPlan = useCallback(async (showSpinner = false) => {
     try {
       if (showSpinner) setLoading(true);
-      const res = await api.get<StudyPlan>('/plans/current');
-      setPlan(res.data);
+      const res = await api.get<StudyPlan | null>('/plans/current');
+      if (res.data && res.data.id) {
+        setPlan(res.data);
 
-      const detailRes = await api.get(`/plans/${res.data.id}`);
-      setTasks(detailRes.data.tasks || []);
+        const detailRes = await api.get(`/plans/${res.data.id}`);
+        setTasks(detailRes.data.tasks || []);
 
-      if (res.data.available_days && res.data.available_days.length > 0) {
-        setAdjustDays(res.data.available_days);
-      }
-      if (res.data.daily_study_hours) {
-        setAdjustHours(res.data.daily_study_hours);
-      }
-      if (res.data.target_completion_date) {
-        setAdjustTargetDate(res.data.target_completion_date);
+        if (res.data.available_days && res.data.available_days.length > 0) {
+          setAdjustDays(res.data.available_days);
+        }
+        if (res.data.daily_study_hours) {
+          setAdjustHours(res.data.daily_study_hours);
+        }
+        if (res.data.target_completion_date) {
+          setAdjustTargetDate(res.data.target_completion_date);
+        }
+      } else {
+        setPlan(null);
+        setTasks([]);
       }
     } catch {
       setPlan(null);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
