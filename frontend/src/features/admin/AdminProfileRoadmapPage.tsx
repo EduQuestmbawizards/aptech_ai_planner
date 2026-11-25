@@ -828,16 +828,26 @@ export const AdminProfileRoadmapPage: React.FC = () => {
 
                             {/* Quick Status Changers & Sessions Info */}
                             <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-2 border-t border-slate-100">
-                              <div className="flex items-center space-x-2 text-slate-600">
+                              <div className="flex flex-wrap items-center gap-2 text-slate-600">
                                 <FolderOpen className="w-4 h-4 text-blue-600" />
                                 <span>
                                   Sessions Conducted: <strong className="text-slate-900">{sessionsUnderProposal.length}</strong>
                                 </span>
                                 <button
-                                  onClick={() => handleOpenAddSession(proposal.id)}
-                                  className="text-xs font-bold text-blue-600 hover:underline ml-2"
+                                  onClick={() => {
+                                    setSessionProposalFilter(proposal.id);
+                                    setActiveTab('SESSIONS');
+                                  }}
+                                  className="inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors ml-1"
                                 >
-                                  + Log Session Under This Proposal
+                                  <FolderOpen className="w-3.5 h-3.5" />
+                                  <span>View Sessions &amp; MoM ({sessionsUnderProposal.length})</span>
+                                </button>
+                                <button
+                                  onClick={() => handleOpenAddSession(proposal.id)}
+                                  className="text-xs font-bold text-blue-600 hover:underline ml-1"
+                                >
+                                  + Log Session
                                 </button>
                               </div>
 
@@ -880,34 +890,169 @@ export const AdminProfileRoadmapPage: React.FC = () => {
               {/* TAB 2: Mentorship Sessions & MoM Logs */}
               {activeTab === 'SESSIONS' && (
                 <div className="space-y-4">
-                  {/* Sessions Filter & Add Button */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
-                    <div className="flex items-center space-x-2">
-                      <Filter className="w-4 h-4 text-slate-400" />
-                      <span className="text-xs font-bold text-slate-700">Filter By Track:</span>
-                      <select
-                        value={sessionProposalFilter}
-                        onChange={(e) => setSessionProposalFilter(e.target.value)}
-                        className="text-xs font-semibold px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  {/* Sessions Filter Header & Add Button */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-amber-600" />
+                          <span>Mentorship Sessions &amp; Meeting Minutes (MoM)</span>
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Filter sessions by proposal / initiative to isolate its specific log, or review general discovery notes.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => handleOpenAddSession(sessionProposalFilter !== 'ALL' && sessionProposalFilter !== 'GENERAL' ? sessionProposalFilter : undefined)}
+                        className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
                       >
-                        <option value="ALL">All Sessions ({allSessions.length})</option>
-                        <option value="GENERAL">General Mentorship / Discovery ({allSessions.filter((s) => !s.roadmap_item_id).length})</option>
-                        {proposalsList.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.period} ({allSessions.filter((s) => s.roadmap_item_id === p.id).length})
-                          </option>
-                        ))}
-                      </select>
+                        <Plus className="w-4 h-4" />
+                        <span>
+                          {sessionProposalFilter !== 'ALL' && sessionProposalFilter !== 'GENERAL'
+                            ? '+ Log Session For This Proposal'
+                            : '+ Log New Session'}
+                        </span>
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => handleOpenAddSession()}
-                      className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>+ Log New Session</span>
-                    </button>
+                    {/* Interactive Filter Pills */}
+                    <div className="space-y-1.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1">
+                        <Filter className="w-3 h-3 text-slate-400" />
+                        <span>Filter by Proposal / Stage:</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          onClick={() => setSessionProposalFilter('ALL')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                            sessionProposalFilter === 'ALL'
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          <span>All Sessions</span>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                            sessionProposalFilter === 'ALL' ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-600'
+                          }`}>
+                            {allSessions.length}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => setSessionProposalFilter('GENERAL')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                            sessionProposalFilter === 'GENERAL'
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'bg-amber-50 text-amber-800 border border-amber-200/60 hover:bg-amber-100'
+                          }`}
+                        >
+                          <span>General Mentorship &amp; Discovery</span>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                            sessionProposalFilter === 'GENERAL' ? 'bg-amber-700 text-amber-100' : 'bg-white text-amber-800'
+                          }`}>
+                            {allSessions.filter((s) => !s.roadmap_item_id).length}
+                          </span>
+                        </button>
+
+                        {proposalsList.map((p) => {
+                          const count = allSessions.filter((s) => s.roadmap_item_id === p.id).length;
+                          const isSelected = sessionProposalFilter === p.id;
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => setSessionProposalFilter(p.id)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                                isSelected
+                                  ? 'bg-blue-600 text-white shadow-xs'
+                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60'
+                              }`}
+                            >
+                              <span className="truncate max-w-[200px]">{p.period}</span>
+                              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                                isSelected ? 'bg-blue-700 text-blue-100' : 'bg-white text-slate-700'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Proposal Context Banner (When a specific proposal is chosen) */}
+                  {sessionProposalFilter !== 'ALL' && sessionProposalFilter !== 'GENERAL' && (() => {
+                    const activeP = proposalsList.find((p) => p.id === sessionProposalFilter);
+                    if (!activeP) return null;
+                    return (
+                      <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white border border-blue-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                        <div className="space-y-1 max-w-xl">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
+                              {activeP.proposal_type?.replace(/_/g, ' ') || 'PROPOSAL TRACK'}
+                            </span>
+                            <h4 className="text-sm font-bold text-slate-900">{activeP.period}</h4>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              activeP.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                              activeP.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                              activeP.status === 'REJECTED' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                              'bg-amber-100 text-amber-800 border border-amber-200'
+                            }`}>
+                              {activeP.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                            {activeP.main_actions || 'No scope details recorded.'}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          {activeP.proposal_html_url && (
+                            <button
+                              onClick={() => handleOpenViewer(activeP)}
+                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl text-xs font-bold shadow-xs transition-all"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>View Interactive Proposal (HTML)</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleOpenAddSession(activeP.id)}
+                            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Log Session</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* General Mentorship Banner (When GENERAL is chosen) */}
+                  {sessionProposalFilter === 'GENERAL' && (
+                    <div className="bg-gradient-to-r from-amber-50/90 to-white border border-amber-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">
+                            DISCOVERY &amp; CONSULTATION
+                          </span>
+                          <h4 className="text-sm font-bold text-slate-900">General Mentorship Sessions</h4>
+                        </div>
+                        <p className="text-xs text-slate-600">
+                          Ad-hoc consultation, parent discovery calls, profile audit sessions, and background discussions not tied to a specific proposal.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => handleOpenAddSession()}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Log Discovery Session</span>
+                      </button>
+                    </div>
+                  )}
 
                   {filteredSessions.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center space-y-3">

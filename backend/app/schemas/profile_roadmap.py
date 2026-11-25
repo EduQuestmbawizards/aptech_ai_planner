@@ -92,11 +92,11 @@ class ProfileSessionAttendanceResponse(BaseModel):
     student_id: str
     roadmap_item_id: Optional[str] = None
     period: Optional[str] = None
-    session_date: date
-    topic: str
-    description: str
-    duration_minutes: int
-    status: str
+    session_date: Optional[Any] = None
+    topic: Optional[str] = "Mentorship Session"
+    description: Optional[str] = ""
+    duration_minutes: Optional[int] = 45
+    status: Optional[str] = "PRESENT"
     remarks: Optional[str] = None
     marked_by: Optional[str] = None
     marked_by_name: Optional[str] = None
@@ -108,7 +108,7 @@ class ProfileSessionAttendanceResponse(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
     @field_validator("attachments", mode="before")
     @classmethod
@@ -150,26 +150,30 @@ class ProfileRoadmapItemResponse(BaseModel):
     updated_at: Optional[datetime] = None
     sessions: Optional[List[ProfileSessionAttendanceResponse]] = []
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 class ProfileRoadmapStats(BaseModel):
-    total_items: int
-    completed: int
-    in_progress: int
-    pending: int
-    completion_percentage: float
-    total_session_minutes: int
+    total_items: int = 0
+    completed: int = 0
+    in_progress: int = 0
+    pending: int = 0
+    completion_percentage: float = 0.0
+    total_session_minutes: int = 0
     total_sessions_count: int = 0
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class ProfileRoadmapStudentSummary(BaseModel):
     student_id: str
-    student_name: str
-    student_email: str
-    aptech_student_id: str
-    track_type: str
-    stats: ProfileRoadmapStats
-    items: List[ProfileRoadmapItemResponse]
-    sessions: List[ProfileSessionAttendanceResponse] = []
+    student_name: Optional[str] = "Student"
+    student_email: Optional[str] = ""
+    aptech_student_id: Optional[str] = ""
+    track_type: Optional[str] = "COURSE"
+    stats: Optional[ProfileRoadmapStats] = None
+    items: Optional[List[ProfileRoadmapItemResponse]] = []
+    sessions: Optional[List[ProfileSessionAttendanceResponse]] = []
+
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 

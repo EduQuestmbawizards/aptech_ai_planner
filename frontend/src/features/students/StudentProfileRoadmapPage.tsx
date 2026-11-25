@@ -7,16 +7,10 @@ import {
   Clock,
   Calendar,
   Sparkles,
-  Award,
   BookOpen,
-  ArrowRight,
   FileText,
   Target,
-  GraduationCap,
-  TrendingUp,
   AlertCircle,
-  MessageSquareQuote,
-  Check,
   CalendarCheck,
   Download,
   Paperclip,
@@ -24,8 +18,10 @@ import {
   CheckCircle,
   Clock3,
   XCircle,
-  ExternalLink,
-  FileCode2,
+  Filter,
+  FolderOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
 
@@ -43,7 +39,12 @@ export const StudentProfileRoadmapPage: React.FC = () => {
   const [data, setData] = useState<ProfileRoadmapStudentSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
+
+  // Proposal Section Filter
+  const [proposalFilter, setProposalFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
+
+  // Sessions Proposal Filter (Filter sessions by selected proposal)
+  const [sessionProposalFilter, setSessionProposalFilter] = useState<string>('ALL');
 
   // Interactive HTML Proposal Viewer Modal State
   const [viewerOpen, setViewerOpen] = useState<boolean>(false);
@@ -79,6 +80,14 @@ export const StudentProfileRoadmapPage: React.FC = () => {
     setViewerOpen(true);
   };
 
+  const handleSelectProposalFilter = (proposalId: string) => {
+    setSessionProposalFilter(proposalId);
+    const element = document.getElementById('sessions-log-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[500px] flex items-center justify-center">
@@ -109,19 +118,31 @@ export const StudentProfileRoadmapPage: React.FC = () => {
   }
 
   const { stats, items, sessions } = data;
+  const allSessions = sessions || [];
 
-  // Find active or latest proposal with HTML
+  // Filter proposals
+  const filteredProposals = items.filter((item) => {
+    if (proposalFilter === 'COMPLETED') return item.status === 'COMPLETED';
+    if (proposalFilter === 'ACTIVE') return item.status === 'APPROVED' || item.status === 'IN_PROGRESS' || item.status === 'PROPOSED';
+    return true;
+  });
+
+  // Filter sessions by selected proposal
+  const filteredSessions = allSessions.filter((sess) => {
+    if (sessionProposalFilter === 'ALL') return true;
+    if (sessionProposalFilter === 'GENERAL') return !sess.roadmap_item_id;
+    return sess.roadmap_item_id === sessionProposalFilter;
+  });
+
+  // Proposal being viewed in session filter
+  const currentFilteredProposal = items.find((p) => p.id === sessionProposalFilter);
+
+  // Proposal with HTML for hero shortcut
   const proposalWithHtml = items.find((i) => i.proposal_html_url && (i.status === 'APPROVED' || i.status === 'IN_PROGRESS')) ||
     items.find((i) => i.proposal_html_url);
 
   const activeFocusItem = items.find((i) => i.status === 'APPROVED' || i.status === 'IN_PROGRESS') ||
     items.find((i) => i.status === 'PROPOSED');
-
-  const filteredItems = items.filter((item) => {
-    if (filter === 'COMPLETED') return item.status === 'COMPLETED';
-    if (filter === 'ACTIVE') return item.status === 'APPROVED' || item.status === 'IN_PROGRESS' || item.status === 'PROPOSED';
-    return true;
-  });
 
   const getStatusBadge = (status: RoadmapItemStatusType) => {
     switch (status) {
@@ -168,7 +189,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-5xl mx-auto pb-16">
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-amber-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden border border-amber-500/20">
         <div className="relative z-10 space-y-4">
@@ -184,7 +205,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
                 className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5"
               >
                 <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>View Interactive Proposal &amp; Roadmap (HTML)</span>
+                <span>View Interactive Proposal (HTML)</span>
               </button>
             )}
           </div>
@@ -194,7 +215,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
               Profile Building &amp; Mentorship Journey
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1.5 leading-relaxed">
-              Collaborative execution plan tracking global competitions, research initiatives, community leadership, and portfolio milestones with your faculty mentors.
+              Curated roadmap tracking global competitions, research initiatives, and milestones with your faculty mentors.
             </p>
           </div>
 
@@ -203,7 +224,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
             <div className="bg-white/5 backdrop-blur-sm p-3.5 rounded-xl border border-white/10">
               <div className="text-[11px] text-slate-400 font-medium">Sessions Logged</div>
               <div className="text-xl font-black text-amber-300 mt-0.5">
-                {(sessions && sessions.length) || stats.total_sessions_count || 0} Classes
+                {allSessions.length} Classes
               </div>
             </div>
 
@@ -251,9 +272,9 @@ export const StudentProfileRoadmapPage: React.FC = () => {
           {/* Filter Pills */}
           <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
             <button
-              onClick={() => setFilter('ALL')}
+              onClick={() => setProposalFilter('ALL')}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                filter === 'ALL'
+                proposalFilter === 'ALL'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -261,9 +282,9 @@ export const StudentProfileRoadmapPage: React.FC = () => {
               All ({items.length})
             </button>
             <button
-              onClick={() => setFilter('ACTIVE')}
+              onClick={() => setProposalFilter('ACTIVE')}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                filter === 'ACTIVE'
+                proposalFilter === 'ACTIVE'
                   ? 'bg-white text-amber-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -271,9 +292,9 @@ export const StudentProfileRoadmapPage: React.FC = () => {
               Active / Proposed
             </button>
             <button
-              onClick={() => setFilter('COMPLETED')}
+              onClick={() => setProposalFilter('COMPLETED')}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                filter === 'COMPLETED'
+                proposalFilter === 'COMPLETED'
                   ? 'bg-white text-emerald-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
@@ -295,86 +316,192 @@ export const StudentProfileRoadmapPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredItems.map((item, idx) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 hover:border-slate-300 transition-all space-y-3"
-              >
-                {/* Header Row */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-400">#{idx + 1}</span>
-                      <h3 className="text-base font-bold text-slate-900">{item.period}</h3>
-                      {getProposalTypeBadge(item.proposal_type)}
-                      {getStatusBadge(item.status)}
+            {filteredProposals.map((item, idx) => {
+              const sessionsCount = allSessions.filter((s) => s.roadmap_item_id === item.id).length;
+
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 hover:border-slate-300 transition-all space-y-3"
+                >
+                  {/* Header Row */}
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-slate-400">#{idx + 1}</span>
+                        <h3 className="text-base font-bold text-slate-900">{item.period}</h3>
+                        {getProposalTypeBadge(item.proposal_type)}
+                        {getStatusBadge(item.status)}
+                      </div>
+                      {item.session_date && (
+                        <p className="text-xs text-slate-500 flex items-center space-x-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Target Timeline: {item.session_date}</span>
+                        </p>
+                      )}
                     </div>
-                    {item.session_date && (
-                      <p className="text-xs text-slate-500 flex items-center space-x-1">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Target Timeline: {item.session_date}</span>
+
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      {item.proposal_html_url && (
+                        <button
+                          onClick={() => handleOpenViewer(item)}
+                          className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold shadow-xs transition-all flex-shrink-0"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>View Interactive Proposal (HTML)</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleSelectProposalFilter(item.id)}
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg text-xs font-bold border border-blue-200 transition-colors"
+                      >
+                        <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                        <span>View Sessions ({sessionsCount})</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scope & Deliverables */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                        Initiative Scope &amp; Focus Area
+                      </div>
+                      <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                        {item.main_actions}
                       </p>
-                    )}
-                  </div>
-
-                  {item.proposal_html_url && (
-                    <button
-                      onClick={() => handleOpenViewer(item)}
-                      className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold shadow-xs transition-all flex-shrink-0"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>View Interactive Proposal (HTML)</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Scope & Deliverables */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                      Initiative Scope &amp; Focus Area
                     </div>
-                    <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-                      {item.main_actions}
-                    </p>
-                  </div>
 
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                      Expected Deliverables &amp; Output
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                        Expected Deliverables &amp; Output
+                      </div>
+                      <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                        {item.milestones_outputs || 'Deliverables and outputs are being finalized.'}
+                      </p>
                     </div>
-                    <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-                      {item.milestones_outputs || 'Deliverables and outputs are being finalized.'}
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* SECTION 2: Mentorship Sessions & MoM Discussion Log            */}
+      {/* SECTION 2: Mentorship Sessions Filtered by Proposal            */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
+      <div id="sessions-log-section" className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-5 scroll-mt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
             <div className="flex items-center space-x-2">
               <CalendarCheck className="w-5 h-5 text-blue-600" />
               <h2 className="text-base font-bold text-slate-900">
-                Mentorship Sessions &amp; Discussion Log ({(sessions && sessions.length) || 0})
+                Mentorship Sessions &amp; MoM Discussion Log ({allSessions.length})
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Verified date-wise records of strategy meetings, competition discussions, and study materials.
+              Select any Proposal below to filter and read its specific meeting Minutes of Meeting (MoM) and study notes.
             </p>
           </div>
         </div>
 
-        {sessions && sessions.length > 0 ? (
+        {/* PROPOSAL SELECTOR PILLS (Enhanced Readability) */}
+        <div className="space-y-2">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-600">
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <span>Select Proposal / Track To View Sessions:</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {/* All Sessions Button */}
+            <button
+              onClick={() => setSessionProposalFilter('ALL')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center space-x-1.5 ${
+                sessionProposalFilter === 'ALL'
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              <span>All Sessions</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${sessionProposalFilter === 'ALL' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                {allSessions.length}
+              </span>
+            </button>
+
+            {/* General Mentorship Sessions */}
+            <button
+              onClick={() => setSessionProposalFilter('GENERAL')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center space-x-1.5 ${
+                sessionProposalFilter === 'GENERAL'
+                  ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-xs'
+                  : 'bg-amber-50/60 text-amber-900 border-amber-200 hover:bg-amber-100'
+              }`}
+            >
+              <span>General Consultation &amp; Discovery</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${sessionProposalFilter === 'GENERAL' ? 'bg-amber-600 text-slate-950 font-black' : 'bg-amber-100 text-amber-800'}`}>
+                {allSessions.filter((s) => !s.roadmap_item_id).length}
+              </span>
+            </button>
+
+            {/* Each Specific Proposal */}
+            {items.map((prop) => {
+              const count = allSessions.filter((s) => s.roadmap_item_id === prop.id).length;
+              const isSelected = sessionProposalFilter === prop.id;
+
+              return (
+                <button
+                  key={prop.id}
+                  onClick={() => setSessionProposalFilter(prop.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center space-x-1.5 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-blue-50/60 text-blue-900 border-blue-200 hover:bg-blue-100'
+                  }`}
+                >
+                  <span className="truncate max-w-[220px]">{prop.period}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-blue-700 text-white font-black' : 'bg-blue-100 text-blue-800'}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Proposal Overview Banner (When a specific proposal is chosen) */}
+        {currentFilteredProposal && (
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50/50 to-blue-50 p-4 rounded-2xl border border-blue-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
+                  {currentFilteredProposal.proposal_type?.replace(/_/g, ' ') || 'PROPOSAL TRACK'}
+                </span>
+                <h3 className="text-sm font-bold text-slate-900">{currentFilteredProposal.period}</h3>
+                {getStatusBadge(currentFilteredProposal.status)}
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Showing all mentorship sessions and MoM notes recorded specifically for this initiative.
+              </p>
+            </div>
+
+            {currentFilteredProposal.proposal_html_url && (
+              <button
+                onClick={() => handleOpenViewer(currentFilteredProposal)}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold shadow-xs transition-all flex-shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>View Interactive Proposal (HTML)</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Filtered Sessions Cards List */}
+        {filteredSessions.length > 0 ? (
           <div className="space-y-3.5">
-            {sessions.map((sess) => {
+            {filteredSessions.map((sess) => {
               const linkedProposal = items.find((p) => p.id === sess.roadmap_item_id);
 
               const allAtts = sess.attachments && sess.attachments.length > 0
@@ -391,9 +518,9 @@ export const StudentProfileRoadmapPage: React.FC = () => {
               return (
                 <div
                   key={sess.id}
-                  className="bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-xl p-4 transition-all space-y-2.5"
+                  className="bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-xl p-4 sm:p-5 transition-all space-y-3"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/60">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-slate-900 flex items-center font-mono">
                         <Calendar className="w-3.5 h-3.5 mr-1 text-slate-500" />
@@ -428,12 +555,12 @@ export const StudentProfileRoadmapPage: React.FC = () => {
 
                   <div>
                     <h3 className="text-sm font-bold text-slate-900">{sess.topic}</h3>
-                    <p className="text-xs text-slate-700 mt-1 whitespace-pre-line leading-relaxed">
+                    <p className="text-xs text-slate-700 mt-1.5 whitespace-pre-line leading-relaxed">
                       {sess.description}
                     </p>
 
                     {sess.remarks && (
-                      <div className="text-[11px] text-slate-700 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200/60 mt-2 italic">
+                      <div className="text-[11px] text-slate-700 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200/60 mt-2.5 italic">
                         <span className="font-bold not-italic text-amber-950">Mentor Guidance: </span>
                         {sess.remarks}
                       </div>
@@ -441,7 +568,7 @@ export const StudentProfileRoadmapPage: React.FC = () => {
 
                     {/* Attached Documents */}
                     {allAtts.length > 0 && (
-                      <div className="mt-3 pt-2.5 border-t border-slate-200/60 space-y-1.5">
+                      <div className="mt-3.5 pt-2.5 border-t border-slate-200/60 space-y-1.5">
                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1">
                           <Paperclip className="w-3 h-3 text-blue-600" />
                           <span>Session Documents ({allAtts.length}):</span>
@@ -480,8 +607,9 @@ export const StudentProfileRoadmapPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="py-8 text-center text-xs text-slate-400">
-            No mentorship sessions logged yet. Your first session notes will appear here once conducted.
+          <div className="py-10 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 space-y-1">
+            <p className="font-semibold text-slate-600">No sessions recorded under this selection.</p>
+            <p>Sessions will appear here once conducted by your mentors.</p>
           </div>
         )}
       </div>

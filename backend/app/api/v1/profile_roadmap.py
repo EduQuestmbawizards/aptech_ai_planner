@@ -98,10 +98,10 @@ def _serialize_session(s: ProfileSessionAttendance) -> ProfileSessionAttendanceR
         roadmap_item_id=s.roadmap_item_id,
         period=period_str,
         session_date=s.session_date,
-        topic=s.topic,
-        description=s.description,
-        duration_minutes=s.duration_minutes,
-        status=s.status,
+        topic=s.topic or "Mentorship Session",
+        description=s.description or "",
+        duration_minutes=s.duration_minutes if s.duration_minutes is not None else 45,
+        status=s.status or "PRESENT",
         remarks=s.remarks,
         marked_by=s.marked_by,
         marked_by_name=marker_name,
@@ -207,19 +207,36 @@ def list_students_with_roadmaps(
 
     summaries = []
     for s in students:
-        items = ProfileRoadmapService.get_roadmap_for_student(db, s.id)
-        stats = ProfileRoadmapService.get_stats_for_student(db, s.id)
-        summaries.append(
-            ProfileRoadmapStudentSummary(
-                student_id=s.id,
-                student_name=s.user.full_name if s.user else "Unknown Student",
-                student_email=s.user.email if s.user else "",
-                aptech_student_id=s.aptech_student_id,
-                track_type=s.track_type,
-                stats=ProfileRoadmapStats(**stats),
-                items=[_serialize_item(i) for i in items]
+        try:
+            items = ProfileRoadmapService.get_roadmap_for_student(db, s.id)
+            stats = ProfileRoadmapService.get_stats_for_student(db, s.id)
+            sessions = ProfileRoadmapService.get_student_sessions(db, s.id)
+            summaries.append(
+                ProfileRoadmapStudentSummary(
+                    student_id=s.id,
+                    student_name=s.user.full_name if s.user and s.user.full_name else "Student",
+                    student_email=s.user.email if s.user and s.user.email else "",
+                    aptech_student_id=s.aptech_student_id or "",
+                    track_type=s.track_type or "COURSE",
+                    stats=ProfileRoadmapStats(**stats),
+                    items=[_serialize_item(i) for i in items],
+                    sessions=[_serialize_session(ses) for ses in sessions]
+                )
             )
-        )
+        except Exception as err:
+            logger.error(f"Error compiling summary for student {s.id}: {err}")
+            summaries.append(
+                ProfileRoadmapStudentSummary(
+                    student_id=s.id,
+                    student_name=s.user.full_name if s.user and s.user.full_name else "Student",
+                    student_email=s.user.email if s.user and s.user.email else "",
+                    aptech_student_id=s.aptech_student_id or "",
+                    track_type=s.track_type or "COURSE",
+                    stats=ProfileRoadmapStats(),
+                    items=[],
+                    sessions=[]
+                )
+            )
     return summaries
 
 
@@ -245,10 +262,10 @@ def get_student_roadmap(
 
     return ProfileRoadmapStudentSummary(
         student_id=student.id,
-        student_name=student.user.full_name if student.user else "Unknown Student",
-        student_email=student.user.email if student.user else "",
-        aptech_student_id=student.aptech_student_id,
-        track_type=student.track_type,
+        student_name=student.user.full_name if student.user and student.user.full_name else "Student",
+        student_email=student.user.email if student.user and student.user.email else "",
+        aptech_student_id=student.aptech_student_id or "",
+        track_type=student.track_type or "COURSE",
         stats=ProfileRoadmapStats(**stats),
         items=[_serialize_item(i) for i in items],
         sessions=[_serialize_session(s) for s in sessions]
