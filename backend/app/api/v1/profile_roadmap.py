@@ -131,45 +131,6 @@ def _serialize_item(item: ProfileRoadmapItem, db: Optional[Session] = None) -> P
         except Exception:
             ai_data = None
 
-    # If blueprint is missing or missing activities array, extract with AI
-    if not ai_data or not ai_data.get("activities"):
-        try:
-            from app.services.profile_roadmap_service import extract_proposal_ai_blueprint
-            html_text = ""
-            html_name = getattr(item, "proposal_html_name", None)
-            if html_name:
-                local_path = os.path.join(PROPOSAL_DOCS_DIR, html_name)
-                if os.path.isfile(local_path):
-                    try:
-                        with open(local_path, "r", encoding="utf-8", errors="ignore") as f:
-                            html_text = f.read()
-                    except Exception:
-                        pass
-                else:
-                    try:
-                        remote_bytes = download_file_from_supabase(f"proposals/{html_name}")
-                        if remote_bytes:
-                            html_text = remote_bytes.decode("utf-8", errors="ignore")
-                    except Exception:
-                        pass
-
-            ai_data = extract_proposal_ai_blueprint(
-                html_content=html_text,
-                title=item.period,
-                actions=item.main_actions or "",
-                outputs=item.milestones_outputs or "",
-                proposal_type=getattr(item, "proposal_type", "GLOBAL_COMPETITION") or "GLOBAL_COMPETITION"
-            )
-            if db and ai_data:
-                try:
-                    item.ai_blueprint = json.dumps(ai_data)
-                    db.add(item)
-                    db.commit()
-                except Exception:
-                    db.rollback()
-        except Exception as err:
-            logger.warning(f"Could not auto-extract AI blueprint for item {item.id}: {err}")
-
     p_priority = getattr(item, "priority", None) or (ai_data.get("priority") if isinstance(ai_data, dict) else "NORMAL") or "NORMAL"
     p_timeline = getattr(item, "target_timeline", None) or (ai_data.get("target_timeline") if isinstance(ai_data, dict) else None)
 
