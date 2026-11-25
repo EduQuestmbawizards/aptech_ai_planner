@@ -226,6 +226,12 @@ async def upload_roadmap_excel(
         )
 
     file_bytes = await file.read()
+    try:
+        clean_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', file.filename or "roadmap.xlsx")
+        upload_file_to_supabase(f"roadmaps/{student_id}_{uuid.uuid4().hex[:8]}_{clean_name}", file_bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    except Exception as e:
+        logger.warning(f"Failed to backup roadmap excel to Supabase Storage: {e}")
+
     items = parse_profile_roadmap_excel(file_bytes)
 
     saved_items = ProfileRoadmapService.save_roadmap_for_student(
