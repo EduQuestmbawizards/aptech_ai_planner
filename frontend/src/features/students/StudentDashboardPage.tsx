@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../../context/StudyTimerContext';
-import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary } from '../../types';
+import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary, ProfileRoadmapItem } from '../../types';
 import {
   CalendarCheck2,
   CalendarCheck,
@@ -23,7 +23,9 @@ import {
   Target,
   Download,
   Paperclip,
+  Sparkles,
 } from 'lucide-react';
+import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
 
 const getDocDownloadUrl = (url?: string | null) => {
   if (!url) return '';
@@ -61,6 +63,27 @@ export const StudentDashboardPage: React.FC = () => {
   const [selectedTimerTaskId, setSelectedTimerTaskId] = useState<string>('');
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Interactive HTML Proposal Viewer Modal State
+  const [viewerOpen, setViewerOpen] = useState<boolean>(false);
+  const [viewerTitle, setViewerTitle] = useState<string>('');
+  const [viewerUrl, setViewerUrl] = useState<string>('');
+  const [viewerType, setViewerType] = useState<string | null>(null);
+  const [viewerStatus, setViewerStatus] = useState<string | null>(null);
+
+  const handleOpenViewer = (item: ProfileRoadmapItem) => {
+    if (!item.proposal_html_url) return;
+    setViewerTitle(item.period);
+    setViewerUrl(item.proposal_html_url);
+    setViewerType(item.proposal_type || 'PROPOSAL');
+    setViewerStatus(item.status);
+    setViewerOpen(true);
+  };
+
+  const proposalsWithHtml = (profileRoadmap?.items || []).filter((i) => i.proposal_html_url);
+  const activeProposalWithHtml =
+    proposalsWithHtml.find((i) => i.status === 'APPROVED' || i.status === 'IN_PROGRESS') ||
+    proposalsWithHtml[0];
 
   const fetchDashboardData = useCallback(async (showSpinner = false) => {
     try {
@@ -235,6 +258,15 @@ export const StudentDashboardPage: React.FC = () => {
                   View Full Roadmap &amp; MoM Logs
                   <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                 </button>
+                {proposalsWithHtml.length > 0 && (
+                  <button
+                    onClick={() => handleOpenViewer(activeProposalWithHtml || proposalsWithHtml[0])}
+                    className="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-md transition-all border border-amber-300/40"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1.5 text-slate-950" />
+                    View Interactive Proposal (HTML)
+                  </button>
+                )}
               </div>
             </div>
 
@@ -254,6 +286,62 @@ export const StudentDashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Interactive Strategic Proposals Section (if available) */}
+        {proposalsWithHtml.length > 0 && (
+          <div className="bg-gradient-to-r from-amber-50 via-white to-amber-50/50 border border-amber-300/80 rounded-2xl p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-100">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-xs">
+                  <Sparkles className="w-4 h-4 text-slate-950" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span>Interactive Proposals &amp; Execution Plans</span>
+                    <span className="text-[10px] font-black uppercase bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full">
+                      {proposalsWithHtml.length} Available
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Open interactive HTML models, deliverables, milestones &amp; faculty notes in 1-click.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
+              {proposalsWithHtml.map((prop, idx) => (
+                <div
+                  key={prop.id}
+                  className="bg-white p-3.5 rounded-xl border border-amber-200/90 shadow-2xs hover:border-amber-400 transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+                      <span>Proposal #{idx + 1}</span>
+                      <span className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold">
+                        {prop.proposal_type || 'ROADMAP'}
+                      </span>
+                    </div>
+                    <div className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1" title={prop.period}>
+                      {prop.period}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                      {prop.main_actions || 'Curated roadmap execution strategy'}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenViewer(prop)}
+                    className="mt-3 w-full inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-2xs transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    <span>View Interactive HTML</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 4 Metric KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -331,9 +419,20 @@ export const StudentDashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <span className="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full uppercase tracking-wider">
-                {currentMilestone.status.replace('_', ' ')}
-              </span>
+              <div className="flex items-center space-x-2">
+                {currentMilestone.proposal_html_url && (
+                  <button
+                    onClick={() => handleOpenViewer(currentMilestone)}
+                    className="inline-flex items-center px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold shadow-2xs transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                    <span>View Interactive Proposal (HTML)</span>
+                  </button>
+                )}
+                <span className="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full uppercase tracking-wider">
+                  {currentMilestone.status.replace('_', ' ')}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
@@ -478,6 +577,16 @@ export const StudentDashboardPage: React.FC = () => {
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
         </div>
+
+        {/* Interactive HTML Proposal Viewer Modal */}
+        <InteractiveProposalModal
+          isOpen={viewerOpen}
+          onClose={() => setViewerOpen(false)}
+          title={viewerTitle}
+          proposalHtmlUrl={viewerUrl}
+          proposalType={viewerType}
+          status={viewerStatus}
+        />
       </div>
     );
   }
@@ -622,13 +731,24 @@ export const StudentDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => navigate('/profile-roadmap')}
-            className="w-full md:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center whitespace-nowrap"
-          >
-            <span>View Roadmap &amp; MoM Logs</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {proposalsWithHtml.length > 0 && (
+              <button
+                onClick={() => handleOpenViewer(activeProposalWithHtml || proposalsWithHtml[0])}
+                className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center whitespace-nowrap"
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                <span>View Interactive Proposal (HTML)</span>
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/profile-roadmap')}
+              className="w-full sm:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center whitespace-nowrap border border-amber-500/30"
+            >
+              <span>View Roadmap &amp; MoM Logs</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -992,6 +1112,16 @@ export const StudentDashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Interactive HTML Proposal Viewer Modal */}
+      <InteractiveProposalModal
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        title={viewerTitle}
+        proposalHtmlUrl={viewerUrl}
+        proposalType={viewerType}
+        status={viewerStatus}
+      />
     </div>
   );
 };
