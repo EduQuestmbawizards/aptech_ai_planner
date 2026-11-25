@@ -41,6 +41,7 @@ import {
   XCircle,
   RefreshCw,
   FolderOpen,
+  Upload,
 } from 'lucide-react';
 import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
 
@@ -780,7 +781,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                                 ) : (
                                   <button
                                     onClick={() => handleOpenEditProposal(proposal)}
-                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+                                    className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-xs font-bold transition-colors"
                                   >
                                     <FileCode2 className="w-3.5 h-3.5 text-amber-600" />
                                     <span>Attach HTML Proposal</span>
@@ -789,10 +790,11 @@ export const AdminProfileRoadmapPage: React.FC = () => {
 
                                 <button
                                   onClick={() => handleOpenEditProposal(proposal)}
-                                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
-                                  title="Edit details"
+                                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-colors border border-slate-200 shadow-2xs"
+                                  title="Edit proposal details, timeline, or replace HTML file"
                                 >
-                                  <Edit3 className="w-4 h-4" />
+                                  <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>Edit / Replace Proposal</span>
                                 </button>
 
                                 <button
@@ -1222,7 +1224,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-amber-600" />
                 <h3 className="text-base font-bold text-slate-900">
-                  {editingProposalId ? 'Edit Proposal / Milestone' : 'Create New Proposal'}
+                  {editingProposalId ? 'Edit Proposal & Replace HTML File' : 'Create New Proposal'}
                 </h3>
               </div>
               <button
@@ -1300,8 +1302,8 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                 />
               </div>
 
-              {/* Interactive HTML Proposal Upload */}
-              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+              {/* Interactive HTML Proposal Upload & Replace */}
+              <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="block text-xs font-bold text-amber-950 flex items-center space-x-1.5">
@@ -1309,40 +1311,62 @@ export const AdminProfileRoadmapPage: React.FC = () => {
                       <span>Interactive HTML Proposal Document (.html)</span>
                     </label>
                     <p className="text-[11px] text-amber-900 mt-0.5">
-                      Upload your visual, interactive roadmap file. Students and parents will view this with 1-click in an interactive iframe.
+                      Upload or replace the visual, interactive roadmap file for this proposal.
                     </p>
                   </div>
                 </div>
 
                 {proposalHtmlUrl ? (
-                  <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-amber-200">
-                    <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800">
-                      <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      <span className="truncate max-w-sm">{proposalHtmlName || 'interactive-proposal.html'}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-amber-200">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-emerald-800">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <span className="truncate max-w-sm">{proposalHtmlName || 'interactive-proposal.html'}</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setViewerTitle(proposalTitle || 'Proposal Preview');
+                            setViewerUrl(proposalHtmlUrl);
+                            setViewerOpen(true);
+                          }}
+                          className="px-2.5 py-1 text-xs font-bold bg-amber-500 text-slate-950 rounded-md hover:bg-amber-600"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProposalHtmlUrl(null);
+                            setProposalHtmlName(null);
+                          }}
+                          className="text-xs text-rose-600 hover:underline px-1 font-semibold"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setViewerTitle(proposalTitle || 'Proposal Preview');
-                          setViewerUrl(proposalHtmlUrl);
-                          setViewerOpen(true);
-                        }}
-                        className="px-2.5 py-1 text-xs font-bold bg-amber-500 text-slate-950 rounded-md hover:bg-amber-600"
-                      >
-                        Preview
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProposalHtmlUrl(null);
-                          setProposalHtmlName(null);
-                        }}
-                        className="text-xs text-rose-600 hover:underline px-1"
-                      >
-                        Remove
-                      </button>
+
+                    <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-[11px] font-semibold text-amber-950">
+                        Proposal change hui hai? Nayi HTML file upload karein:
+                      </span>
+                      <label className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs transition-colors">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{proposalHtmlUploading ? 'Uploading...' : 'Replace HTML File'}</span>
+                        <input
+                          type="file"
+                          accept=".html,.htm"
+                          onChange={handleProposalHtmlFileUpload}
+                          disabled={proposalHtmlUploading}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
+                    {proposalHtmlUploading && (
+                      <p className="text-[11px] text-blue-700 font-semibold animate-pulse">Uploading replacement HTML file to storage...</p>
+                    )}
                   </div>
                 ) : (
                   <div>
