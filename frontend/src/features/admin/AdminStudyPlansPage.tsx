@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
 import { AdminStudyPlan, StudyTask, StudyPlanVersionSnapshot } from '../../types';
+import { getEconomicsTrackLabel } from '../../utils/courseHelper';
 import {
   CalendarCheck,
   CheckCircle2,
@@ -821,7 +822,24 @@ export const AdminStudyPlansPage: React.FC = () => {
                             <tr key={t.id} className={isDone ? 'bg-emerald-50/40' : ''}>
                               <td className="py-2 px-3 font-mono font-bold whitespace-nowrap">{t.scheduled_date}</td>
                               <td className="py-2 px-3">{t.task_type}</td>
-                              <td className="py-2 px-3 font-semibold text-slate-900">{t.title}</td>
+                              <td className="py-2 px-3 font-semibold text-slate-900">
+                                <div className="flex items-center flex-wrap gap-1">
+                                  <span>{t.title}</span>
+                                  {getEconomicsTrackLabel(t) && (
+                                    <span
+                                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                        getEconomicsTrackLabel(t) === 'Microeconomics'
+                                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                          : getEconomicsTrackLabel(t) === 'Macroeconomics'
+                                          ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                          : 'bg-slate-100 text-slate-800 border-slate-300'
+                                      }`}
+                                    >
+                                      ({getEconomicsTrackLabel(t)})
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
                               <td className="py-2 px-3 whitespace-nowrap">{t.estimated_duration_hours} hrs</td>
                               <td className="py-2 px-3 whitespace-nowrap">
                                 {isDone ? (

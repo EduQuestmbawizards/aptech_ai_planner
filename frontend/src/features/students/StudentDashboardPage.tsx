@@ -4,6 +4,7 @@ import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../../context/StudyTimerContext';
 import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary, ProfileRoadmapItem } from '../../types';
+import { getEconomicsTrackLabel } from '../../utils/courseHelper';
 import {
   CalendarCheck2,
   CalendarCheck,
@@ -1028,6 +1029,19 @@ export const StudentDashboardPage: React.FC = () => {
                             {t.scheduled_date}
                           </span>
                           <span className="text-xs font-bold text-slate-900 truncate">{t.title}</span>
+                          {getEconomicsTrackLabel(t) && (
+                            <span
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                getEconomicsTrackLabel(t) === 'Microeconomics'
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : getEconomicsTrackLabel(t) === 'Macroeconomics'
+                                  ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                  : 'bg-slate-100 text-slate-800 border-slate-300'
+                              }`}
+                            >
+                              ({getEconomicsTrackLabel(t)})
+                            </span>
+                          )}
                         </div>
                         <p className="text-[11px] text-slate-500 line-clamp-1">{t.description}</p>
                       </div>
@@ -1090,6 +1104,19 @@ export const StudentDashboardPage: React.FC = () => {
                         >
                           {t.title}
                         </span>
+                        {getEconomicsTrackLabel(t) && (
+                          <span
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                              getEconomicsTrackLabel(t) === 'Microeconomics'
+                                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                : getEconomicsTrackLabel(t) === 'Macroeconomics'
+                                ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                : 'bg-slate-100 text-slate-800 border-slate-300'
+                            }`}
+                          >
+                            ({getEconomicsTrackLabel(t)})
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-slate-500 line-clamp-1">{t.description}</p>
                     </div>

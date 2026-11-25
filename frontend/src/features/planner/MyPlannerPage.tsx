@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useStudyTimer } from '../../context/StudyTimerContext';
 import { StudyPlan, StudyTask, StudyPlanVersionSnapshot } from '../../types';
+import { getEconomicsTrackLabel } from '../../utils/courseHelper';
 import {
   Compass,
   RotateCw,
@@ -782,8 +783,21 @@ export const MyPlannerPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className={`font-bold ${isDone ? 'text-emerald-900' : 'text-slate-900'}`}>
-                          {t.title}
+                        <div className={`font-bold ${isDone ? 'text-emerald-900' : 'text-slate-900'} flex items-center flex-wrap gap-1.5`}>
+                          <span>{t.title}</span>
+                          {getEconomicsTrackLabel(t) && (
+                            <span
+                              className={`text-[11px] font-bold px-1.5 py-0.5 rounded border ${
+                                getEconomicsTrackLabel(t) === 'Microeconomics'
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : getEconomicsTrackLabel(t) === 'Macroeconomics'
+                                  ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                  : 'bg-slate-100 text-slate-800 border-slate-300'
+                              }`}
+                            >
+                              ({getEconomicsTrackLabel(t)})
+                            </span>
+                          )}
                         </div>
                         {isDone && t.completed_at ? (
                           <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
