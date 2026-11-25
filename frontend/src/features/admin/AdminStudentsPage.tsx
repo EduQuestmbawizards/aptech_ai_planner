@@ -593,7 +593,7 @@ export const AdminStudentsPage: React.FC = () => {
                 <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/90 space-y-2">
                   <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900">
                     <Compass className="w-4 h-4 text-amber-600" />
-                    <span>Upload Profile Execution Plan (.xlsx)</span>
+                    <span>Upload Profile Execution Plan (.xlsx) <span className="font-normal text-amber-700">(Optional)</span></span>
                   </div>
                   <input
                     type="file"
@@ -602,7 +602,7 @@ export const AdminStudentsPage: React.FC = () => {
                     className="w-full text-xs px-2.5 py-1.5 bg-white border border-amber-200 rounded-lg file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200"
                   />
                   <p className="text-[11px] text-amber-800/80 leading-normal">
-                    Excel columns: <b>Period / Month</b>, <b>Main actions</b>, and <b>Milestones and outputs</b>. The system will automatically parse and generate month-wise roadmap milestones for mentorship tracking.
+                    Optional: You can leave this empty. Dynamic proposals, discovery sessions, and interactive HTML roadmaps can be created directly from the Profile Building section after adding the student.
                   </p>
                 </div>
               )}
@@ -777,6 +777,23 @@ export const AdminStudentsPage: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {addErrorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-lg flex items-start justify-between gap-2">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0" />
+                    <span>{addErrorMsg}</span>
+                  </div>
+                  {(addErrorMsg.toLowerCase().includes('token') || addErrorMsg.toLowerCase().includes('expired') || addErrorMsg.toLowerCase().includes('authenticated')) && (
+                    <a
+                      href="/login"
+                      className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold whitespace-nowrap text-[11px]"
+                    >
+                      Login Again
+                    </a>
+                  )}
+                </div>
+              )}
 
               <div className="pt-4 flex justify-end space-x-3">
                 <button

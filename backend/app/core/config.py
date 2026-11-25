@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Security
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "aptech-super-secret-jwt-key-change-in-production-32chars")
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 120
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080")) # 7 days
     INVITATION_TOKEN_EXPIRE_HOURS: int = 72
 
     # OpenAI

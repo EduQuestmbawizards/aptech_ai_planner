@@ -39,6 +39,7 @@ api.interceptors.response.use(
       if (!isAuthEndpoint && window.location.pathname !== '/login') {
         localStorage.removeItem('aptech_token');
         localStorage.removeItem('aptech_user');
+        window.location.href = '/login?expired=true';
       }
     }
     return Promise.reject(error);
