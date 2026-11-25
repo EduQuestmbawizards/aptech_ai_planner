@@ -414,10 +414,10 @@ def get_my_profile_roadmap(
 
     return ProfileRoadmapStudentSummary(
         student_id=student.id,
-        student_name=current_user.full_name,
-        student_email=current_user.email,
-        aptech_student_id=student.aptech_student_id,
-        track_type=student.track_type,
+        student_name=current_user.full_name or "Student",
+        student_email=current_user.email or "",
+        aptech_student_id=student.aptech_student_id or "",
+        track_type=student.track_type or "COURSE",
         stats=ProfileRoadmapStats(**stats),
         items=[_serialize_item(i) for i in items],
         sessions=[_serialize_session(s) for s in sessions]

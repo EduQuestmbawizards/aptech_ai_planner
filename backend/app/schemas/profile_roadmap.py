@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, date
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
@@ -176,4 +176,10 @@ class ProfileRoadmapStudentSummary(BaseModel):
     sessions: Optional[List[ProfileSessionAttendanceResponse]] = []
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+
+ProfileSessionAttendanceResponse.model_rebuild()
+ProfileRoadmapItemResponse.model_rebuild()
+ProfileRoadmapStudentSummary.model_rebuild()
+
 
