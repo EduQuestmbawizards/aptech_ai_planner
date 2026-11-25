@@ -68,3 +68,115 @@ export const getEconomicsTrackLabel = (task: {
 
   return null;
 };
+
+export interface APUnitWeightage {
+  unitNumber: number;
+  title: string;
+  weightage: string;
+  isHighYield: boolean;
+  track: 'Microeconomics' | 'Macroeconomics';
+  coreTopics: string[];
+}
+
+export const AP_MICRO_WEIGHTAGE: APUnitWeightage[] = [
+  {
+    unitNumber: 1,
+    title: 'Basic Economic Concepts',
+    weightage: '12%–15%',
+    isHighYield: false,
+    track: 'Microeconomics',
+    coreTopics: ['Scarcity & Opportunity Cost', 'Production Possibilities Curve (PPC)', 'Comparative Advantage & Trade', 'Marginal Analysis & Utility'],
+  },
+  {
+    unitNumber: 2,
+    title: 'Supply and Demand',
+    weightage: '20%–25%',
+    isHighYield: true,
+    track: 'Microeconomics',
+    coreTopics: ['Market Equilibrium & Shifts', 'Elasticity (Price, Income, Cross)', 'Consumer & Producer Surplus', 'Government Interventions & Deadweight Loss'],
+  },
+  {
+    unitNumber: 3,
+    title: 'Production, Cost, and the Perfect Competition Model',
+    weightage: '22%–25%',
+    isHighYield: true,
+    track: 'Microeconomics',
+    coreTopics: ['Short-Run & Long-Run Cost Curves', 'Diminishing Marginal Returns', 'Profit Maximization (MR=MC)', 'Perfect Competition Long-Run Equilibrium'],
+  },
+  {
+    unitNumber: 4,
+    title: 'Imperfect Competition',
+    weightage: '15%–22%',
+    isHighYield: true,
+    track: 'Microeconomics',
+    coreTopics: ['Monopoly & Price Discrimination', 'Monopolistic Competition', 'Oligopoly & Game Theory Matrix', 'Collusion & Nash Equilibrium'],
+  },
+  {
+    unitNumber: 5,
+    title: 'Factor Markets',
+    weightage: '10%–13%',
+    isHighYield: false,
+    track: 'Microeconomics',
+    coreTopics: ['Derived Demand for Resources', 'Marginal Revenue Product (MRP)', 'Marginal Resource Cost (MRC)', 'Monopsony in Labor Markets'],
+  },
+  {
+    unitNumber: 6,
+    title: 'Market Failure and the Role of Government',
+    weightage: '8%–13%',
+    isHighYield: false,
+    track: 'Microeconomics',
+    coreTopics: ['Positive & Negative Externalities', 'Public Goods & Free-Rider Dilemma', 'Income Inequality & Gini Coefficient', 'Corrective Taxes & Subsidies'],
+  },
+];
+
+export const AP_MACRO_WEIGHTAGE: APUnitWeightage[] = [
+  {
+    unitNumber: 1,
+    title: 'Basic Economic Concepts',
+    weightage: '5%–10%',
+    isHighYield: false,
+    track: 'Macroeconomics',
+    coreTopics: ['Circular Flow of Economic Activity', 'Scarcity & Production Frontiers', 'Real vs. Nominal Variables', 'Specialization & Gains from Trade'],
+  },
+  {
+    unitNumber: 2,
+    title: 'Economic Indicators and the Business Cycle',
+    weightage: '12%–17%',
+    isHighYield: false,
+    track: 'Macroeconomics',
+    coreTopics: ['GDP Calculation & Real GDP', 'Unemployment Types & Natural Rate (NRU)', 'Inflation Indices, CPI & GDP Deflator', 'Business Cycle Fluctuations'],
+  },
+  {
+    unitNumber: 3,
+    title: 'National Income and Price Determination',
+    weightage: '17%–27%',
+    isHighYield: true,
+    track: 'Macroeconomics',
+    coreTopics: ['Aggregate Demand (AD) & Aggregate Supply (AS)', 'Short-Run vs. Long-Run Equilibrium', 'Spending & Tax Multipliers', 'Fiscal Policy Stabilizers'],
+  },
+  {
+    unitNumber: 4,
+    title: 'Financial Sector',
+    weightage: '18%–23%',
+    isHighYield: true,
+    track: 'Macroeconomics',
+    coreTopics: ['Money Assets & Banking System', 'Money Market & Loanable Funds Market', 'Central Bank & Monetary Policy Tools', 'Nominal vs. Real Interest Rates'],
+  },
+  {
+    unitNumber: 5,
+    title: 'Long-Run Consequences of Stabilization Policies',
+    weightage: '20%–30%',
+    isHighYield: true,
+    track: 'Macroeconomics',
+    coreTopics: ['Short-Run & Long-Run Phillips Curves', 'Government Deficits & National Debt', 'Crowding-Out Effect', 'Economic Growth & Productivity'],
+  },
+  {
+    unitNumber: 6,
+    title: 'Open Economy — International Trade and Finance',
+    weightage: '10%–13%',
+    isHighYield: false,
+    track: 'Macroeconomics',
+    coreTopics: ['Balance of Payments (Current & Financial)', 'Foreign Exchange Market (Forex)', 'Currency Appreciation & Depreciation', 'Capital Flows & Exchange Rates'],
+  },
+];
+

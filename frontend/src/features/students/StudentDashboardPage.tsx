@@ -33,6 +33,7 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { InteractiveProposalModal } from '../../components/InteractiveProposalModal';
+import { OfficialExamWeightageCard } from '../../components/OfficialExamWeightageCard';
 
 const getDocDownloadUrl = (url?: string | null) => {
   if (!url) return '';
@@ -633,6 +634,14 @@ export const StudentDashboardPage: React.FC = () => {
           </button>
         </div>
 
+        {/* Official College Board Exam Weightage Guide (if enrolled in AP course) */}
+        {enrolledCourses.length > 0 && (
+          <OfficialExamWeightageCard
+            courseCode={enrolledCourses[0]?.course_code}
+            courseName={enrolledCourses[0]?.course_name}
+          />
+        )}
+
         {/* Interactive HTML Proposal Viewer Modal */}
         <InteractiveProposalModal
           isOpen={viewerOpen}
@@ -694,6 +703,12 @@ export const StudentDashboardPage: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Official College Board Exam Weightage Guide */}
+        <OfficialExamWeightageCard
+          courseCode={enrolledCourses[0]?.course_code}
+          courseName={enrolledCourses[0]?.course_name}
+        />
       </div>
     );
   }
@@ -860,6 +875,12 @@ export const StudentDashboardPage: React.FC = () => {
           <p className="text-[11px] text-slate-400 mt-1 font-medium">Total curriculum requirement</p>
         </div>
       </div>
+
+      {/* Official College Board Exam Weightage & Syllabus Breakdown */}
+      <OfficialExamWeightageCard
+        courseCode={activePlan.course_code}
+        courseName={activePlan.course_name}
+      />
 
       {/* Live Study Timer Focus Card */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-2xl p-5 md:p-6 text-white shadow-lg border border-amber-500/30">
