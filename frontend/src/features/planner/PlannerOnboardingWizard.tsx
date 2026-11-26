@@ -466,7 +466,7 @@ export const PlannerOnboardingWizard: React.FC = () => {
                     key={day.id}
                     type="button"
                     onClick={() => toggleDay(day.id)}
-                    className={`py-3 rounded-xl text-xs font-extrabold border transition-all ${
+                    className={`py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl text-[11px] sm:text-xs font-extrabold border transition-all ${
                       selected
                         ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-sm'
                         : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'

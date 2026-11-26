@@ -633,9 +633,9 @@ export const MyPlannerPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             {/* Quick Status Pills */}
-            <div className="flex bg-amber-50 p-1 rounded-xl border border-amber-200/70 text-xs">
+            <div className="flex bg-amber-50 p-1 rounded-xl border border-amber-200/70 text-xs overflow-x-auto max-w-full">
               {[
                 { key: 'ALL', label: `All (${tasks.length})` },
                 { key: 'PENDING', label: `To Do (${pendingCount})` },
@@ -646,7 +646,7 @@ export const MyPlannerPage: React.FC = () => {
                   key={tab.key}
                   type="button"
                   onClick={() => setStatusTab(tab.key)}
-                  className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-bold transition-all whitespace-nowrap shrink-0 ${
                     statusTab === tab.key
                       ? 'bg-slate-900 text-amber-300 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -657,21 +657,21 @@ export const MyPlannerPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="relative">
+            <div className="relative w-full sm:w-auto flex-1 sm:flex-initial">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search topic or date..."
-                className="text-xs pl-8 pr-3 py-1.5 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-300 rounded-xl bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
             </div>
 
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="text-xs border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white text-slate-700 font-medium"
+              className="text-xs border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white text-slate-700 font-medium w-full sm:w-auto"
             >
               <option value="">All Types</option>
               <option value="TOPIC">Topic Study</option>
@@ -682,8 +682,8 @@ export const MyPlannerPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
+        <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <table className="w-full text-left text-xs text-slate-700 min-w-[700px]">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3 px-3 text-center">Tick</th>

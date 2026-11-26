@@ -365,8 +365,8 @@ export const StudentAttendancePage: React.FC = () => {
           </div>
         ) : (
           /* Table View - Clean, Top-Aligned & Well-Spaced */
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <table className="w-full text-left text-xs min-w-[700px]">
               <thead className="bg-slate-50 text-slate-600 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-3.5 px-4 w-32">Date</th>

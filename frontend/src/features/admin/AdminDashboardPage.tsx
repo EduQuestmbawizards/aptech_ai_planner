@@ -80,24 +80,24 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Admin Overview</h1>
           <p className="text-xs md:text-sm text-slate-500 mt-1">
             Centrally manage Aptech admissions, approved course tracks, and student study plan progress.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             href="/admin/study-plans"
-            className="inline-flex items-center px-4 py-2 text-xs font-extrabold rounded-xl text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-sm transition-colors"
+            className="inline-flex items-center px-3.5 sm:px-4 py-2 text-xs font-extrabold rounded-xl text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-sm transition-colors"
           >
             Review Study Plans
             <ArrowUpRight className="ml-1.5 w-3.5 h-3.5" />
           </a>
           <a
             href="/admin/students"
-            className="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors"
+            className="inline-flex items-center px-3.5 sm:px-4 py-2 text-xs font-semibold rounded-xl text-white bg-slate-900 hover:bg-slate-800 shadow-sm transition-colors"
           >
             Manage Students
             <ArrowUpRight className="ml-1.5 w-3.5 h-3.5" />
@@ -106,21 +106,21 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
-              className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm flex items-start justify-between"
+              className="bg-white rounded-xl p-3.5 sm:p-5 border border-slate-200/80 shadow-sm flex items-start justify-between gap-2"
             >
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.title}</p>
-                <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{card.value}</h3>
-                <p className="text-[11px] text-slate-400 mt-1 font-medium">{card.subtitle}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{card.title}</p>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">{card.value}</h3>
+                <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 font-medium truncate">{card.subtitle}</p>
               </div>
-              <div className={`${card.color} text-white p-2.5 rounded-xl shadow-md`}>
-                <Icon className="w-5 h-5" />
+              <div className={`${card.color} text-white p-2 sm:p-2.5 rounded-xl shadow-md shrink-0`}>
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
           );
@@ -217,8 +217,8 @@ export const AdminDashboardPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
+        <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <table className="w-full text-left text-xs text-slate-700 min-w-[650px]">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">Student</th>

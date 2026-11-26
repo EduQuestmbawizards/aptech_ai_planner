@@ -103,6 +103,15 @@ export const StudentLayout: React.FC = () => {
         </button>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 md:hidden transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar Desktop */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
@@ -184,26 +193,26 @@ export const StudentLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8">
         <div className="max-w-6xl mx-auto space-y-4">
           {/* Persistent Live Study Timer Bar (visible across all student pages when active) */}
           {activeTask && (
-            <div className="bg-slate-900 text-white rounded-2xl px-4 py-3 shadow-lg border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-slate-900 text-white rounded-2xl p-3 sm:px-4 sm:py-3 shadow-lg border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
               <div className="flex items-center space-x-3 min-w-0">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isRunning ? 'bg-amber-400 text-slate-950 animate-pulse' : 'bg-slate-800 text-amber-300'}`}>
-                  <Timer className="w-5 h-5" />
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isRunning ? 'bg-amber-400 text-slate-950 animate-pulse' : 'bg-slate-800 text-amber-300'}`}>
+                  <Timer className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isRunning ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
                     {isRunning ? 'Live Study Timer Running' : 'Study Timer Paused'}
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-white truncate">{activeTask.title}</div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <span className="font-mono text-lg sm:text-xl font-black text-amber-300 bg-slate-950/80 px-3 py-1 rounded-xl border border-amber-500/30">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
+                <span className="font-mono text-base sm:text-xl font-black text-amber-300 bg-slate-950/80 px-2.5 sm:px-3 py-1 rounded-xl border border-amber-500/30">
                   {formatTimerClock(elapsedSeconds)}
                 </span>
 
@@ -212,7 +221,7 @@ export const StudentLayout: React.FC = () => {
                     type="button"
                     onClick={pauseTimer}
                     disabled={saving}
-                    className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-200 border border-slate-700 transition-colors"
+                    className="inline-flex items-center px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-200 border border-slate-700 transition-colors"
                   >
                     <Pause className="w-3.5 h-3.5 mr-1" />
                     Pause
@@ -222,7 +231,7 @@ export const StudentLayout: React.FC = () => {
                     type="button"
                     onClick={resumeTimer}
                     disabled={saving}
-                    className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 transition-colors"
+                    className="inline-flex items-center px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 transition-colors"
                   >
                     <Play className="w-3.5 h-3.5 mr-1" />
                     Resume
@@ -234,7 +243,7 @@ export const StudentLayout: React.FC = () => {
                   onClick={() => saveTimerSession(false)}
                   disabled={saving || elapsedSeconds < 5}
                   title="Save elapsed minutes to your study hours"
-                  className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-400 text-slate-950 disabled:opacity-40 transition-colors"
+                  className="inline-flex items-center px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-sky-500 hover:bg-sky-400 text-slate-950 disabled:opacity-40 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5 mr-1" />
                   Log Time
@@ -244,10 +253,10 @@ export const StudentLayout: React.FC = () => {
                   type="button"
                   onClick={() => saveTimerSession(true)}
                   disabled={saving}
-                  className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:opacity-40 transition-colors"
+                  className="inline-flex items-center px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 disabled:opacity-40 transition-colors"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                  Complete Task
+                  Complete
                 </button>
 
                 <button
@@ -257,7 +266,7 @@ export const StudentLayout: React.FC = () => {
                   title="Discard timer"
                   className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

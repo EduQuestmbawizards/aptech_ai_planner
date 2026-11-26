@@ -575,7 +575,7 @@ export const AdminProfileRoadmapPage: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-1.5 max-h-[560px] overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-[240px] sm:max-h-[320px] lg:max-h-[560px] overflow-y-auto pr-1">
               {loading ? (
                 <div className="py-8 text-center text-xs text-slate-400">Loading students...</div>
               ) : filteredStudents.length === 0 ? (

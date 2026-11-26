@@ -72,7 +72,7 @@ export const WeeklySchedulePage: React.FC = () => {
       </div>
 
       {/* 7-Day Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         {weekDays.map((d, idx) => {
           const dateStr = d.toISOString().split('T')[0];
           const isToday = new Date().toISOString().split('T')[0] === dateStr;
@@ -81,7 +81,7 @@ export const WeeklySchedulePage: React.FC = () => {
           return (
             <div
               key={dateStr}
-              className={`rounded-2xl border p-3 flex flex-col min-h-[300px] transition-all ${
+              className={`rounded-2xl border p-3 flex flex-col min-h-[160px] sm:min-h-[220px] lg:min-h-[300px] transition-all ${
                 isToday
                   ? 'bg-brand-50/40 border-brand-300 ring-2 ring-brand-500/20'
                   : 'bg-white border-slate-200/80'

@@ -200,7 +200,7 @@ export const DailyTasksPage: React.FC = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                  <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
                     {!isCompleted && (
                       <button
                         type="button"

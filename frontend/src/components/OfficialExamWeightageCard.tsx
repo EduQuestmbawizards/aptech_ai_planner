@@ -88,10 +88,10 @@ export const OfficialExamWeightageCard: React.FC<OfficialExamWeightageCardProps>
         </div>
 
         {/* Tab Filters */}
-        <div className="flex items-center space-x-2 pt-4 mt-4 border-t border-slate-800">
+        <div className="flex items-center gap-1.5 sm:gap-2 pt-4 mt-4 border-t border-slate-800 overflow-x-auto pb-1 max-w-full">
           <button
             onClick={() => setActiveTab('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'ALL'
                 ? 'bg-amber-400 text-slate-950 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -101,7 +101,7 @@ export const OfficialExamWeightageCard: React.FC<OfficialExamWeightageCardProps>
           </button>
           <button
             onClick={() => setActiveTab('MICRO')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'MICRO'
                 ? 'bg-amber-400 text-slate-950 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -111,7 +111,7 @@ export const OfficialExamWeightageCard: React.FC<OfficialExamWeightageCardProps>
           </button>
           <button
             onClick={() => setActiveTab('MACRO')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
               activeTab === 'MACRO'
                 ? 'bg-amber-400 text-slate-950 shadow-sm'
                 : 'text-slate-300 hover:text-white hover:bg-white/10'

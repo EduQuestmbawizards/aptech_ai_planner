@@ -131,7 +131,7 @@ export const CourseSyllabusPage: React.FC = () => {
               <div key={module.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                 <button
                   onClick={() => toggleModule(module.id)}
-                  className="w-full text-left p-5 bg-slate-50/70 hover:bg-slate-100 flex items-center justify-between transition-colors"
+                  className="w-full text-left p-4 sm:p-5 bg-slate-50/70 hover:bg-slate-100 flex items-center justify-between transition-colors"
                 >
                   <div>
                     <span className="text-[10px] font-mono font-bold text-brand-700 uppercase tracking-wider mr-2">
@@ -155,7 +155,7 @@ export const CourseSyllabusPage: React.FC = () => {
                 </button>
 
                 {expandedModules[module.id] && (
-                  <div className="p-5 divide-y divide-slate-100 space-y-4">
+                  <div className="p-4 sm:p-5 divide-y divide-slate-100 space-y-4">
                     {module.topics.map((topic, tIdx) => (
                       <div key={topic.id} className="pt-4 first:pt-0">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

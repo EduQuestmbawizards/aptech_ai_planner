@@ -78,6 +78,15 @@ export const AdminLayout: React.FC = () => {
         </button>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 md:hidden transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar Desktop */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
@@ -164,7 +173,7 @@ export const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8">
         <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>

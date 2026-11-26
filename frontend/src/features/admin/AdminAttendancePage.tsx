@@ -263,8 +263,8 @@ export const AdminAttendancePage: React.FC = () => {
         </div>
 
         {/* Quick Filter Pills */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 flex-wrap">
-          <span className="text-[11px] font-bold text-slate-500 mr-1 flex items-center gap-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100 overflow-x-auto pb-1">
+          <span className="text-[11px] font-bold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
             <Filter className="w-3.5 h-3.5" /> Filter List:
           </span>
           {(['ALL', 'PRESENT', 'ABSENT', 'UNMARKED'] as const).map((f) => (
@@ -272,7 +272,7 @@ export const AdminAttendancePage: React.FC = () => {
               key={f}
               type="button"
               onClick={() => setStatusFilter(f)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-colors ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-colors shrink-0 whitespace-nowrap ${
                 statusFilter === f
                   ? 'bg-slate-900 text-amber-300 border-slate-900'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -329,7 +329,7 @@ export const AdminAttendancePage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[700px]">
             <thead className="bg-slate-50 text-slate-600 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3.5 px-4">Student</th>
