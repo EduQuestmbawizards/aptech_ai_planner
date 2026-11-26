@@ -97,14 +97,18 @@ export const AdminStudyPlansPage: React.FC = () => {
     setDetailLoading(true);
     setHistoryLoading(true);
     try {
-      const [detailRes, histRes] = await Promise.all([
+      const [detailRes, histRes] = await Promise.allSettled([
         api.get(`/admin/study-plans/${plan.id}`),
         api.get<StudyPlanVersionSnapshot[]>(`/plans/${plan.id}/history`),
       ]);
-      setSelectedPlan(detailRes.data);
-      setPlanHistory(histRes.data || []);
-      if (histRes.data && histRes.data.length > 0) {
-        setExpandedHistoryId(histRes.data[0].id);
+      if (detailRes.status === 'fulfilled') {
+        setSelectedPlan(detailRes.value.data);
+      }
+      if (histRes.status === 'fulfilled') {
+        setPlanHistory(histRes.value.data || []);
+        if (histRes.value.data && histRes.value.data.length > 0) {
+          setExpandedHistoryId(histRes.value.data[0].id);
+        }
       }
     } catch (err) {
       console.error('Failed to load plan detail', err);

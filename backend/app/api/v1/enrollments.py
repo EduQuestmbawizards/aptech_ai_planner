@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.user import User, StudentProfile
+from app.models.user import User, StudentProfile, UserRole
 from app.models.course import Course
 from app.models.enrollment import Enrollment, EnrollmentStatus
 from app.models.logs import AuditLog
@@ -210,7 +210,7 @@ def get_enrollment_invoice_data(
     if not enrollment:
         raise HTTPException(status_code=404, detail="Enrollment not found.")
 
-    if current_user.role != "ADMIN":
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value, "ADMIN", "SUPER_ADMIN"):
         if not current_user.student_profile or enrollment.student_id != current_user.student_profile.id:
             raise HTTPException(status_code=403, detail="Access denied to this enrollment invoice.")
         if getattr(enrollment, "access_type", "FULL") == "TRIAL":
@@ -232,7 +232,7 @@ def download_enrollment_invoice_pdf(
     if not enrollment:
         raise HTTPException(status_code=404, detail="Enrollment not found.")
 
-    if current_user.role != "ADMIN":
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value, "ADMIN", "SUPER_ADMIN"):
         if not current_user.student_profile or enrollment.student_id != current_user.student_profile.id:
             raise HTTPException(status_code=403, detail="Access denied to this enrollment invoice.")
         if getattr(enrollment, "access_type", "FULL") == "TRIAL":

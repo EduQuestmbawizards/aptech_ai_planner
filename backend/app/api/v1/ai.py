@@ -76,8 +76,8 @@ def get_ai_usage_stats(
     db: Session = Depends(get_db)
 ):
     query = db.query(AIUsageLog)
-    # If not admin, restrict to own usage
-    if current_user.role != UserRole.ADMIN.value:
+    # If not admin/super_admin, restrict to own usage
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value):
         query = query.filter(AIUsageLog.user_id == current_user.id)
 
     logs = query.all()

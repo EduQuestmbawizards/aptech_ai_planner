@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.user import User, StudentProfile
+from app.models.user import User, StudentProfile, UserRole
 from app.models.course import Course
 from app.models.enrollment import Enrollment, EnrollmentStatus, AccessType
 from app.models.planner import StudyPlan, StudyPlanVersion, StudyTask, TaskStatus
@@ -383,7 +383,7 @@ def get_plan_version_history(
     if not plan:
         raise HTTPException(status_code=404, detail="Study plan not found.")
 
-    if current_user.role != "ADMIN":
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value, "ADMIN", "SUPER_ADMIN"):
         if not current_user.student_profile or plan.student_id != current_user.student_profile.id:
             raise HTTPException(status_code=403, detail="Access denied to view this plan's history.")
 
@@ -489,7 +489,7 @@ def export_plan_schedule_csv(
     if not plan:
         raise HTTPException(status_code=404, detail="Study plan not found.")
 
-    if current_user.role != "ADMIN":
+    if current_user.role not in (UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value, "ADMIN", "SUPER_ADMIN"):
         if not current_user.student_profile or plan.student_id != current_user.student_profile.id:
             raise HTTPException(status_code=403, detail="Access denied to export this schedule.")
         if plan.enrollment and getattr(plan.enrollment, "access_type", AccessType.FULL.value) == AccessType.TRIAL.value:
