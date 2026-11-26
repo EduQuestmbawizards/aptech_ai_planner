@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import StudentProfile
 from app.models.planner import StudyPlan, StudyTask, StudySession, TaskStatus
+from app.models.attendance import Attendance, AttendanceStatus
 from app.models.enrollment import AccessType
 from app.schemas.planner import TaskResponse
 from app.schemas.task import TaskStatusUpdate, StudySessionCreate, StudySessionResponse
@@ -163,6 +164,27 @@ def update_task_status(
             )
             db.add(auto_session)
             task.actual_duration_hours = round(auto_minutes / 60.0, 2)
+
+        # Auto-record Attendance as PRESENT for the task scheduled date
+        plan = task.study_plan
+        if task.scheduled_date and plan and plan.enrollment_id:
+            att_date = task.scheduled_date
+            existing_att = db.query(Attendance).filter(
+                Attendance.enrollment_id == plan.enrollment_id,
+                Attendance.attendance_date == att_date
+            ).first()
+            if not existing_att:
+                db.add(
+                    Attendance(
+                        student_id=student.id,
+                        enrollment_id=plan.enrollment_id,
+                        course_id=plan.course_id,
+                        attendance_date=att_date,
+                        status=AttendanceStatus.PRESENT.value,
+                        study_task_id=task.id,
+                        remarks=f"Verified PRESENT for class on {att_date}: '{task.title}'",
+                    )
+                )
     else:
         task.completed_at = None
         # Remove auto-logged session if task is reverted from COMPLETED

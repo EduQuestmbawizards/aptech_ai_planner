@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { CourseSyllabus, MyEnrolledCourse } from '../../types';
+import { getCourseBrand } from '../../utils/courseHelper';
 import {
   BookOpen,
   FileText,
@@ -64,14 +65,21 @@ export const CourseSyllabusPage: React.FC = () => {
     );
   }
 
+  const currentCourse = enrolledCourses.find((c) => c.course_id === selectedCourseId);
+  const brandName = getCourseBrand(
+    syllabus?.category || (currentCourse as any)?.category,
+    syllabus?.name || currentCourse?.course_name,
+    syllabus?.course_code || currentCourse?.course_code
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Official Course Syllabus</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">{brandName} Course Syllabus</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Authoritative Aptech curriculum hierarchy, accredited learning hours, and approved study resources.
+            Authoritative {brandName} curriculum hierarchy, accredited learning hours, and approved study resources.
           </p>
         </div>
 
@@ -98,9 +106,14 @@ export const CourseSyllabusPage: React.FC = () => {
           {/* Syllabus Meta Header */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold border border-brand-200">
-                {syllabus.course_code}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold border border-brand-200">
+                  {syllabus.course_code}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                  {brandName} Authorised Course
+                </span>
+              </div>
               <h2 className="text-base font-bold text-slate-900 mt-1">{syllabus.name}</h2>
               <div className="text-xs text-slate-500 mt-0.5">
                 Official Duration: {syllabus.official_duration_value} {syllabus.official_duration_unit} • Total Accredited Hours: {syllabus.total_learning_hours} hrs

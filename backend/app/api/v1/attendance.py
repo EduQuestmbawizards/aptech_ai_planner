@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.models.user import User, StudentProfile, UserRole
 from app.models.enrollment import Enrollment, EnrollmentStatus
 from app.models.course import Course
-from app.models.planner import StudyTask
+from app.models.planner import StudyPlan, StudyTask
 from app.models.attendance import Attendance, AttendanceStatus
 from app.models.profile_roadmap import ProfileRoadmapItem, ProfileSessionAttendance
 from app.models.logs import AuditLog
@@ -476,14 +476,46 @@ def get_students_attendance_overview(
                 })
             continue
 
-        # Check attendance for target_date
+        # Check active study plan to know student's exact class date
+        plan = (
+            db.query(StudyPlan)
+            .filter(StudyPlan.student_id == st.id, StudyPlan.is_active == True)
+            .order_by(StudyPlan.created_at.desc())
+            .first()
+        )
+        class_date = None
+        class_title = None
+        class_task_id = None
+        if plan and plan.tasks:
+            # 1. Matching task for att_date
+            matching_task = next((t for t in plan.tasks if t.scheduled_date == att_date), None)
+            if not matching_task:
+                # 2. Most recent completed task or latest scheduled task <= today
+                eligible = [t for t in plan.tasks if t.scheduled_date <= date.today()]
+                if eligible:
+                    eligible.sort(key=lambda t: t.scheduled_date, reverse=True)
+                    matching_task = eligible[0]
+                else:
+                    matching_task = plan.tasks[0]
+            if matching_task:
+                class_date = matching_task.scheduled_date.isoformat()
+                class_title = matching_task.title
+                class_task_id = matching_task.id
+
+        # Check attendance for target class date or att_date
         att_record = None
         all_records = []
+        target_check_date = date.fromisoformat(class_date) if class_date else att_date
         try:
             att_record = db.query(Attendance).filter(
                 Attendance.enrollment_id == primary_enr.id,
-                Attendance.attendance_date == att_date
+                Attendance.attendance_date == target_check_date
             ).first()
+            if not att_record and target_check_date != att_date:
+                att_record = db.query(Attendance).filter(
+                    Attendance.enrollment_id == primary_enr.id,
+                    Attendance.attendance_date == att_date
+                ).first()
             all_records = db.query(Attendance).filter(Attendance.enrollment_id == primary_enr.id).all()
         except Exception as att_err:
             logger.warning(f"Error querying attendance for enrollment {primary_enr.id}: {att_err}")
@@ -507,6 +539,9 @@ def get_students_attendance_overview(
             "course_name": course.name if course else "Unknown",
             "course_code": course.course_code if course else "",
             "access_type": getattr(primary_enr, "access_type", "FULL"),
+            "class_date": class_date,
+            "class_title": class_title,
+            "class_task_id": class_task_id,
             "current_status": att_record.status if att_record else None,
             "remarks": att_record.remarks if att_record else None,
             "summary": summary,

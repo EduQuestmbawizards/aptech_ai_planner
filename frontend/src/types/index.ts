@@ -133,6 +133,9 @@ export interface AdminStudentAttendanceOverviewItem {
   course_name?: string;
   course_code?: string;
   access_type: 'FULL' | 'TRIAL';
+  class_date?: string | null;
+  class_title?: string | null;
+  class_task_id?: string | null;
   current_status: AttendanceStatusType | null;
   remarks?: string | null;
   summary: AttendanceSummary;
@@ -196,6 +199,7 @@ export interface CourseSyllabus {
   course_id: string;
   course_code: string;
   name: string;
+  category?: string;
   official_duration_value: number;
   official_duration_unit: string;
   total_learning_hours: number;

@@ -4,7 +4,7 @@ import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useStudyTimer, formatTimerClock } from '../../context/StudyTimerContext';
 import { StudyPlan, StudyTask, ProgressOverview, MyEnrolledCourse, StudentAttendanceStats, ProfileRoadmapStudentSummary, ProfileRoadmapItem } from '../../types';
-import { getEconomicsTrackLabel } from '../../utils/courseHelper';
+import { getEconomicsTrackLabel, getCourseBrand } from '../../utils/courseHelper';
 import {
   CalendarCheck2,
   CalendarCheck,
@@ -659,17 +659,22 @@ export const StudentDashboardPage: React.FC = () => {
 
   // If student has no active plan yet, show onboarding invitation
   if (!activePlan) {
+    const brandName = getCourseBrand(
+      enrolledCourses[0]?.category,
+      enrolledCourses[0]?.course_name,
+      enrolledCourses[0]?.course_code
+    );
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-brand-900 to-slate-900 rounded-3xl p-8 text-white shadow-xl">
           <span className="text-xs font-mono font-semibold text-brand-300 uppercase tracking-widest bg-brand-800/60 px-3 py-1 rounded-full">
-            Aptech Certified Career Track
+            {brandName} Authorised Track
           </span>
           <h1 className="text-2xl md:text-3xl font-extrabold mt-3 tracking-tight">
             Welcome, {user?.full_name}!
           </h1>
           <p className="text-sm text-slate-300 mt-2 max-w-xl">
-            You are enrolled in Aptech's official curriculum. Generate your AI-powered personalized study schedule to match your target completion deadline and daily availability.
+            You are enrolled in {brandName}'s official curriculum. Generate your AI-powered personalized study schedule to match your target completion deadline and daily availability.
           </p>
           <div className="mt-6 flex flex-wrap gap-4">
             <button

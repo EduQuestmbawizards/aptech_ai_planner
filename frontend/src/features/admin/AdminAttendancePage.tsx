@@ -95,22 +95,26 @@ export const AdminAttendancePage: React.FC = () => {
       setSaveSuccess(null);
       setErrorMessage(null);
 
+      // Use the student's actual class date when available, otherwise the selectedDate
+      const dateToMark = student.class_date || selectedDate;
+
       await api.post('/attendance/batch', {
-        attendance_date: selectedDate,
+        attendance_date: dateToMark,
         course_id: student.course_id,
         records: [
           {
             student_id: student.student_id,
             enrollment_id: student.enrollment_id,
             status: statusToMark,
-            remarks: localRemarks[student.enrollment_id] || undefined,
+            study_task_id: student.class_task_id || undefined,
+            remarks: localRemarks[student.enrollment_id] || (student.class_title ? `Class on ${dateToMark}: ${student.class_title}` : undefined),
           },
         ],
       });
 
       // Update local state
       setLocalStatuses((prev) => ({ ...prev, [student.enrollment_id]: statusToMark }));
-      setSaveSuccess(`Marked ${student.full_name} as ${statusToMark} for ${selectedDate}!`);
+      setSaveSuccess(`Marked ${student.full_name} as ${statusToMark} for class on ${dateToMark}!`);
       // Background refresh
       fetchAttendanceOverview();
     } catch (err: any) {
@@ -373,12 +377,23 @@ export const AdminAttendancePage: React.FC = () => {
                         )}
                       </td>
 
-                      {/* Course */}
+                      {/* Course & Class Date */}
                       <td className="py-3.5 px-3">
                         <div className="font-bold text-slate-800">{st.course_code}</div>
                         <div className="text-[11px] text-slate-400 truncate max-w-[160px]">
                           {st.course_name}
                         </div>
+                        {st.class_date && (
+                          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 w-max">
+                            <Calendar className="w-3 h-3 text-amber-600 shrink-0" />
+                            <span>Class Date: <strong>{st.class_date}</strong></span>
+                          </div>
+                        )}
+                        {st.class_title && (
+                          <div className="text-[10px] text-slate-500 line-clamp-1 italic mt-0.5 max-w-[180px]">
+                            {st.class_title}
+                          </div>
+                        )}
                       </td>
 
                       {/* Overall % */}
@@ -411,10 +426,10 @@ export const AdminAttendancePage: React.FC = () => {
                                 ? 'bg-emerald-600 text-white shadow-xs'
                                 : 'text-slate-700 hover:text-emerald-700 hover:bg-emerald-50'
                             }`}
-                            title="Mark Present"
+                            title={`Mark Present for class on ${st.class_date || selectedDate}`}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            Present
+                            Present{st.class_date ? ` (${st.class_date})` : ''}
                           </button>
                           <button
                             type="button"

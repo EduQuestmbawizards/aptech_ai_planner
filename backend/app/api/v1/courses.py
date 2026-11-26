@@ -110,6 +110,7 @@ def get_course_syllabus(id: str, db: Session = Depends(get_db)):
         "course_id": c.id,
         "course_code": c.course_code,
         "name": c.name,
+        "category": c.category,
         "official_duration_value": c.official_duration_value,
         "official_duration_unit": c.official_duration_unit,
         "total_learning_hours": c.total_learning_hours,

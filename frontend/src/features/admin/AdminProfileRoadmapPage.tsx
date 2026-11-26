@@ -300,7 +300,15 @@ export const AdminProfileRoadmapPage: React.FC = () => {
   const handleOpenAddSession = (presetProposalId?: string) => {
     setEditingSessionId(null);
     setSelectedProposalIdForSession(presetProposalId || '');
-    setSessionDate(new Date().toISOString().split('T')[0]);
+    const presetItem = presetProposalId ? selectedStudent?.items?.find((it) => it.id === presetProposalId) : null;
+    let initialDate = new Date().toISOString().split('T')[0];
+    if (presetItem?.session_date) {
+      const match = presetItem.session_date.match(/\d{4}-\d{2}-\d{2}/);
+      if (match) {
+        initialDate = match[0];
+      }
+    }
+    setSessionDate(initialDate);
     setSessionTopic('');
     setSessionDescription('');
     setSessionDuration(60);

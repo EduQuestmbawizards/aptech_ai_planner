@@ -200,3 +200,47 @@ export const AP_MACRO_WEIGHTAGE: APUnitWeightage[] = [
   },
 ];
 
+/**
+ * Resolves the course brand/category (EduQuest, MBA Wizards, or Aptech)
+ * based on course category, title, or code.
+ */
+export const getCourseBrand = (
+  category?: string | null,
+  name?: string | null,
+  code?: string | null
+): 'EduQuest' | 'MBA Wizards' | 'Aptech' => {
+  const cat = (category || '').trim();
+  const lowerCat = cat.toLowerCase();
+  if (lowerCat === 'eduquest') return 'EduQuest';
+  if (lowerCat === 'mba wizards' || lowerCat === 'mbawizards' || lowerCat === 'mba') return 'MBA Wizards';
+  if (lowerCat === 'aptech') return 'Aptech';
+
+  const text = `${category || ''} ${name || ''} ${code || ''}`.toLowerCase();
+  if (
+    text.includes('mba') ||
+    text.includes('cat ') ||
+    text.includes('gmat') ||
+    text.includes('gre') ||
+    text.includes('snap') ||
+    text.includes('nmat') ||
+    text.includes('xat')
+  ) {
+    return 'MBA Wizards';
+  }
+  if (
+    text.includes('eduquest') ||
+    text.includes('ap ') ||
+    text.includes('ap-') ||
+    text.includes('sat') ||
+    text.includes('act') ||
+    text.includes('ucat') ||
+    text.includes('micro') ||
+    text.includes('macro') ||
+    text.includes('economic') ||
+    text.includes('college board')
+  ) {
+    return 'EduQuest';
+  }
+  return 'Aptech';
+};
+
