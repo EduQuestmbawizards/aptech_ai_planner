@@ -527,7 +527,11 @@ def export_plan_schedule_csv(
             t.estimated_duration_hours,
             t.actual_duration_hours,
             t.status,
-            t.completed_at.strftime("%Y-%m-%d %H:%M") if t.completed_at else "",
+            (
+                t.scheduled_date.strftime("%Y-%m-%d")
+                if (t.status == TaskStatus.COMPLETED.value and t.scheduled_date)
+                else (t.completed_at.strftime("%Y-%m-%d") if t.completed_at else "")
+            ),
             plan.approval_status,
         ])
 

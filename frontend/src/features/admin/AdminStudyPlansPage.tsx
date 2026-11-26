@@ -454,33 +454,34 @@ export const AdminStudyPlansPage: React.FC = () => {
 
       {/* Inspect & Review Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-3 sm:p-6 flex justify-center items-start min-h-screen">
-          <div className="bg-white rounded-3xl max-w-4xl w-full my-auto shadow-2xl border border-amber-200 flex flex-col max-h-[92vh] overflow-hidden">
-            <div className="bg-slate-900 text-white p-5 sm:p-6 flex items-start justify-between border-b-2 border-amber-400 shrink-0 rounded-t-3xl">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-amber-400 text-slate-950">
-                    {selectedPlan.course_code}
-                  </span>
-                  <span className="text-xs text-amber-200 font-mono">{selectedPlan.aptech_student_id}</span>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6">
+          <div className="min-h-full flex items-center justify-center py-6 sm:py-10">
+            <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-amber-200 overflow-hidden my-auto">
+              <div className="bg-slate-900 text-white p-5 sm:p-6 flex items-start justify-between border-b-2 border-amber-400 sticky top-0 z-30 shadow-md">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-amber-400 text-slate-950">
+                      {selectedPlan.course_code}
+                    </span>
+                    <span className="text-xs text-amber-200 font-mono">{selectedPlan.aptech_student_id}</span>
+                  </div>
+                  <h2 className="text-lg font-black text-white mt-1.5">
+                    {selectedPlan.student_name} — {selectedPlan.title}
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    {selectedPlan.start_date} → {selectedPlan.target_completion_date} • {(selectedPlan.available_days || []).join(', ')} • {selectedPlan.daily_study_hours} hrs/day
+                  </p>
                 </div>
-                <h2 className="text-lg font-black text-white mt-1.5">
-                  {selectedPlan.student_name} — {selectedPlan.title}
-                </h2>
-                <p className="text-xs text-slate-300 mt-0.5">
-                  {selectedPlan.start_date} → {selectedPlan.target_completion_date} • {(selectedPlan.available_days || []).join(', ')} • {selectedPlan.daily_study_hours} hrs/day
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPlan(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedPlan(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 overscroll-contain">
+              <div className="p-5 sm:p-6 space-y-5">
               {/* Modal Tabs: Review vs Old Plans History */}
               <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
                 <button
@@ -875,6 +876,7 @@ export const AdminStudyPlansPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );
