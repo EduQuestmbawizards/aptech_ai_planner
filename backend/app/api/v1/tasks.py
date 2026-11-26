@@ -137,7 +137,10 @@ def update_task_status(
 
     if payload.status == TaskStatus.COMPLETED.value:
         if not task.completed_at:
-            task.completed_at = datetime.now(timezone.utc)
+            if task.scheduled_date:
+                task.completed_at = datetime.combine(task.scheduled_date, datetime.min.time(), tzinfo=timezone.utc)
+            else:
+                task.completed_at = datetime.now(timezone.utc)
         # Auto-log estimated/specified study hours if the student didn't already log a timer/manual session
         if not existing_sessions:
             credit_hours = (
@@ -150,10 +153,12 @@ def update_task_status(
                 )
             )
             auto_minutes = max(1, int(round((credit_hours or 1.0) * 60)))
+            sess_date = datetime.combine(task.scheduled_date, datetime.min.time(), tzinfo=timezone.utc) if task.scheduled_date else datetime.now(timezone.utc)
             auto_session = StudySession(
                 task_id=task.id,
                 student_id=student.id,
                 duration_minutes=auto_minutes,
+                session_date=sess_date,
                 notes=AUTO_LOG_NOTE,
             )
             db.add(auto_session)

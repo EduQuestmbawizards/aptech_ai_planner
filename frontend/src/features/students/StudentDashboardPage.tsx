@@ -1164,11 +1164,11 @@ export const StudentDashboardPage: React.FC = () => {
                       )}
                       {isCompleted ? (
                         <span
-                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200"
                           title="Completed topics are permanently locked"
                         >
-                          <Lock className="w-3 h-3 mr-1" />
-                          Done (Locked)
+                          <Lock className="w-3 h-3" />
+                          Done • {t.scheduled_date}
                         </span>
                       ) : (
                         <button

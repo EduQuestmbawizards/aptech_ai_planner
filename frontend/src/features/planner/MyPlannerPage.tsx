@@ -799,10 +799,10 @@ export const MyPlannerPage: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        {isDone && t.completed_at ? (
+                        {isDone ? (
                           <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
                             <Lock className="w-3 h-3" />
-                            Verified complete on {new Date(t.completed_at).toLocaleString()}
+                            Verified complete on {t.scheduled_date}
                           </div>
                         ) : t.description ? (
                           <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{t.description}</div>

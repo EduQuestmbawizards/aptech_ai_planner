@@ -273,8 +273,10 @@ export const AdminDashboardPage: React.FC = () => {
                           <div>
                             <div className="font-semibold text-slate-800 line-clamp-1">{p.last_completed_task_title}</div>
                             {p.last_completed_at && (
-                              <div className="text-[10px] text-slate-400">
-                                {new Date(p.last_completed_at).toLocaleString()}
+                              <div className="text-[10px] text-slate-500 font-medium">
+                                {p.last_completed_at.includes('T')
+                                  ? p.last_completed_at.split('T')[0]
+                                  : p.last_completed_at}
                               </div>
                             )}
                           </div>

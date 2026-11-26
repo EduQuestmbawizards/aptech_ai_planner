@@ -454,9 +454,9 @@ export const AdminStudyPlansPage: React.FC = () => {
 
       {/* Inspect & Review Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-amber-200">
-            <div className="bg-slate-900 text-white p-6 flex items-start justify-between border-b-2 border-amber-400 sticky top-0 z-10">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-3 sm:p-6 flex justify-center items-start min-h-screen">
+          <div className="bg-white rounded-3xl max-w-4xl w-full my-auto shadow-2xl border border-amber-200 flex flex-col max-h-[92vh] overflow-hidden">
+            <div className="bg-slate-900 text-white p-5 sm:p-6 flex items-start justify-between border-b-2 border-amber-400 shrink-0 rounded-t-3xl">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-amber-400 text-slate-950">
@@ -480,7 +480,7 @@ export const AdminStudyPlansPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-5">
+            <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 overscroll-contain">
               {/* Modal Tabs: Review vs Old Plans History */}
               <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
                 <button
@@ -552,7 +552,7 @@ export const AdminStudyPlansPage: React.FC = () => {
                             </div>
                           </button>
                           {isExpanded && (
-                            <div className="p-4 border-t border-slate-200 max-h-64 overflow-y-auto">
+                            <div className="p-4 border-t border-slate-200 overflow-x-auto">
                               <table className="w-full text-left text-[11px]">
                                 <thead>
                                   <tr className="text-slate-500 border-b border-slate-200">
@@ -804,9 +804,9 @@ export const AdminStudyPlansPage: React.FC = () => {
                 {detailLoading ? (
                   <div className="py-6 text-center text-xs text-slate-500">Loading timetable...</div>
                 ) : (
-                  <div className="max-h-72 overflow-y-auto border border-slate-200 rounded-2xl">
+                  <div className="border border-slate-200 rounded-2xl overflow-x-auto shadow-xs">
                     <table className="w-full text-left text-xs text-slate-700">
-                      <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200 sticky top-0">
+                      <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-200 sticky top-0 z-10">
                         <tr>
                           <th className="py-2.5 px-3">Date</th>
                           <th className="py-2.5 px-3">Type</th>
@@ -845,7 +845,7 @@ export const AdminStudyPlansPage: React.FC = () => {
                                 {isDone ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                     <Lock className="w-2.5 h-2.5" />
-                                    Done{t.completed_at ? ` • ${new Date(t.completed_at).toLocaleDateString()}` : ''}
+                                    Done • {t.scheduled_date}
                                   </span>
                                 ) : (
                                   <div className="flex items-center gap-2">

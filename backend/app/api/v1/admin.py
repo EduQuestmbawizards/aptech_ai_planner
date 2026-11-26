@@ -724,7 +724,11 @@ def list_student_study_plans(
             "duration_days": duration_days,
             "completion_percent": completion_pct,
             "last_completed_task_title": last_done.title if last_done else None,
-            "last_completed_at": last_done.completed_at.isoformat() if (last_done and last_done.completed_at) else None,
+            "last_completed_at": (
+                last_done.scheduled_date.isoformat()
+                if (last_done and last_done.scheduled_date)
+                else (last_done.completed_at.isoformat() if (last_done and last_done.completed_at) else None)
+            ),
         })
 
     return {"items": items, "total": len(items)}
@@ -949,7 +953,10 @@ def admin_mark_task_complete(
     if task.status != TaskStatus.COMPLETED.value:
         task.status = TaskStatus.COMPLETED.value
         if not task.completed_at:
-            task.completed_at = datetime.now(timezone.utc)
+            if task.scheduled_date:
+                task.completed_at = datetime.combine(task.scheduled_date, datetime.min.time(), tzinfo=timezone.utc)
+            else:
+                task.completed_at = datetime.now(timezone.utc)
 
         existing_sessions = db.query(StudySession).filter(StudySession.task_id == task.id).all()
         if not existing_sessions:
@@ -959,11 +966,13 @@ def admin_mark_task_complete(
                 else (task.estimated_duration_hours or 1.0)
             )
             auto_minutes = max(1, int(round(credit_hours * 60)))
+            sess_date = datetime.combine(task.scheduled_date, datetime.min.time(), tzinfo=timezone.utc) if task.scheduled_date else datetime.now(timezone.utc)
             db.add(
                 StudySession(
                     task_id=task.id,
                     student_id=plan.student_id,
                     duration_minutes=auto_minutes,
+                    session_date=sess_date,
                     notes="Verified & marked complete by Teacher/Admin",
                 )
             )
