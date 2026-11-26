@@ -181,11 +181,19 @@ class SchedulerEngine:
                 current_date = current_date + timedelta(days=1)
             current_day_allocated_hours = min(daily_hours, 2.0)
 
+            is_economics = any(k in (course.name or "").lower() for k in ["economic", "ap micro", "ap macro", "ap-econ"])
+            practice_title = f"Practice & Problem Set (FRQ): {top.title}" if is_economics else f"Hands-on Lab & Practice: {top.title}"
+            practice_desc = (
+                f"Solve AP-style multiple-choice questions, Free-Response Questions (FRQ), and graphical analysis for {top.title}."
+                if is_economics
+                else f"Complete hands-on coding exercises and laboratory assignments for {top.title}."
+            )
+
             tasks.append({
                 "topic_id": top.id,
                 "topic_code": top.topic_code,
-                "title": f"Hands-on Lab & Practice: {top.title}",
-                "description": f"Complete hands-on coding exercises and laboratory assignments for {top.title}.",
+                "title": practice_title,
+                "description": practice_desc,
                 "scheduled_date": current_date,
                 "estimated_duration_hours": round(current_day_allocated_hours, 1),
                 "task_type": TaskType.PRACTICE.value,

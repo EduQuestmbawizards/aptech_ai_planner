@@ -13,7 +13,7 @@ export const getEconomicsTrackLabel = (task: {
   // 1. Direct match on topic code
   if (code.includes('MIC') || code.startsWith('AP-MIC')) return 'Microeconomics';
   if (code.includes('MAC') || code.startsWith('AP-MAC')) return 'Macroeconomics';
-  if (code.includes('REV') || code.startsWith('AP-REV')) return 'Exam Prep';
+  if (code.includes('REV') || code.startsWith('AP-REV') || code.includes('STRAT')) return 'Exam Prep';
 
   // 2. Keyword detection for Macroeconomics (check Macro first for distinct terms)
   if (
@@ -36,12 +36,28 @@ export const getEconomicsTrackLabel = (task: {
     text.includes('phillips curve') ||
     text.includes('foreign exchange') ||
     text.includes('balance of payments') ||
-    text.includes('national income')
+    text.includes('national income') ||
+    text.includes('stabilization') ||
+    text.includes('open economy') ||
+    text.includes('business cycle') ||
+    text.includes('economic indicators')
   ) {
     return 'Macroeconomics';
   }
 
-  // 3. Keyword detection for Microeconomics
+  // 3. Keyword detection for Exam Prep / Strategy
+  if (
+    text.includes('exam prep') ||
+    text.includes('exam strategy') ||
+    text.includes('frq scoring workshop') ||
+    text.includes('dual graph mastery') ||
+    text.includes('diagnostic planning') ||
+    text.includes('teacher-decided sequencing')
+  ) {
+    return 'Exam Prep';
+  }
+
+  // 4. Keyword detection for Microeconomics
   if (
     text.includes('microeconomic') ||
     text.includes('comparative advantage') ||
@@ -59,9 +75,13 @@ export const getEconomicsTrackLabel = (task: {
     text.includes('resource market') ||
     text.includes('deadweight loss') ||
     text.includes('externalities') ||
+    text.includes('market failure') ||
+    text.includes('public goods') ||
+    text.includes('gini') ||
     text.includes('cost curve') ||
     text.includes('diminishing returns') ||
-    text.includes('surplus')
+    text.includes('surplus') ||
+    text.includes('basic economic concepts')
   ) {
     return 'Microeconomics';
   }
