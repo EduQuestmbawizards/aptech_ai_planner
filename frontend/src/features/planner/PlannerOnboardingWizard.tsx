@@ -12,6 +12,7 @@ import {
   Sparkles,
   BookOpen,
   ShieldCheck,
+  Flag,
 } from 'lucide-react';
 
 const WEEKDAYS = [
@@ -32,10 +33,18 @@ const DURATION_PRESETS = [
   { label: '6 Months', days: 180, desc: 'Relaxed Pace' },
 ];
 
-const addDaysIso = (days: number): string => {
-  const d = new Date();
+const toLocalIso = (d: Date): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const addDaysTo = (dateStr: string, days: number): string => {
+  const parts = dateStr.split('-').map(Number);
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
   d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  return toLocalIso(d);
 };
 
 export const PlannerOnboardingWizard: React.FC = () => {
@@ -47,9 +56,10 @@ export const PlannerOnboardingWizard: React.FC = () => {
   const [syllabus, setSyllabus] = useState<CourseSyllabus | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Step 1: Course & Duration
+  // Step 1: Course, Start Date & Target Date
+  const [startDate, setStartDate] = useState<string>(() => toLocalIso(new Date()));
   const [selectedPresetDays, setSelectedPresetDays] = useState<number | 'custom'>(90);
-  const [targetDate, setTargetDate] = useState<string>(() => addDaysIso(90));
+  const [targetDate, setTargetDate] = useState<string>(() => addDaysTo(toLocalIso(new Date()), 90));
 
   // Step 2: Study Days, Hours & Comfort Level
   const [dailyHours, setDailyHours] = useState<number>(2.0);
@@ -104,7 +114,25 @@ export const PlannerOnboardingWizard: React.FC = () => {
 
   const handleSelectDurationPreset = (days: number) => {
     setSelectedPresetDays(days);
-    setTargetDate(addDaysIso(days));
+    setTargetDate(addDaysTo(startDate, days));
+  };
+
+  const handleStartDateChange = (newStart: string) => {
+    setStartDate(newStart);
+    if (selectedPresetDays !== 'custom') {
+      setTargetDate(addDaysTo(newStart, selectedPresetDays));
+    } else {
+      const startMs = new Date(newStart).getTime();
+      const endMs = new Date(targetDate).getTime();
+      if (endMs <= startMs) {
+        setTargetDate(addDaysTo(newStart, 30));
+      }
+    }
+  };
+
+  const handleTargetDateChange = (newTarget: string) => {
+    setSelectedPresetDays('custom');
+    setTargetDate(newTarget);
   };
 
   const toggleDay = (dayId: string) => {
@@ -119,17 +147,18 @@ export const PlannerOnboardingWizard: React.FC = () => {
   const runFeasibilityCheck = async (
     overrideDays = availableDays,
     overrideHours = dailyHours,
+    overrideStartDate = startDate,
     overrideDate = targetDate
   ) => {
     setPreviewLoading(true);
     setErrorMsg(null);
     try {
-      const reqDays = Math.max(
-        1,
-        Math.ceil((new Date(overrideDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
-      );
+      const startMs = new Date(overrideStartDate).getTime();
+      const endMs = new Date(overrideDate).getTime();
+      const reqDays = Math.max(1, Math.ceil((endMs - startMs) / (1000 * 3600 * 24)));
       const res = await api.post('/plans/preview', {
         enrollment_id: selectedEnrollmentId,
+        start_date: overrideStartDate,
         target_completion_date: overrideDate,
         requested_duration_days: reqDays,
         daily_study_hours: overrideHours,
@@ -152,12 +181,12 @@ export const PlannerOnboardingWizard: React.FC = () => {
     setGenerateLoading(true);
     setErrorMsg(null);
     try {
-      const reqDays = Math.max(
-        1,
-        Math.ceil((new Date(targetDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
-      );
+      const startMs = new Date(startDate).getTime();
+      const endMs = new Date(targetDate).getTime();
+      const reqDays = Math.max(1, Math.ceil((endMs - startMs) / (1000 * 3600 * 24)));
       await api.post('/plans/generate', {
         enrollment_id: selectedEnrollmentId,
+        start_date: startDate,
         target_completion_date: targetDate,
         requested_duration_days: reqDays,
         daily_study_hours: dailyHours,
@@ -203,10 +232,11 @@ export const PlannerOnboardingWizard: React.FC = () => {
 
   const selectedCourse = enrolledCourses.find((e) => e.enrollment_id === selectedEnrollmentId);
   const weeklyHours = (availableDays.length * dailyHours).toFixed(1);
-  const totalDaysFromNow = Math.max(
+  const totalDays = Math.max(
     1,
-    Math.ceil((new Date(targetDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+    Math.ceil((new Date(targetDate).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24))
   );
+  const approxMonths = Math.max(1, Math.round(totalDays / 30));
 
   return (
     <div className="max-w-3xl mx-auto space-y-5 py-2">
@@ -301,57 +331,82 @@ export const PlannerOnboardingWizard: React.FC = () => {
             </div>
           )}
 
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900">2. In how many months do you want to finish?</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              For example: pick 2 Months for fast prep, 3 Months for balanced prep, or 4 Months for easy pace.
+          {/* Start Date & Target Completion Date */}
+          <div className="space-y-3">
+            <h2 className="text-base font-extrabold text-slate-900">2. Set Class Start Date &amp; Target Completion Date</h2>
+            <p className="text-xs text-slate-500">
+              Classes kal ya past date me shuru hui theen? Start date me past date bhi choose kar sakte hain.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-3">
-              {DURATION_PRESETS.map((p) => (
-                <button
-                  key={p.days}
-                  type="button"
-                  onClick={() => handleSelectDurationPreset(p.days)}
-                  className={`p-3 rounded-2xl border text-left transition-all ${
-                    selectedPresetDays === p.days
-                      ? 'bg-slate-900 text-white border-amber-400 ring-2 ring-amber-400/50'
-                      : 'bg-slate-50 text-slate-800 border-slate-200 hover:border-amber-300'
-                  }`}
-                >
-                  <div className={`text-sm font-black ${selectedPresetDays === p.days ? 'text-amber-300' : 'text-slate-900'}`}>
-                    {p.label}
-                  </div>
-                  <div className={`text-[11px] mt-0.5 ${selectedPresetDays === p.days ? 'text-slate-300' : 'text-slate-500'}`}>
-                    {p.desc}
-                  </div>
-                </button>
-              ))}
 
-              <div
-                className={`p-3 rounded-2xl border ${
-                  selectedPresetDays === 'custom'
-                    ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400/30'
-                    : 'bg-slate-50 border-slate-200'
-                }`}
-              >
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Or Pick Custom Date</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-amber-600" />
+                  <span>Batch / Class Start Date</span>
+                  <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 shadow-2xs focus:ring-2 focus:ring-amber-400 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Defaults to Today, ya kal/past date select karein.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <Flag className="w-4 h-4 text-amber-600" />
+                  <span>Target Completion Date</span>
+                  <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="date"
                   value={targetDate}
-                  min={addDaysIso(7)}
-                  onChange={(e) => {
-                    setSelectedPresetDays('custom');
-                    setTargetDate(e.target.value);
-                  }}
-                  className="w-full text-xs px-2 py-1 rounded-lg border border-slate-300 bg-white text-slate-900"
+                  min={startDate}
+                  onChange={(e) => handleTargetDateChange(e.target.value)}
+                  className="w-full text-xs font-bold px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 shadow-2xs focus:ring-2 focus:ring-amber-400 focus:outline-none"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Preset click karein ya custom date pick karein.
+                </span>
               </div>
             </div>
 
-            <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+            {/* Quick Duration Presets */}
+            <div className="space-y-1.5 pt-1">
+              <div className="text-xs font-bold text-slate-700">
+                Quick Duration Presets (Calculated from Start Date):
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {DURATION_PRESETS.map((p) => (
+                  <button
+                    key={p.days}
+                    type="button"
+                    onClick={() => handleSelectDurationPreset(p.days)}
+                    className={`p-3 rounded-2xl border text-left transition-all ${
+                      selectedPresetDays === p.days
+                        ? 'bg-slate-900 text-white border-amber-400 ring-2 ring-amber-400/50'
+                        : 'bg-slate-50 text-slate-800 border-slate-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <div className={`text-sm font-black ${selectedPresetDays === p.days ? 'text-amber-300' : 'text-slate-900'}`}>
+                      {p.label}
+                    </div>
+                    <div className={`text-[11px] mt-0.5 ${selectedPresetDays === p.days ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {p.desc}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-amber-700 flex-shrink-0" />
               <span>
-                Your plan will run from <strong>Today</strong> until <strong>{targetDate}</strong> ({totalDaysFromNow} days).
+                Plan Timeline: <strong>{startDate}</strong> se <strong>{targetDate}</strong> tak ({totalDays} days / {approxMonths} months).
               </span>
             </div>
           </div>
@@ -532,7 +587,7 @@ export const PlannerOnboardingWizard: React.FC = () => {
                 <div className="font-extrabold text-sm">Great! Your Plan is Realistic &amp; Easy to Follow</div>
                 <p>
                   This course needs <strong>{feasibility.total_syllabus_hours} hours</strong>, and with your schedule you have{' '}
-                  <strong>{feasibility.total_available_hours} hours</strong> available before <strong>{targetDate}</strong>.
+                  <strong>{feasibility.total_available_hours} hours</strong> available from <strong>{startDate}</strong> until <strong>{targetDate}</strong>.
                 </p>
               </div>
             </div>
@@ -557,7 +612,7 @@ export const PlannerOnboardingWizard: React.FC = () => {
                   onClick={() => {
                     const nextHours = Math.min(8, dailyHours + 1);
                     setDailyHours(nextHours);
-                    runFeasibilityCheck(availableDays, nextHours, targetDate);
+                    runFeasibilityCheck(availableDays, nextHours, startDate, targetDate);
                   }}
                   className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-white border border-rose-300 text-rose-800 hover:bg-rose-100"
                 >
@@ -566,11 +621,10 @@ export const PlannerOnboardingWizard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const newDays = totalDaysFromNow + 30;
-                    const newDate = addDaysIso(newDays);
+                    const newTarget = addDaysTo(targetDate, 30);
                     setSelectedPresetDays('custom');
-                    setTargetDate(newDate);
-                    runFeasibilityCheck(availableDays, dailyHours, newDate);
+                    setTargetDate(newTarget);
+                    runFeasibilityCheck(availableDays, dailyHours, startDate, newTarget);
                   }}
                   className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-white border border-rose-300 text-rose-800 hover:bg-rose-100"
                 >

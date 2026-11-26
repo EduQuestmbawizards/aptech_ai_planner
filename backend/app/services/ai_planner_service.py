@@ -33,7 +33,7 @@ class AIPlannerService:
             existing_plan.is_active = False
             existing_plan.status = "ARCHIVED"
 
-        start_date = date.today()
+        start_date = req.start_date or date.today()
         target_date = req.target_completion_date
 
         # Generate deterministic foundation first (ensures 100% syllabus coverage, zero hallucinated modules/hours)

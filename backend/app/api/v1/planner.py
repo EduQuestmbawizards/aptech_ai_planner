@@ -162,7 +162,12 @@ def preview_plan_feasibility(
         raise HTTPException(status_code=403, detail="Only approved and ACTIVE enrollments can configure a study planner.")
 
     course = enrollment.course
-    start = date.today()
+    start = payload.start_date or date.today()
+    if payload.target_completion_date <= start:
+        raise HTTPException(
+            status_code=400,
+            detail="Target completion date must be after the start date."
+        )
 
     feasibility = SchedulerEngine.calculate_capacity_feasibility(
         course_hours=course.total_learning_hours,
@@ -190,6 +195,13 @@ def generate_study_plan(
 
     if enrollment.status != EnrollmentStatus.ACTIVE.value:
         raise HTTPException(status_code=403, detail="Enrollment is not ACTIVE. Cannot generate planner.")
+
+    start = payload.start_date or date.today()
+    if payload.target_completion_date <= start:
+        raise HTTPException(
+            status_code=400,
+            detail="Target completion date must be after the start date."
+        )
 
     plan = AIPlannerService.generate_and_save_plan(
         db=db,

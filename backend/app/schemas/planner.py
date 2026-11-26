@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class PlannerOnboardingRequest(BaseModel):
     enrollment_id: str
+    start_date: Optional[date] = None
     target_completion_date: date
     requested_duration_days: int
     daily_study_hours: float = Field(gt=0, le=16)
